@@ -76,4 +76,9 @@ public class ResourceManager : NetworkBehaviour
 
         secondaryAmmo = Math.Max(0, secondaryAmmo - amount);
     }
+
+    public bool hasEnergy()
+    {
+        return energy != 0;
+    }
 }

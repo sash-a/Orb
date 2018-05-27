@@ -8,6 +8,7 @@ public abstract class AAttackBehaviour : NetworkBehaviour
 
     // Local players camera.
     [SerializeField] protected Camera cam;
+
     // Layers that the local player can attack.
     [SerializeField] protected LayerMask mask;
 
@@ -23,10 +24,14 @@ public abstract class AAttackBehaviour : NetworkBehaviour
     void Update()
     {
         if (Input.GetButtonDown("Fire1")) attack();
+        if (Input.GetButtonUp("Fire1")) endAttack();
     }
 
     [Client]
     public abstract void attack();
+
+    [Client]
+    public abstract void endAttack();
 
     /// <summary>
     /// Notifies server that player has been shot

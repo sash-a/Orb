@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 54860386287291800}
   - component: {fileID: 114433240641295868}
   - component: {fileID: 114859757079092420}
+  - component: {fileID: 65311564782156520}
+  - component: {fileID: 65624477063644936}
   m_Layer: 0
   m_Name: Palm_Tree
   m_TagString: Untagged
@@ -28,7 +30,7 @@ Transform:
   m_GameObject: {fileID: 188006}
   m_LocalRotation: {x: 0.000000021855694, y: 0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.5, y: 2, z: 1.5}
+  m_LocalScale: {x: 3, y: 4.5, z: 3}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -105,6 +107,30 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!65 &65311564782156520
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 188006}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.5284373, y: 3.7642958, z: 1.1985769}
+  m_Center: {x: 0.0151004, y: 1.8943168, z: -0.11735709}
+--- !u!65 &65624477063644936
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 188006}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 4.3876605, y: 1.5973748, z: 3.8567502}
+  m_Center: {x: -0.24948978, y: 4.7630944, z: -0.5378984}
 --- !u!114 &114433240641295868
 MonoBehaviour:
   m_ObjectHideFlags: 1

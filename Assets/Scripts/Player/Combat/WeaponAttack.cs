@@ -33,4 +33,9 @@ public class WeaponAttack : AAttackBehaviour
 
         // For explosives someother kind of range check will be required and a grenade/explosive gameObject instead of raycasting
     }
+
+    public override void endAttack()
+    {
+        throw new System.NotImplementedException();
+    }
 }

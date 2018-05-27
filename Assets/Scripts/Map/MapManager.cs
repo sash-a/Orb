@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-
+using System.Linq;
+using UnityEditor;
 
 public class MapManager : MonoBehaviour
 {
@@ -11,14 +14,17 @@ public class MapManager : MonoBehaviour
     public static Dictionary<int, Dictionary<int, Voxel>> voxels; // indexed like voxels[layer][column]
     public static Dictionary<int, Dictionary<int, Vector3>> voxelPositions; // the world coords of each vox center
 
-    // Maps column id's onto a set of all column ids that that column is adjacent to
-    public static Dictionary<int, HashSet<int>> neighboursMap;
+    public static Dictionary<int, HashSet<int>>
+        neighboursMap; //maps column id's onto a set of all column ids that that column is adjacent to
 
     public static Voxel DeletedVoxel;
 
+    //public Dictionary<int,Column> columns;
 
     public static GameObject Map;
+    //public static MapManager manager;
 
+    // Use this for initialization
     void Start()
     {
         //manager = this;
@@ -37,6 +43,7 @@ public class MapManager : MonoBehaviour
 
         // Shane what does this do?
         Map.transform.localScale *= mapSize;
+        
     }
 
 
@@ -66,8 +73,10 @@ public class MapManager : MonoBehaviour
         {
             return true;
         }
-
-        return false;
+        else
+        {
+            return false;
+        }
     }
 
     internal static void informDeleted(int layer, int columnID) //block at layer columnID
@@ -79,18 +88,18 @@ public class MapManager : MonoBehaviour
         {
             if (doesVoxelExist(layer, n))
             {
-//                voxels[layer][n].smoothBlock(true, centre);
+                voxels[layer][n].smoothBlock(true, centre);
             }
         }
 
         if (doesVoxelExist(layer + 1, columnID))
         {
-//            voxels[layer + 1][columnID].smoothBlock(false, centre);
+            voxels[layer + 1][columnID].smoothBlock(false, centre);
         }
 
         if (doesVoxelExist(layer - 1, columnID))
         {
-//            voxels[layer - 1][columnID].smoothBlock(false, centre);
+            voxels[layer - 1][columnID].smoothBlock(false, centre);
         }
     }
 
@@ -105,11 +114,15 @@ public class MapManager : MonoBehaviour
             {
                 return voxels[l][columnID].Equals(DeletedVoxel);
             }
-
-            return false; //hasnt even been created yet
+            else
+            {
+                return false; //hasnt even been created yet
+            }
         }
-
-        //layer doesnt exist
-        return true;
+        else
+        {
+            //layer doesnt exist
+            return true;
+        }
     }
 }

@@ -132,7 +132,7 @@ public class NetworkMapGen : NetworkBehaviour
             {
                 if (isServer)
                 {
-                    Debug.Log("Center: " + vox.worldCentreOfObject);
+                    //Debug.Log("Center: " + vox.worldCentreOfObject);
                     GameObject tree = Instantiate(treePrefab, vox.worldCentreOfObject, Quaternion.identity);
                     NetworkServer.Spawn(tree);
                 }

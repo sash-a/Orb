@@ -6,17 +6,14 @@ using UnityEngine.Networking;
 
 public class Voxel : NetworkBehaviour
 {
-    public static bool use1factorSmoothing = false;
-    public static bool use2factorSmoothing = false;
-    public static bool use3factorSmoothing = false;
+    public static bool use1factorSmoothing = true;
+    public static bool use2factorSmoothing = true;
+    public static bool use3factorSmoothing = true;
 
     public static float extrudeLength = 0.014f; //0.02
 
     // decrease constant to move blocks further away from eachother//0.0025 - overlaps slightly ; 0.00249 leaves minute gap
-    public static float
-        scaleRatio =
-            (0.002491f * MapManager.mapSize + extrudeLength) /
-            (0.00249f * MapManager.mapSize);
+    public static float scaleRatio = (0.002491f * MapManager.mapSize + extrudeLength) / (0.00249f * MapManager.mapSize);
 
 
     public int columnID;
@@ -37,11 +34,13 @@ public class Voxel : NetworkBehaviour
     HashSet<Vector3> deletedCentres;
     ArrayList smoothAppointments;
 
-    public static int[] triangles;
+    public String info;
+
 
     private void Start()
     {
-        genVolumeTriangles();
+        info = "";
+
         setTexture();
 
         deletedAdjacents = 0;
@@ -57,25 +56,24 @@ public class Voxel : NetworkBehaviour
         smoothAppointments = new ArrayList();
 
         filter = gameObject.GetComponent<MeshFilter>();
-        GetComponent<MeshCollider>().convex = true;
+        GetComponent<MeshCollider>().convex = false;
 
         double scale = Math.Pow(scaleRatio, Math.Abs(layer));
-        worldCentreOfObject = centreOfObject * (float) scale * MapManager.mapSize;
-        Debug.Log("Voxel center obj: " + worldCentreOfObject);
+        worldCentreOfObject = centreOfObject * (float)scale * MapManager.mapSize;
+        //Debug.Log("Voxel center obj: " + worldCentreOfObject);
 
         if (layer > 0)
         {
-            transform.localScale = Vector3.one * (float) scale;
+            transform.localScale = Vector3.one * (float)scale;
+            MapManager.voxels[layer][columnID] = this;
 
-            Voxel childScript = GetComponent<Voxel>();
-            MapManager.voxels[layer][columnID] = childScript;
-
-            childScript.origonalPoints = origonalPoints;
-            childScript.restore();
-            childScript.setColumnID(columnID);
-            cloneMeshFilter(gameObject);
-            childScript.refreshCollider();
+            setColumnID(columnID);
+            restoreCollider();
         }
+
+        cloneMeshFilter();
+        restore();
+
     }
 
     public void setColumnID(int colID)
@@ -162,7 +160,7 @@ public class Voxel : NetworkBehaviour
                 else
                 {
                     //Debug.Log("missed normal ray casting");
-                    int[] other = findRemainingOnSide(new int[] {i});
+                    int[] other = findRemainingOnSide(new int[] { i });
                     dir = ((filter.sharedMesh.vertices[other[0]] +
                             filter.sharedMesh.vertices[other[0] + 3] +
                             filter.sharedMesh.vertices[other[1]] +
@@ -182,7 +180,7 @@ public class Voxel : NetworkBehaviour
             gameObject.SetActive(true);
         }
 
-//        worldCentreOfObject = centreOfObject * MapManager.mapSize;
+        //        worldCentreOfObject = centreOfObject * MapManager.mapSize;
     }
 
     public void addNeighbour(Voxel n)
@@ -268,6 +266,7 @@ public class Voxel : NetworkBehaviour
         }
     }
 
+
     /*
      * Returns true if voxel created on server false otherwise
      */
@@ -286,7 +285,12 @@ public class Voxel : NetworkBehaviour
         {
             GameObject childObject = Instantiate(gameObject, gameObject.transform.position,
                 gameObject.transform.localRotation);
-            childObject.GetComponent<Voxel>().layer = newVoxelLayer;
+            
+            Voxel childScript = childObject.GetComponent<Voxel>();
+            childScript.layer = newVoxelLayer;
+            childScript.origonalPoints = origonalPoints;
+            childScript.cloneMeshFilter();
+
 
             NetworkServer.Spawn(childObject);
             return true;
@@ -295,33 +299,13 @@ public class Voxel : NetworkBehaviour
         return false;
     }
 
-    private void cloneMeshFilter(GameObject childObject)
+    private void cloneMeshFilter()
     {
-        MeshFilter orig = childObject.GetComponent<MeshFilter>();
-        //String name = "voxelShape";
-
-        Vector3[] vnew = new Vector3[6]; //deep copy verts
-        for (int i = 0; i < 6; i++)
-        {
-            if (origonalPoints.ContainsKey(i))
-            {
-                vnew[i] = origonalPoints[i] + Vector3.zero;
-            }
-            else
-            {
-                vnew[i] = orig.mesh.vertices[i] + Vector3.zero;
-            }
-        }
-
-        int[] triangles = orig.mesh.triangles;
-
-
-        //gameObject.AddComponent<MeshFilter>();
-        //MeshFilter newFilter = gameObject.GetComponent<MeshFilter>();
-        orig.mesh.vertices = vnew;
-
-        orig.mesh.triangles = triangles;
+        MeshFilter mf = GetComponent<MeshFilter>();
+        Mesh meshCopy = Mesh.Instantiate(mf.sharedMesh) as Mesh; //make a deep copy
+        GetComponent<MeshFilter>().mesh = meshCopy;
     }
+
 
 
     internal void smoothBlock(bool adjacent, Vector3 cent) //before each new shrink- unshrink previous smoothenings
@@ -368,7 +352,7 @@ public class Voxel : NetworkBehaviour
             if (MapManager.isDeleted(layer + 1, columnID) || MapManager.isDeleted(layer - 1, columnID))
             {
                 //is going to pull something in
-                restore();
+                //restore();
                 showNeighbours(false);
             }
 
@@ -380,6 +364,8 @@ public class Voxel : NetworkBehaviour
                 {
                     if (MapManager.isDeleted(layer + dir, columnID))
                     {
+                        info += "|using 1fac smoothing|";
+
                         //down is deleted, suck in 2 points
                         Vector3 smoothDirVec = Vector3.zero;
                         foreach (Vector3 dc in deletedCentres)
@@ -389,8 +375,8 @@ public class Voxel : NetworkBehaviour
 
                         smoothDirVec.Normalize();
                         //now find the two closest points and shrink them in
-                        double[] closestDs = new double[] {double.MaxValue, double.MaxValue};
-                        int[] closestIDs = new int[] {-1, -1};
+                        double[] closestDs = new double[] { double.MaxValue, double.MaxValue };
+                        int[] closestIDs = new int[] { -1, -1 };
                         for (int i = 0; i < 6; i++)
                         {
                             double d = (verts[i] - smoothDirVec).magnitude;
@@ -427,10 +413,13 @@ public class Voxel : NetworkBehaviour
                         if (Math.Sign(2.5 - closestIDs[0]) == Math.Sign(2.5 - closestIDs[1]))
                         {
                             //both points on same side of voxel- if not there has been an error
-                            int corner = findRemainingOnSide(new int[] {closestIDs[0], closestIDs[1]})[0];
+                            int corner = findRemainingOnSide(new int[] { closestIDs[0], closestIDs[1] })[0];
 
-                            receedPoint(closestIDs[0], corner);
-                            receedPoint(closestIDs[1], corner);
+                            //receedPoint(closestIDs[0], corner);
+                            //receedPoint(closestIDs[1], corner);
+
+                            deletePoint(closestIDs[0]);
+                            deletePoint(closestIDs[1]);
                             smoothNeighbours(closestIDs[0], corner);
                             smoothNeighbours(closestIDs[1], corner);
                             gameObject.GetComponent<MeshCollider>().sharedMesh = filter.mesh;
@@ -455,7 +444,7 @@ public class Voxel : NetworkBehaviour
             if (MapManager.isDeleted(layer + 1, columnID) || MapManager.isDeleted(layer - 1, columnID))
             {
                 //is going to pull something in
-                restore();
+                //restore();
                 //filter.mesh.triangles = VoxelGen.triangles;
                 //Debug.Log("restoring regular triangles thanks to adj=2");
             }
@@ -467,6 +456,7 @@ public class Voxel : NetworkBehaviour
                 {
                     if (MapManager.isDeleted(layer + dir, columnID))
                     {
+                        info += "|using 2fac smoothing|";
                         //down is deleted, suck in point
                         //Debug.Log("down and 2 adjacent smoothing");
                         Vector3 smoothDirVec = Vector3.zero;
@@ -521,27 +511,29 @@ public class Voxel : NetworkBehaviour
             {
                 releaseVoxel();
             }
-
-            if (MapManager.isDeleted(layer + 1, columnID) || MapManager.isDeleted(layer - 1, columnID))
+            else
             {
-                restore();
-                filter.mesh.triangles = triangles;
-            }
 
-            if (MapManager.isDeleted(layer + 1, columnID))
-            {
-                //down is deleted, suck in bottom 3 points
-                shrink(3, 0.5f);
-                shrink(4, 0.5f);
-                shrink(5, 0.5f);
-            }
+                if (MapManager.isDeleted(layer + 1, columnID) || MapManager.isDeleted(layer - 1, columnID))
+                {
+                    restore();
+                }
 
-            if (MapManager.isDeleted(layer - 1, columnID))
-            {
-                //up is deleted, suck in top 3 points
-                shrink(0, 0.5f);
-                shrink(1, 0.5f);
-                shrink(2, 0.5f);
+                if (MapManager.isDeleted(layer + 1, columnID))
+                {
+                    //down is deleted, suck in bottom 3 points
+                    shrink(3, 0.5f);
+                    shrink(4, 0.5f);
+                    shrink(5, 0.5f);
+                }
+
+                if (MapManager.isDeleted(layer - 1, columnID))
+                {
+                    //up is deleted, suck in top 3 points
+                    shrink(0, 0.5f);
+                    shrink(1, 0.5f);
+                    shrink(2, 0.5f);
+                }
             }
         }
     }
@@ -610,7 +602,7 @@ public class Voxel : NetworkBehaviour
                             //found the towards point in neighbour vox
 
                             neighbour.deletePoint(sameID);
-                            neighbour.smoothNeighbours(sameID, findRemainingOnSide(new int[] {otherSameId, sameID})[0]);
+                            neighbour.smoothNeighbours(sameID, findRemainingOnSide(new int[] { otherSameId, sameID })[0]);
                             neighbour.showNeighbours(false);
                             //MapGen.voxels[layer][neighbourCol].shrink(sameID, 0);
                         }
@@ -640,13 +632,19 @@ public class Voxel : NetworkBehaviour
     {
         //Debug.Log("deleting point " + pID + " from vox " + columnID);
         if (!deletedPoints.Contains(pID))
-        {
+        {//hasnt deleted this point already
             if (filter.mesh.triangles.Length == 24)
             {
+                info += "|deleting:" + pID + "|";
                 //has not had a point deleted yet
                 deletedPoints.Add(pID);
                 int horn = (pID + 3) % 6;
-                int[] sameCorners = findRemainingOnSide(new int[] {pID});
+                info += "|horn:" + horn + "|";
+
+
+                int[] sameCorners = findRemainingOnSide(new int[] { pID });
+                info += "|ss corners: " + sameCorners[0] + "," + sameCorners[1] + "|";
+
                 if (pID == 1 || pID == 4)
                 {
                     //split natural order in half
@@ -655,28 +653,76 @@ public class Voxel : NetworkBehaviour
                     sameCorners[1] = temp;
                 }
 
-                int[] otherCorners = new int[] {(sameCorners[0] + 3) % 6, (sameCorners[1] + 3) % 6};
+                int[] otherCorners = new int[] { (sameCorners[0] + 3) % 6, (sameCorners[1] + 3) % 6 };
+                info += "|os corners: " + otherCorners[0] + "," + otherCorners[1] + "|";
+
 
                 int[] triangles = new int[6 * 3];
+
+
                 triangles[0] = horn; //top
                 triangles[1] = sameCorners[1]; //top
                 triangles[2] = sameCorners[0]; //top
 
+
+                /**
+                triangles[0] = horn; //top
+                triangles[1] = otherCorners[1]; //top
+                triangles[2] = sameCorners[0]; //top
+                */
+
+                /**
+                triangles[0] = 0; //top
+                triangles[1] = 0; //top
+                triangles[2] = 0; //top
+                */
+
+                //bottom working
                 triangles[3] = horn; //bottom
                 triangles[4] = otherCorners[0]; //bottom
                 triangles[5] = otherCorners[1]; //bottom
+
+
+                /**
+                triangles[3] = 0; //bottom
+                triangles[4] = 0; //bottom
+                triangles[5] = 0; //bottom
+                */
+
 
                 triangles[6] = horn; //side
                 triangles[7] = sameCorners[0]; //side
                 triangles[8] = otherCorners[0]; //side
 
+
+                /**
+                triangles[6] = 0; //side
+                triangles[7] = 0; //side
+                triangles[8] = 0; //side
+                */
+
+
                 triangles[9] = horn; //side
                 triangles[10] = otherCorners[1]; //side
                 triangles[11] = sameCorners[1]; //side
 
+
+                /**
+                triangles[9] = 0; //side
+                triangles[10] = 0; //side
+                triangles[11] = 0; //side
+                */
+
                 triangles[12] = sameCorners[0]; //back
                 triangles[13] = sameCorners[1]; //back
                 triangles[14] = otherCorners[0]; //back
+
+
+                /**
+                triangles[12] = 0; //back
+                triangles[13] = 0; //back
+                triangles[14] = 0; //back
+                */
 
                 triangles[15] = sameCorners[1]; //back
                 triangles[16] = otherCorners[1]; //back
@@ -696,6 +742,7 @@ public class Voxel : NetworkBehaviour
             }
             else if (deletedPoints.Count == 1)
             {
+                Debug.Log("doing a second delete vox:" + columnID + "; triangles size:" + filter.mesh.triangles.Length);
                 int delt = -1;
                 foreach (int d in deletedPoints)
                 {
@@ -705,9 +752,10 @@ public class Voxel : NetworkBehaviour
                 if ((delt <= 2) == (pID <= 2))
                 {
                     //points on same side of vox
-                    int tip = findRemainingOnSide(new int[] {pID, delt})[0];
+                    int tip = findRemainingOnSide(new int[] { pID, delt })[0];
                     int underTip = (tip + 3) % 6;
-                    int[] rest = findRemainingOnSide(new int[] {underTip});
+                    int[] rest = findRemainingOnSide(new int[] { underTip });
+
                     if (underTip == 1 || underTip == 4)
                     {
                         int temp = rest[0];
@@ -767,6 +815,7 @@ public class Voxel : NetworkBehaviour
         }
 
         m.vertices = verts;
+
         int[] tris = new int[filter.mesh.triangles.Length];
         for (int i = 0; i < tris.Length; i++)
         {
@@ -782,7 +831,7 @@ public class Voxel : NetworkBehaviour
         gameObject.GetComponent<MeshCollider>().convex = !gameObject.GetComponent<MeshCollider>().convex;
     }
 
-    private void refreshCollider()
+    private void restoreCollider()
     {
         Mesh m = new Mesh();
         Vector3[] verts = new Vector3[filter.mesh.vertices.Length];
@@ -800,13 +849,7 @@ public class Voxel : NetworkBehaviour
         }
 
         m.vertices = verts;
-        int[] tris = new int[triangles.Length];
-        for (int i = 0; i < tris.Length; i++)
-        {
-            tris[i] = triangles[i] + 0;
-        }
-
-        m.triangles = tris;
+        m.triangles = genVolumeTriangles();
         gameObject.GetComponent<MeshCollider>().sharedMesh = m;
 
         //gameObject.GetComponent<MeshCollider>().sharedMesh.RecalculateNormals();
@@ -825,14 +868,14 @@ public class Voxel : NetworkBehaviour
         Vector3[] newVerts = new Vector3[6];
         for (int i = 0; i < 6; i++)
         {
-            newVerts[i] = filter.mesh.vertices[i];
+            newVerts[i] = filter.mesh.vertices[i] + Vector3.zero;
         }
 
         foreach (int id in origonalPoints.Keys)
         {
             //for each morphed point
             //Debug.Log("vox " + columnID + " restoring point from "  + newVerts[id] + );
-            newVerts[id] = origonalPoints[id];
+            newVerts[id] = origonalPoints[id] + Vector3.zero;
         }
 
         //filter.mesh.vertices = newVerts;
@@ -840,11 +883,10 @@ public class Voxel : NetworkBehaviour
         {
             //there was morphing
             //gameObject.GetComponent<MeshCollider>().sharedMesh = GetComponent<MeshFilter>().mesh;//return collider to origonal
-            //origonalPoints = new Dictionary<int, Vector3>();
+            origonalPoints = new Dictionary<int, Vector3>();
         }
 
-
-        //filter.mesh.triangles = VoxelGen.triangles;
+        filter.mesh.triangles = genVolumeTriangles();
     }
 
     private void shrink(int index, float f)
@@ -882,12 +924,12 @@ public class Voxel : NetworkBehaviour
         if (Math.Sign(2.5 - points[0]) > 0)
         {
             //point is part of {0,1,2}
-            set = new HashSet<int> {0, 1, 2};
+            set = new HashSet<int> { 0, 1, 2 };
             debug = "set started 0,1,2 ";
         }
         else
         {
-            set = new HashSet<int> {3, 4, 5};
+            set = new HashSet<int> { 3, 4, 5 };
             debug = "set started 3,4,5 ";
         }
 
@@ -929,7 +971,7 @@ public class Voxel : NetworkBehaviour
             }
 
             if (filter.mesh.vertices[i] == vert)
-                //if(Vector3.Distance(filter.mesh.vertices[i], vert)< 0.05)
+            //if(Vector3.Distance(filter.mesh.vertices[i], vert)< 0.05)
             {
                 return i;
             }
@@ -958,9 +1000,9 @@ public class Voxel : NetworkBehaviour
     }
 
 
-    public static void genVolumeTriangles()
+    public int[] genVolumeTriangles()
     {
-        triangles = new int[24];
+        int[] triangles = new int[24];
 
         triangles[0] = 0;
         triangles[1] = 2;
@@ -987,5 +1029,7 @@ public class Voxel : NetworkBehaviour
         triangles[21] = 0;
         triangles[22] = 5;
         triangles[23] = 2; //end of triangle 8
+
+        return triangles;
     }
 }

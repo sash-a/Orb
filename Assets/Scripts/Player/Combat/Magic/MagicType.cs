@@ -1,5 +1,9 @@
 ﻿[System.Serializable]
 public class MagicType : Item
 {
-    // Really not sure
+    public bool isTelekenetic;
+    public bool isDamage;
+    public bool isShield;
+
+    public Shield shield;
 }

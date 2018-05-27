@@ -75,7 +75,7 @@ public class VoxelGen
             voxelBehaviour.obtusePoint = getObtusePoint();
 
             // Saving mesh
-            MeshUtility.Optimize(filter.mesh);
+            //MeshUtility.Optimize(filter.mesh);//will break smoothing
             Mesh tempMesh = UnityEngine.Object.Instantiate(filter.mesh);
             AssetDatabase.CreateAsset(tempMesh, meshPath);
             AssetDatabase.Refresh();
