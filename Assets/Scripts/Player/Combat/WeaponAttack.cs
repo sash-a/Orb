@@ -36,6 +36,6 @@ public class WeaponAttack : AAttackBehaviour
 
     public override void endAttack()
     {
-        throw new System.NotImplementedException();
+//        throw new System.NotImplementedException();
     }
 }

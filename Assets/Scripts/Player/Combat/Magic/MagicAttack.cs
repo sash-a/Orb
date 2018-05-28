@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 
 [RequireComponent(typeof(ResourceManager))]
 public class MagicAttack : AAttackBehaviour
@@ -19,21 +20,29 @@ public class MagicAttack : AAttackBehaviour
 
     void Update()
     {
+        base.Update();
+        
         if (!resourceManager.hasEnergy() && currentShield != null)
         {
             Destroy(currentShield);
             currentShield = null;
             shieldUp = false;
         }
+
+        if (shieldUp && resourceManager.hasEnergy())
+        {
+            // Drain energy
+        }
     }
 
+    [Client]
     public override void attack()
     {
         if (type.isShield && resourceManager.hasEnergy() && !shieldUp)
         {
-            currentShield = Instantiate(shield); // Position, child to player etc
+            currentShield = Instantiate(shield, transform.position, Quaternion.identity);
+            currentShield.transform.parent = transform;
             shieldUp = true;
-            // Drain energy
         }
         else if (type.isDamage)
         {
@@ -43,6 +52,7 @@ public class MagicAttack : AAttackBehaviour
         }
     }
 
+    [Client]
     public override void endAttack()
     {
         if (currentShield == null) return;

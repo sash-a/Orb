@@ -13,6 +13,13 @@ public class AssetOrientation : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.MoveRotation(Quaternion.LookRotation(getFoward(), -transform.position.normalized));
+        //transform.localRotation = transform.rotation;
+        StartCoroutine(SetParent());
+    }
+
+    IEnumerator SetParent() {
+        yield return new WaitForSeconds(0.3f);
+        transform.parent = MapManager.Map.transform.GetChild(2);
     }
 
     public Vector3 getFoward()

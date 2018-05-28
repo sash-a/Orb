@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.Networking;
 using UnityEditor;
 
 public class MapManager : MonoBehaviour
@@ -14,20 +15,19 @@ public class MapManager : MonoBehaviour
     public static Dictionary<int, Dictionary<int, Voxel>> voxels; // indexed like voxels[layer][column]
     public static Dictionary<int, Dictionary<int, Vector3>> voxelPositions; // the world coords of each vox center
 
-    public static Dictionary<int, HashSet<int>>
-        neighboursMap; //maps column id's onto a set of all column ids that that column is adjacent to
+    public static Dictionary<int, HashSet<int>> neighboursMap; //maps column id's onto a set of all column ids that that column is adjacent to
 
     public static Voxel DeletedVoxel;
 
     //public Dictionary<int,Column> columns;
 
     public static GameObject Map;
-    //public static MapManager manager;
+    public static MapManager manager;
 
     // Use this for initialization
     void Start()
     {
-        //manager = this;
+        manager = this;
         Map = GameObject.Find("Map");
         Debug.Log("starting map manager");
 
@@ -81,6 +81,7 @@ public class MapManager : MonoBehaviour
 
     internal static void informDeleted(int layer, int columnID) //block at layer columnID
     {
+
         Vector3 centre = voxels[layer][columnID].centreOfObject;
         voxels[layer][columnID] = MapManager.DeletedVoxel;
 
@@ -88,20 +89,50 @@ public class MapManager : MonoBehaviour
         {
             if (doesVoxelExist(layer, n))
             {
-                voxels[layer][n].smoothBlock(true, centre);
+                voxels[layer][n].smoothBlockInPlace();
             }
         }
 
         if (doesVoxelExist(layer + 1, columnID))
         {
-            voxels[layer + 1][columnID].smoothBlock(false, centre);
+            voxels[layer + 1][columnID].smoothBlockInPlace();
+
         }
 
         if (doesVoxelExist(layer - 1, columnID))
         {
-            voxels[layer - 1][columnID].smoothBlock(false, centre);
+            voxels[layer - 1][columnID].smoothBlockInPlace();
+        }
+        //manager.StartCoroutine(informNeighbours(layer, columnID));
+    }
+
+    static IEnumerator informNeighbours(int layer, int columnID)
+    {
+        yield return new WaitForSeconds(0.15f);
+        Vector3 centre = voxels[layer][columnID].centreOfObject;
+        voxels[layer][columnID] = MapManager.DeletedVoxel;
+
+        foreach (int n in neighboursMap[columnID])
+        {
+            if (doesVoxelExist(layer, n))
+            {
+                voxels[layer][n].smoothBlockInPlace();
+            }
+        }
+
+        if (doesVoxelExist(layer + 1, columnID))
+        {
+            voxels[layer + 1][columnID].smoothBlockInPlace();
+        
+        }
+
+        if (doesVoxelExist(layer - 1, columnID))
+        {
+            voxels[layer - 1][columnID].smoothBlockInPlace();
         }
     }
+
+    
 
     // returns true only if the voxel has been created and destroyed|| or the voxel is in layer -1
     internal static bool isDeleted(int l, int columnID)

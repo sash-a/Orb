@@ -72,7 +72,7 @@ public class NetworkMapGen : NetworkBehaviour
     {
         yield return new WaitForSeconds(1);
         GenerateTrees(density);
-        Debug.Log("Done trees");
+        //Debug.Log("Generated trees");
     }
 
     IEnumerator InitVoxels()
@@ -85,22 +85,22 @@ public class NetworkMapGen : NetworkBehaviour
         {
             if (objs[i].name.Contains("voxel") || objs[i].name.Equals("TriVoxel"))
             {
-                objs[i].transform.parent = parent.transform;
+                objs[i].transform.parent = parent.transform.GetChild(1);
             }
         }
 
-        Debug.Log("on start client called childcount = " + parent.transform.childCount);
-        for (int i = 1; i < parent.transform.childCount; i++)
+        //Debug.Log("on start client called childcount = " + parent.transform.GetChild(1).childCount);
+        for (int i = 0; i < parent.transform.GetChild(1).childCount; i++)
         {
-            GameObject voxObj = parent.transform.GetChild(i).gameObject;
+            GameObject voxObj = parent.transform.GetChild(1).GetChild(i).gameObject;
             if (!(voxObj.name.Contains("voxel") || voxObj.name.Equals("TriVoxel")))
             {
-                Debug.Log("incorect child load - loaded" + voxObj.name);
+                Debug.LogError("incorect child load - loaded" + voxObj.name);
             }
             else
             {
                 Voxel v = voxObj.GetComponent<Voxel>();
-                v.setColumnID(i - 1);
+                v.setColumnID(i);
             }
         }
 
@@ -114,7 +114,7 @@ public class NetworkMapGen : NetworkBehaviour
         // d is related to density
         int d = density;
         //loop through every surface voxel
-        Debug.LogWarning(MapManager.voxels[0].Count);
+        //Debug.LogWarning(MapManager.voxels[0].Count);
         foreach (Voxel vox in MapManager.voxels[0].Values)
         {
             //when the appropriate number of voxels have been skipped

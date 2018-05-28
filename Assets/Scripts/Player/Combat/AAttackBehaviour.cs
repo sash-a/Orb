@@ -21,7 +21,7 @@ public abstract class AAttackBehaviour : NetworkBehaviour
         }
     }
 
-    void Update()
+    protected void Update()
     {
         if (Input.GetButtonDown("Fire1")) attack();
         if (Input.GetButtonUp("Fire1")) endAttack();

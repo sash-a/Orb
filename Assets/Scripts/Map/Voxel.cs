@@ -27,12 +27,10 @@ public class Voxel : NetworkBehaviour
 
     System.Random rand;
     private MeshFilter filter;
-    public int deletedAdjacents;
+
 
     public Dictionary<int, Vector3> origonalPoints;
     public HashSet<int> deletedPoints;
-    HashSet<Vector3> deletedCentres;
-    ArrayList smoothAppointments;
 
     public String info;
 
@@ -43,17 +41,14 @@ public class Voxel : NetworkBehaviour
 
         setTexture();
 
-        deletedAdjacents = 0;
 
         gameObject.name = "TriVoxel";
         gameObject.tag = "TriVoxel";
-        transform.parent = MapManager.Map.transform;
+        transform.parent = MapManager.Map.transform.GetChild(1);
 
 
-        deletedCentres = new HashSet<Vector3>();
         origonalPoints = new Dictionary<int, Vector3>();
         deletedPoints = new HashSet<int>();
-        smoothAppointments = new ArrayList();
 
         filter = gameObject.GetComponent<MeshFilter>();
         GetComponent<MeshCollider>().convex = false;
@@ -61,18 +56,17 @@ public class Voxel : NetworkBehaviour
         double scale = Math.Pow(scaleRatio, Math.Abs(layer));
         worldCentreOfObject = centreOfObject * (float)scale * MapManager.mapSize;
         //Debug.Log("Voxel center obj: " + worldCentreOfObject);
+        MapManager.voxels[layer][columnID] = this;
 
         if (layer > 0)
         {
             transform.localScale = Vector3.one * (float)scale;
-            MapManager.voxels[layer][columnID] = this;
 
             setColumnID(columnID);
-            restoreCollider();
         }
 
         cloneMeshFilter();
-        restore();
+        restoreVoxel();
 
     }
 
@@ -103,7 +97,10 @@ public class Voxel : NetworkBehaviour
 
     internal void destroyVoxel()
     {
-        //Debug.Log("destroy vox called from in vox");
+        if (!isServer)
+        {
+            Debug.Log("destroy vox called from in vox");
+        }
         showNeighbours(true);
         //Destroy(gameObject);
         NetworkServer.Destroy(gameObject);
@@ -285,11 +282,12 @@ public class Voxel : NetworkBehaviour
         {
             GameObject childObject = Instantiate(gameObject, gameObject.transform.position,
                 gameObject.transform.localRotation);
-            
+
             Voxel childScript = childObject.GetComponent<Voxel>();
             childScript.layer = newVoxelLayer;
             childScript.origonalPoints = origonalPoints;
             childScript.cloneMeshFilter();
+            MapManager.voxels[newVoxelLayer][childScript.columnID] = childScript;
 
 
             NetworkServer.Spawn(childObject);
@@ -307,259 +305,227 @@ public class Voxel : NetworkBehaviour
     }
 
 
-
-    internal void smoothBlock(bool adjacent, Vector3 cent) //before each new shrink- unshrink previous smoothenings
-    {
-        if (adjacent)
+    internal void smoothBlockInPlace()
+    {//implement order independant simplified smoothing
+        if (MapManager.isDeleted(layer + 1, columnID) || MapManager.isDeleted(layer - 1, columnID))
         {
-            deletedAdjacents++;
-            deletedCentres.Add(cent);
-        }
-        else
-        {
-            foreach (int app in smoothAppointments)
+            try
             {
-                if (!(MapManager.isDeleted(layer + 1, columnID) && MapManager.isDeleted(layer - 1, columnID)) &&
-                    (MapManager.isDeleted(layer + 1, columnID) || MapManager.isDeleted(layer - 1, columnID)))
+                int deletedAdjacents = 0;
+                ArrayList neighbourIDs = new ArrayList();
+                foreach (int nei in MapManager.neighboursMap[columnID])
                 {
-                    //exactly one up or down has been deleted
-                    if (MapManager.isDeleted(layer + 1, columnID))
+                    if (MapManager.isDeleted(layer, nei))
                     {
-                        //below block was deleted
-                        if (app > 2)
-                        {
-                            deletePoint(app);
-                            Debug.Log("fulfilling a smooth appointment");
-                        }
+                        deletedAdjacents++;
                     }
                     else
                     {
-                        //above block was deleted
-                        if (app <= 2)
-                        {
-                            deletePoint(app);
-                            Debug.Log("fulfilling a smooth appointment");
-                        }
+                        neighbourIDs.Add(nei);
                     }
                 }
-            }
-        }
 
-        if (deletedAdjacents == 1 && use1factorSmoothing)
-        {
-            Vector3[] verts = filter.mesh.vertices;
-
-            if (MapManager.isDeleted(layer + 1, columnID) || MapManager.isDeleted(layer - 1, columnID))
-            {
-                //is going to pull something in
-                //restore();
-                showNeighbours(false);
-            }
-
-            if (!(MapManager.isDeleted(layer + 1, columnID) && MapManager.isDeleted(layer - 1, columnID)))
-            {
-                // dont do adj1 smoothing if both up and down deleted
-                int dir = 1;
-                for (int c = 0; c < 2; c++)
+                info = "del adj=" + deletedAdjacents;
+                if (MapManager.isDeleted(layer + 1, columnID) && MapManager.isDeleted(layer - 1, columnID))
                 {
-                    if (MapManager.isDeleted(layer + dir, columnID))
+                    //up and down deleted
+                    if (deletedAdjacents >= 2)
                     {
-                        info += "|using 1fac smoothing|";
+                        releaseVoxel();
+                    }
+                }
+                else
+                {//exactly 1 vertical neighbour is deleted
 
-                        //down is deleted, suck in 2 points
-                        Vector3 smoothDirVec = Vector3.zero;
-                        foreach (Vector3 dc in deletedCentres)
-                        {
-                            smoothDirVec += dc - centreOfObject;
-                        }
+                    if (deletedAdjacents == 1 && use1factorSmoothing)
+                    {
+                        Vector3[] verts = filter.mesh.vertices;
+                        showNeighbours(false);
 
-                        smoothDirVec.Normalize();
-                        //now find the two closest points and shrink them in
-                        double[] closestDs = new double[] { double.MaxValue, double.MaxValue };
+
+                        int dir = 1;
                         int[] closestIDs = new int[] { -1, -1 };
-                        for (int i = 0; i < 6; i++)
+                        for (int c = 0; c < 2; c++)
                         {
-                            double d = (verts[i] - smoothDirVec).magnitude;
-                            if (d < closestDs[0])
-                            {
-                                closestDs[0] = d;
-                                closestIDs[0] = i;
-                                if (d < closestDs[1])
-                                {
-                                    closestDs[0] = closestDs[1];
-                                    closestDs[1] = d;
 
-                                    closestIDs[0] = closestIDs[1];
-                                    closestIDs[1] = i;
+                            //down is deleted, suck in 2 points
+                            Vector3 smoothDirVec = Vector3.zero;
+
+                            foreach (int n in neighbourIDs)
+                            {
+                                smoothDirVec -= (MapManager.voxels[layer][n].centreOfObject - centreOfObject).normalized;
+                            }
+
+                            smoothDirVec.Normalize();
+                            //now find the two closest points and shrink them in
+                            double[] closestDs = new double[] { double.MaxValue, double.MaxValue };
+                            closestIDs = new int[] { -1, -1 };
+
+                            String debug = "";
+                            for (int i = 0; i < 6; i++)
+                            {
+                                double d = (verts[i] - smoothDirVec).magnitude;
+                                if (d < closestDs[0])
+                                {
+                                    closestDs[0] = d;
+                                    closestIDs[0] = i;
+                                    if (d < closestDs[1])
+                                    {
+                                        closestDs[0] = closestDs[1];
+                                        closestDs[1] = d;
+
+                                        closestIDs[0] = closestIDs[1];
+                                        closestIDs[1] = i;
+                                    }
+                                }
+                                debug += "{0:" + closestIDs[0] + " 1:" + closestIDs[1] + "}";
+                            }
+                            if (closestIDs[0] == closestIDs[1] || closestIDs[0] == (closestIDs[1] + 3 % 6))
+                            {//invalid search
+                             //closest0 is the closest
+                                int[] id = findRemainingOnSide(new int[] { closestIDs[1] });
+
+                                if ((verts[id[0]] - smoothDirVec).magnitude > (verts[id[1]] - smoothDirVec).magnitude)
+                                {//verts 1 closer
+                                    closestIDs[0] = id[1];
+                                }
+                                else
+                                {
+                                    closestIDs[0] = id[0];
+
+                                }
+                                //info += debug;
+                            }
+
+                            //dir=+1 -> id e{3,4,5} ; dir=-1 -> id e{0,1,2} 
+                            //Math.Sign(2.5 - closestID) == 1  when closest id in {0,1,2}
+                            if (Math.Sign(2.5 - closestIDs[0]) == dir)
+                            {
+                                //needs to flip
+                                //Debug.Log("flipping closest id from " + closestID + " to " + ((closestID + 3) % 6));
+                                closestIDs[0] = (closestIDs[0] + 3) % 6;
+                            }
+
+                            if (Math.Sign(2.5 - closestIDs[1]) == dir)
+                            {
+                                //needs to flip
+                                closestIDs[1] = (closestIDs[1] + 3) % 6;
+                            }
+
+                            if (MapManager.isDeleted(layer + dir, columnID))
+                            {
+                                info += "|1 fac smoothing|";
+                                if (Math.Sign(2.5 - closestIDs[0]) == Math.Sign(2.5 - closestIDs[1]))
+                                {
+                                    //both points on same side of voxel- if not there has been an error
+                                    int corner = findRemainingOnSide(new int[] { closestIDs[0], closestIDs[1] })[0];
+
+                                    //receedPoint(closestIDs[0], corner);
+                                    //receedPoint(closestIDs[1], corner);
+
+                                    deletePoint(closestIDs[0]);
+                                    deletePoint(closestIDs[1]);
+                                    smoothNeighbours(closestIDs[0], corner);
+                                    smoothNeighbours(closestIDs[1], corner);
+
+                                    updateCollider();
+                                }
+                                else
+                                {
+                                    Debug.LogError("error finding shrink points for adj=1");
                                 }
                             }
+                            dir = -1;
                         }
 
-                        //dir=+1 -> id e{3,4,5} ; dir=-1 -> id e{0,1,2} 
-                        //Math.Sign(2.5 - closestID) == 1  when closest id in {0,1,2}
-                        if (Math.Sign(2.5 - closestIDs[0]) == dir)
-                        {
-                            //needs to flip
-                            //Debug.Log("flipping closest id from " + closestID + " to " + ((closestID + 3) % 6));
-                            closestIDs[0] = (closestIDs[0] + 3) % 6;
-                        }
-
-                        if (Math.Sign(2.5 - closestIDs[1]) == dir)
-                        {
-                            //needs to flip
-                            closestIDs[1] = (closestIDs[1] + 3) % 6;
-                        }
-
-                        if (Math.Sign(2.5 - closestIDs[0]) == Math.Sign(2.5 - closestIDs[1]))
-                        {
-                            //both points on same side of voxel- if not there has been an error
-                            int corner = findRemainingOnSide(new int[] { closestIDs[0], closestIDs[1] })[0];
-
-                            //receedPoint(closestIDs[0], corner);
-                            //receedPoint(closestIDs[1], corner);
-
-                            deletePoint(closestIDs[0]);
-                            deletePoint(closestIDs[1]);
-                            smoothNeighbours(closestIDs[0], corner);
-                            smoothNeighbours(closestIDs[1], corner);
-                            gameObject.GetComponent<MeshCollider>().sharedMesh = filter.mesh;
-                            //updateCollider();
-                        }
-                        else
-                        {
-                            Debug.Log("error finding shrink points for adj=1");
-                        }
                     }
 
-                    dir = -1;
-                }
-            }
-        }
-
-        if (deletedAdjacents == 2 && use2factorSmoothing)
-        {
-            //ready to smooth if up or down is deleted
-            Vector3[] verts = gameObject.GetComponent<MeshFilter>().mesh.vertices;
-
-            if (MapManager.isDeleted(layer + 1, columnID) || MapManager.isDeleted(layer - 1, columnID))
-            {
-                //is going to pull something in
-                //restore();
-                //filter.mesh.triangles = VoxelGen.triangles;
-                //Debug.Log("restoring regular triangles thanks to adj=2");
-            }
-
-            if (!(MapManager.isDeleted(layer + 1, columnID) && MapManager.isDeleted(layer - 1, columnID)))
-            {
-                int dir = 1;
-                for (int c = 0; c < 2; c++)
-                {
-                    if (MapManager.isDeleted(layer + dir, columnID))
+                    if (deletedAdjacents == 2 && use2factorSmoothing)
                     {
-                        info += "|using 2fac smoothing|";
-                        //down is deleted, suck in point
-                        //Debug.Log("down and 2 adjacent smoothing");
-                        Vector3 smoothDirVec = Vector3.zero;
-                        foreach (Vector3 dc in deletedCentres)
+                        //ready to smooth if up or down is deleted
+                        Vector3[] verts = gameObject.GetComponent<MeshFilter>().mesh.vertices;
+                        int dir = 1;
+                        for (int c = 0; c < 2; c++)
                         {
-                            smoothDirVec += dc - centreOfObject;
-                        }
 
-                        smoothDirVec.Normalize();
+                            //down is deleted, suck in point
+                            //Debug.Log("down and 2 adjacent smoothing");
 
-                        //smoothDirVec = worldCentreOfObject + smoothDirVec;//is now a point which should be closest to the vert we wish to shrink
-                        double closestD = double.MaxValue;
-                        int closestID = -1;
-                        for (int i = 0; i < 6; i++)
-                        {
-                            double d = (verts[i] - smoothDirVec).magnitude;
-                            if (d < closestD)
+                            Vector3 smoothDirVec = centreOfObject - MapManager.voxels[layer][(int)neighbourIDs[0]].centreOfObject;
+
+
+                            smoothDirVec.Normalize();
+
+                            //smoothDirVec = worldCentreOfObject + smoothDirVec;//is now a point which should be closest to the vert we wish to shrink
+                            double closestD = double.MaxValue;
+                            int closestID = -1;
+                            for (int i = 0; i < 6; i++)
                             {
-                                closestD = d;
-                                closestID = i;
+                                double d = (verts[i] - smoothDirVec).magnitude;
+                                if (d < closestD)
+                                {
+                                    closestD = d;
+                                    closestID = i;
+                                }
                             }
+
+                            //dir=+1 -> id e{3,4,5} ; dir=-1 -> id e{0,1,2} 
+                            //Math.Sign(2.5 - closestID) == 1  when closest id in {0,1,2}
+                            if (Math.Sign(2.5 - closestID) == dir)
+                            {
+                                //needs to flip
+                                //Debug.Log("flipping closest id from " + closestID + " to " + ((closestID + 3) % 6));
+                                closestID = (closestID + 3) % 6;
+                            }
+
+                            //shrink(closestID, 0.3f);
+                            if (MapManager.isDeleted(layer + dir, columnID))
+                            {
+                                deletePoint(closestID);
+                                info += "|using 2fac smoothing|";
+                            }
+
+
+                            dir = -1;
                         }
 
-                        //dir=+1 -> id e{3,4,5} ; dir=-1 -> id e{0,1,2} 
-                        //Math.Sign(2.5 - closestID) == 1  when closest id in {0,1,2}
-                        if (Math.Sign(2.5 - closestID) == dir)
+                    } //smooth 1 point
+
+                    if (deletedAdjacents == 3 && use3factorSmoothing)
+                    {
+                        restoreVoxel();
+
+                        if (MapManager.isDeleted(layer + 1, columnID))
                         {
-                            //needs to flip
-                            //Debug.Log("flipping closest id from " + closestID + " to " + ((closestID + 3) % 6));
-                            closestID = (closestID + 3) % 6;
+                            //down is deleted, suck in bottom 3 points
+                            shrink(3, 0.5f);
+                            shrink(4, 0.5f);
+                            shrink(5, 0.5f);
+                            info += "|using 3fac smoothing|";
+
                         }
 
-                        //shrink(closestID, 0.3f);
-                        deletePoint(closestID);
+                        if (MapManager.isDeleted(layer - 1, columnID))
+                        {
+                            //up is deleted, suck in top 3 points
+                            shrink(0, 0.5f);
+                            shrink(1, 0.5f);
+                            shrink(2, 0.5f);
+                            info += "|using 3fac smoothing|";
+
+                        }
                     }
-
-                    dir = -1;
                 }
             }
-            else
-            {
-                //has two deleted adjacents and no up/down support
-                //Debug.Log("vox has no support and 2 delt adj - dropping");
-                releaseVoxel();
-            }
-        } //smooth 1 point
+            catch {
 
-        if (deletedAdjacents == 3 && use3factorSmoothing)
-        {
-            //smooth 3 points
-            if (MapManager.isDeleted(layer + 1, columnID) && MapManager.isDeleted(layer - 1, columnID))
-            {
-                releaseVoxel();
-            }
-            else
-            {
-
-                if (MapManager.isDeleted(layer + 1, columnID) || MapManager.isDeleted(layer - 1, columnID))
-                {
-                    restore();
-                }
-
-                if (MapManager.isDeleted(layer + 1, columnID))
-                {
-                    //down is deleted, suck in bottom 3 points
-                    shrink(3, 0.5f);
-                    shrink(4, 0.5f);
-                    shrink(5, 0.5f);
-                }
-
-                if (MapManager.isDeleted(layer - 1, columnID))
-                {
-                    //up is deleted, suck in top 3 points
-                    shrink(0, 0.5f);
-                    shrink(1, 0.5f);
-                    shrink(2, 0.5f);
-                }
             }
         }
     }
 
-    private void receedPoint(int pID, int towards)
-    {
-        //Debug.Log("smoothing vox " + columnID + " point "+ pID); ;
-        if (Math.Sign(2.5 - pID) == Math.Sign(2.5 - towards))
-        {
-            int opposite = (pID + 3) % 6;
-
-            if (!origonalPoints.ContainsKey(pID))
-            {
-                //only morph if this point hasnt been morphed already
-                Vector3[] verts = filter.mesh.vertices;
-                Vector3 newVert = (verts[opposite] + verts[towards]) / 2;
-                //Debug.Log(columnID + " moving point " + pID + " from " + verts[pID] + " to " + newVert);
-                origonalPoints.Add(pID, verts[pID]);
-                replaceVert(pID, newVert);
-                //Debug.Log("vox in col " + columnID + " moving point " + pID);
-            }
-        }
-        else
-        {
-            Debug.Log("cannot smooth a point towards poiint on other side of vox");
-        }
+    IEnumerator smoothBlockReatempt() {
+        yield return new WaitForSeconds(0.3f);
+        smoothBlockInPlace();
     }
 
     private void smoothNeighbours(int pID, int towards)
@@ -610,23 +576,18 @@ public class Voxel : NetworkBehaviour
                         {
                             //point wants to be smoothed but otherID not found
                             //Debug.Log("tried to smooth point but couldnt find otherSame - its delt adj = " + neighbour.deletedAdjacents + " colID = " + neighbour.columnID);
-                            if (neighbour.deletedAdjacents == 2)
+                            if (neighbour.getDeletedAdjacentCount() == 2)
                             {
                                 //Debug.Log("vox had 2 deleted adj - deleting it");
                                 neighbour.destroyVoxel();
                             }
                         }
                     }
-                    else
-                    {
-                        //neighbour does not have the same up down situation
-                        smoothAppointments
-                            .Add(sameID); //scheduled to be smoothed later when the above or below block needing to be removed is removed
-                    }
                 }
             }
         }
     }
+
 
     private void deletePoint(int pID)
     {
@@ -635,15 +596,15 @@ public class Voxel : NetworkBehaviour
         {//hasnt deleted this point already
             if (filter.mesh.triangles.Length == 24)
             {
-                info += "|deleting:" + pID + "|";
+                //info += "|deleting:" + pID + "|";
                 //has not had a point deleted yet
                 deletedPoints.Add(pID);
                 int horn = (pID + 3) % 6;
-                info += "|horn:" + horn + "|";
+                //info += "|horn:" + horn + "|";
 
 
                 int[] sameCorners = findRemainingOnSide(new int[] { pID });
-                info += "|ss corners: " + sameCorners[0] + "," + sameCorners[1] + "|";
+                //info += "|ss corners: " + sameCorners[0] + "," + sameCorners[1] + "|";
 
                 if (pID == 1 || pID == 4)
                 {
@@ -654,7 +615,7 @@ public class Voxel : NetworkBehaviour
                 }
 
                 int[] otherCorners = new int[] { (sameCorners[0] + 3) % 6, (sameCorners[1] + 3) % 6 };
-                info += "|os corners: " + otherCorners[0] + "," + otherCorners[1] + "|";
+                //info += "|os corners: " + otherCorners[0] + "," + otherCorners[1] + "|";
 
 
                 int[] triangles = new int[6 * 3];
@@ -742,7 +703,7 @@ public class Voxel : NetworkBehaviour
             }
             else if (deletedPoints.Count == 1)
             {
-                Debug.Log("doing a second delete vox:" + columnID + "; triangles size:" + filter.mesh.triangles.Length);
+                // Debug.Log("doing a second delete vox:" + columnID + "; triangles size:" + filter.mesh.triangles.Length);
                 int delt = -1;
                 foreach (int d in deletedPoints)
                 {
@@ -831,34 +792,7 @@ public class Voxel : NetworkBehaviour
         gameObject.GetComponent<MeshCollider>().convex = !gameObject.GetComponent<MeshCollider>().convex;
     }
 
-    private void restoreCollider()
-    {
-        Mesh m = new Mesh();
-        Vector3[] verts = new Vector3[filter.mesh.vertices.Length];
-        for (int i = 0; i < verts.Length; i++)
-        {
-            if (origonalPoints.ContainsKey(i))
-            {
-                verts[i] = origonalPoints[i];
-                Debug.Log("using orig point in col erf");
-            }
-            else
-            {
-                verts[i] = filter.mesh.vertices[i] + Vector3.zero;
-            }
-        }
-
-        m.vertices = verts;
-        m.triangles = genVolumeTriangles();
-        gameObject.GetComponent<MeshCollider>().sharedMesh = m;
-
-        //gameObject.GetComponent<MeshCollider>().sharedMesh.RecalculateNormals();
-        gameObject.GetComponent<MeshCollider>().convex = !gameObject.GetComponent<MeshCollider>().convex;
-        //gameObject.GetComponent<MeshCollider>().sharedMesh.RecalculateNormals();
-        gameObject.GetComponent<MeshCollider>().convex = !gameObject.GetComponent<MeshCollider>().convex;
-    }
-
-    private void restore()
+    private void restoreVoxel()
     {
         if (filter == null)
         {
@@ -887,6 +821,31 @@ public class Voxel : NetworkBehaviour
         }
 
         filter.mesh.triangles = genVolumeTriangles();
+
+
+        Mesh m = new Mesh();
+        Vector3[] verts = new Vector3[filter.mesh.vertices.Length];
+        for (int i = 0; i < verts.Length; i++)
+        {
+            if (origonalPoints.ContainsKey(i))
+            {
+                verts[i] = origonalPoints[i];
+                Debug.Log("using orig point in col erf");
+            }
+            else
+            {
+                verts[i] = filter.mesh.vertices[i] + Vector3.zero;
+            }
+        }
+
+        m.vertices = verts;
+        m.triangles = genVolumeTriangles();
+        gameObject.GetComponent<MeshCollider>().sharedMesh = m;
+
+        //gameObject.GetComponent<MeshCollider>().sharedMesh.RecalculateNormals();
+        gameObject.GetComponent<MeshCollider>().convex = !gameObject.GetComponent<MeshCollider>().convex;
+        //gameObject.GetComponent<MeshCollider>().sharedMesh.RecalculateNormals();
+        gameObject.GetComponent<MeshCollider>().convex = !gameObject.GetComponent<MeshCollider>().convex;
     }
 
     private void shrink(int index, float f)
@@ -933,10 +892,12 @@ public class Voxel : NetworkBehaviour
             debug = "set started 3,4,5 ";
         }
 
+        debug += "remoing " + points.Length;
+
         for (int i = 0; i < points.Length; i++)
         {
+            debug += " remo"+i+":" + points[i];
             set.Remove(points[i]);
-            debug += " remo:" + points[i];
         }
 
         int[] remaining = new int[3 - points.Length];
@@ -951,7 +912,7 @@ public class Voxel : NetworkBehaviour
             }
             catch
             {
-                Debug.Log(debug);
+                Debug.LogError  (debug);
             }
 
             count++;
@@ -962,6 +923,7 @@ public class Voxel : NetworkBehaviour
 
     private int findVertIn(Vector3 vert)
     {
+        if (filter == null) { filter = GetComponent<MeshFilter>(); }
         for (int i = 0; i < 6; i++)
         {
             if (Vector3.Distance(filter.mesh.vertices[i], vert) < 0.01 &&
@@ -1032,4 +994,18 @@ public class Voxel : NetworkBehaviour
 
         return triangles;
     }
+
+    private int getDeletedAdjacentCount()
+    {
+        int deletedAdjacents = 0;
+        foreach (int nei in MapManager.neighboursMap[columnID])
+        {
+            if (MapManager.isDeleted(layer, nei))
+            {
+                deletedAdjacents++;
+            }
+        }
+        return deletedAdjacents;
+    }
+
 }

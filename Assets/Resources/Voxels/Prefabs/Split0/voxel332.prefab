@@ -9,22 +9,22 @@ Prefab:
     m_Modifications: []
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 0}
-  m_RootGameObject: {fileID: 1131629787727718}
+  m_RootGameObject: {fileID: 1725862023328102}
   m_IsPrefabParent: 1
---- !u!1 &1131629787727718
+--- !u!1 &1725862023328102
 GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 5
   m_Component:
-  - component: {fileID: 4503086404347264}
-  - component: {fileID: 33376947729002546}
-  - component: {fileID: 114482803045856484}
-  - component: {fileID: 114955477607557272}
-  - component: {fileID: 64631358583423136}
-  - component: {fileID: 23294525831963984}
-  - component: {fileID: 114916384999065210}
+  - component: {fileID: 4042527175059292}
+  - component: {fileID: 33349279484129676}
+  - component: {fileID: 114072279149596508}
+  - component: {fileID: 114723508714480998}
+  - component: {fileID: 64634801510148656}
+  - component: {fileID: 23019089890701130}
+  - component: {fileID: 114603769014491366}
   m_Layer: 0
   m_Name: voxel332
   m_TagString: TriVoxel
@@ -32,12 +32,12 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4503086404347264
+--- !u!4 &4042527175059292
 Transform:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1131629787727718}
+  m_GameObject: {fileID: 1725862023328102}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -45,12 +45,12 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!23 &23294525831963984
+--- !u!23 &23019089890701130
 MeshRenderer:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1131629787727718}
+  m_GameObject: {fileID: 1725862023328102}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -80,19 +80,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!33 &33376947729002546
+--- !u!33 &33349279484129676
 MeshFilter:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1131629787727718}
+  m_GameObject: {fileID: 1725862023328102}
   m_Mesh: {fileID: 4300000, guid: 1a59f9a108c3f6a4da64a0d4c702b7a1, type: 2}
---- !u!64 &64631358583423136
+--- !u!64 &64634801510148656
 MeshCollider:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1131629787727718}
+  m_GameObject: {fileID: 1725862023328102}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
@@ -101,12 +101,12 @@ MeshCollider:
   m_CookingOptions: 14
   m_SkinWidth: 0.01
   m_Mesh: {fileID: 4300000, guid: 1a59f9a108c3f6a4da64a0d4c702b7a1, type: 2}
---- !u!114 &114482803045856484
+--- !u!114 &114072279149596508
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1131629787727718}
+  m_GameObject: {fileID: 1725862023328102}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
@@ -133,24 +133,24 @@ MonoBehaviour:
     i15: 240
   m_ServerOnly: 0
   m_LocalPlayerAuthority: 0
---- !u!114 &114916384999065210
+--- !u!114 &114603769014491366
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1131629787727718}
+  m_GameObject: {fileID: 1725862023328102}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c59f2182146b9a1429f85a8a793f9ef5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 10
---- !u!114 &114955477607557272
+--- !u!114 &114723508714480998
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1131629787727718}
+  m_GameObject: {fileID: 1725862023328102}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fdd6446cce34b294d8d4b57223fb7c14, type: 3}
