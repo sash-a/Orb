@@ -11,6 +11,7 @@ public class MagicAttack : AAttackBehaviour
 
     private bool shieldUp; // True if the player is currently using a shield
     private GameObject currentShield; // The current instance of shield
+    private Coroutine shieldEnergyDrain; // Corutine resposible for the energy drain of the current shield
 
     void Start()
     {
@@ -21,12 +22,12 @@ public class MagicAttack : AAttackBehaviour
     void Update()
     {
         base.Update();
-        
+
         if (!resourceManager.hasEnergy() && currentShield != null)
         {
-            Destroy(currentShield);
-            currentShield = null;
-            shieldUp = false;
+            resourceManager.endEnergyDrain(shieldEnergyDrain);
+            CmdDestroyShield();
+//            shieldEnergyDrain = null;
         }
 
         if (shieldUp && resourceManager.hasEnergy())
@@ -40,9 +41,8 @@ public class MagicAttack : AAttackBehaviour
     {
         if (type.isShield && resourceManager.hasEnergy() && !shieldUp)
         {
-            currentShield = Instantiate(shield, transform.position, Quaternion.identity);
-            currentShield.transform.parent = transform;
-            shieldUp = true;
+            CmdSpawnShield();
+            shieldEnergyDrain = resourceManager.beginEnergyDrain(1);
         }
         else if (type.isDamage)
         {
@@ -55,10 +55,27 @@ public class MagicAttack : AAttackBehaviour
     [Client]
     public override void endAttack()
     {
+        CmdDestroyShield();
+        resourceManager.endEnergyDrain(shieldEnergyDrain);
+        shieldEnergyDrain = null;
+    }
+
+    [Command]
+    public void CmdSpawnShield()
+    {
+        currentShield = Instantiate(shield, transform.position, Quaternion.identity);
+        currentShield.transform.parent = transform;
+        NetworkServer.Spawn(currentShield);
+        shieldUp = true;
+    }
+
+    [Command]
+    public void CmdDestroyShield()
+    {
         if (currentShield == null) return;
 
         Destroy(currentShield);
-        currentShield = null;
+        NetworkServer.Destroy(currentShield);
         shieldUp = false;
     }
 }

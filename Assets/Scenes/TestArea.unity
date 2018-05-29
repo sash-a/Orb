@@ -156,7 +156,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   parent: {fileID: 811708537}
   treePrefab: {fileID: 188006, guid: c6b7fb383a3534b039692b5485b6e739, type: 2}
-  density: 30
+  density: 10
   splits: 0
 --- !u!114 &1953523
 MonoBehaviour:
@@ -528,7 +528,7 @@ MonoBehaviour:
   m_ScriptCRCCheck: 1
   m_MaxDelay: 0.01
   m_LogLevel: 2
-  m_PlayerPrefab: {fileID: 1307754806501666, guid: 92b1eeb6663b89641809a04ac68eef16,
+  m_PlayerPrefab: {fileID: 1307754806501666, guid: dca1661a9b344ad4884a530e09870406,
     type: 2}
   m_AutoCreatePlayer: 1
   m_PlayerSpawnMethod: 1
@@ -536,6 +536,8 @@ MonoBehaviour:
   m_OnlineScene: 
   m_SpawnPrefabs:
   - {fileID: 188006, guid: c6b7fb383a3534b039692b5485b6e739, type: 2}
+  - {fileID: 0}
+  - {fileID: 1864568343934650, guid: 80f9d54728981cf4db203b1f7fe278d9, type: 2}
   m_CustomConfig: 0
   m_MaxConnections: 4
   m_ConnectionConfig:
