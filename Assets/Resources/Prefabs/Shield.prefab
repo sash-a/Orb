@@ -25,7 +25,7 @@ GameObject:
   - component: {fileID: 114357655464427654}
   - component: {fileID: 114770461664496386}
   - component: {fileID: 114338789811109614}
-  - component: {fileID: 114687402629523700}
+  - component: {fileID: 114955375561606994}
   - component: {fileID: 114947933410451732}
   m_Layer: 8
   m_Name: Shield
@@ -133,17 +133,6 @@ MonoBehaviour:
     i15: 76
   m_ServerOnly: 0
   m_LocalPlayerAuthority: 1
---- !u!114 &114687402629523700
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1247925137036356}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bccf506896071be4cb20370ac4cf05fd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &114770461664496386
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -178,6 +167,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 
   typePrefix: Shield
+--- !u!114 &114955375561606994
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1247925137036356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f23e30b4297bcff4ea3d8437785f2d0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  caster: {fileID: 0}
+  shieldHealth: 0
+  energyDrainRate: 0
 --- !u!135 &135676511526226338
 SphereCollider:
   m_ObjectHideFlags: 1

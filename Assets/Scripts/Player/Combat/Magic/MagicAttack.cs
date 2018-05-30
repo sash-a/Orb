@@ -9,7 +9,7 @@ public class MagicAttack : AAttackBehaviour
 
     private ResourceManager resourceManager;
     [SerializeField] private bool shieldUp; // True if the player is currently using a shield
-    private GameObject currentShield; // The current instance of shield
+    private Shield currentShield; // The current instance of shield
     private Coroutine shieldEnergyDrain; // Corutine resposible for the energy drain of the current shield
 
     void Start()
@@ -22,16 +22,7 @@ public class MagicAttack : AAttackBehaviour
     {
         base.Update();
 
-        if (!resourceManager.hasEnergy() && currentShield != null)
-        {
-            resourceManager.endEnergyDrain(shieldEnergyDrain);
-            CmdDestroyShield();
-        }
-
-        if (shieldUp && resourceManager.hasEnergy())
-        {
-            // Drain energy
-        }
+        if (!resourceManager.hasEnergy() && currentShield != null && shieldUp) endSecondaryAttack();
     }
 
     [Client]
@@ -60,19 +51,20 @@ public class MagicAttack : AAttackBehaviour
     {
     }
 
+    [Client]
     public override void secondaryAttack()
     {
-        if (type.isShield && resourceManager.hasEnergy() && !shieldUp)
+        if (resourceManager.getEnergy() > Shield.initialEnergyUsage && type.isShield && !shieldUp)
         {
+            resourceManager.useEnergy(Shield.initialEnergyUsage);
+
             CmdSpawnShield();
-            shieldEnergyDrain = resourceManager.beginEnergyDrain(1);
+            shieldEnergyDrain = resourceManager.beginEnergyDrain(currentShield.energyDrainRate);
             shieldUp = true;
         }
-        
-        Debug.Log("Attack");
-        debugVals();
     }
 
+    [Client]
     public override void endSecondaryAttack()
     {
         if (!type.isShield) return;
@@ -80,18 +72,24 @@ public class MagicAttack : AAttackBehaviour
         CmdDestroyShield();
         resourceManager.endEnergyDrain(shieldEnergyDrain);
         shieldUp = false;
-
-        Debug.Log("End Attack");
-        debugVals();
     }
 
     [Command]
     public void CmdSpawnShield()
     {
-        currentShield = Instantiate(shield, transform.position, Quaternion.identity);
-        NetworkServer.Spawn(currentShield);
+        var shieldInst = Instantiate(shield, transform.position, Quaternion.identity);
+        NetworkServer.Spawn(shieldInst);
 
-        currentShield.GetComponent<ShieldSetUp>().setCaster(GetComponent<Identifier>());
+        currentShield = shieldInst.GetComponent<Shield>();
+        currentShield.setCaster(GetComponent<Identifier>());
+
+        shieldInst.GetComponent<NetHealth>().setInitialHealth(currentShield.shieldHealth);
+        RpcMakeShieldChild();
+    }
+
+    [ClientRpc]
+    private void RpcMakeShieldChild()
+    {
         currentShield.transform.parent = transform;
     }
 
@@ -100,8 +98,8 @@ public class MagicAttack : AAttackBehaviour
     {
         if (currentShield == null) return;
 
-        Destroy(currentShield);
-        NetworkServer.Destroy(currentShield);
+        Destroy(currentShield.gameObject);
+        NetworkServer.Destroy(currentShield.gameObject);
     }
 
     public void shieldDown()
@@ -117,10 +115,5 @@ public class MagicAttack : AAttackBehaviour
     public Coroutine getShieldEnergyDrain()
     {
         return shieldEnergyDrain;
-    }
-
-    private void debugVals()
-    {
-        Debug.Log("Shield up: " + shieldUp);
     }
 }

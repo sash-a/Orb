@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using UnityEngine.Networking;
+﻿using UnityEngine.Networking;
 
 public class NetHealth : NetworkBehaviour
 {
@@ -10,10 +9,6 @@ public class NetHealth : NetworkBehaviour
 
     // Do not delete this may be needed later
     // [SerializeField] private Behaviour[] disableOnDeath;
-    public float getHealth()
-    {
-        return health;
-    }
 
     public bool isDead
     {
@@ -24,7 +19,7 @@ public class NetHealth : NetworkBehaviour
     void Start()
     {
         _isDead = false;
-        health = maxHealth;
+        setInitialHealth(maxHealth);
     }
 
     [ClientRpc]
@@ -51,5 +46,16 @@ public class NetHealth : NetworkBehaviour
         {
             NetworkServer.Destroy(gameObject);
         }
+    }
+
+    public float getHealth()
+    {
+        return health;
+    }
+
+    public void setInitialHealth(float maxHealth)
+    {
+        this.maxHealth = maxHealth;
+        health = maxHealth;
     }
 }

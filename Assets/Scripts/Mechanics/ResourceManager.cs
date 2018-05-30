@@ -97,6 +97,11 @@ public class ResourceManager : NetworkBehaviour
         return energy != 0;
     }
 
+    public int getEnergy()
+    {
+        return energy;
+    }
+
     public Coroutine beginEnergyDrain(int rate)
     {
         Debug.Log("Starting Energy drain");
