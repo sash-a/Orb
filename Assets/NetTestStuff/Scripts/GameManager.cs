@@ -7,11 +7,11 @@ public class GameManager : MonoBehaviour
 
     public static void register(string id, Identifier identifier)
     {
-        string playerID = identifier.typePrefix + id;
-        networkObjects.Add(playerID, identifier);
+        string key = identifier.typePrefix + id;
+        networkObjects.Add(key, identifier);
 
-        identifier.id = id;
-        identifier.transform.name = playerID;
+        identifier.id = key;
+        identifier.transform.name = key;
     }
 
     /*

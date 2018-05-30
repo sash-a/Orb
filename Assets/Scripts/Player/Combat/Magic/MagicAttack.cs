@@ -8,8 +8,7 @@ public class MagicAttack : AAttackBehaviour
     [SerializeField] private GameObject shield;
 
     private ResourceManager resourceManager;
-
-    private bool shieldUp; // True if the player is currently using a shield
+    [SerializeField] private bool shieldUp; // True if the player is currently using a shield
     private GameObject currentShield; // The current instance of shield
     private Coroutine shieldEnergyDrain; // Corutine resposible for the energy drain of the current shield
 
@@ -50,7 +49,6 @@ public class MagicAttack : AAttackBehaviour
                     CmdVoxelDamaged(hit.collider.gameObject, 50); // weapontype.envDamage?
                 else if (hit.collider.tag == "Shield")
                 {
-                    Debug.Log("Damaging shield");
                     CmdShieldHit(hit.collider.gameObject, 50);
                 }
             }
@@ -68,7 +66,11 @@ public class MagicAttack : AAttackBehaviour
         {
             CmdSpawnShield();
             shieldEnergyDrain = resourceManager.beginEnergyDrain(1);
+            shieldUp = true;
         }
+        
+        Debug.Log("Attack");
+        debugVals();
     }
 
     public override void endSecondaryAttack()
@@ -77,6 +79,10 @@ public class MagicAttack : AAttackBehaviour
 
         CmdDestroyShield();
         resourceManager.endEnergyDrain(shieldEnergyDrain);
+        shieldUp = false;
+
+        Debug.Log("End Attack");
+        debugVals();
     }
 
     [Command]
@@ -85,8 +91,8 @@ public class MagicAttack : AAttackBehaviour
         currentShield = Instantiate(shield, transform.position, Quaternion.identity);
         NetworkServer.Spawn(currentShield);
 
+        currentShield.GetComponent<ShieldSetUp>().setCaster(GetComponent<Identifier>());
         currentShield.transform.parent = transform;
-        shieldUp = true;
     }
 
     [Command]
@@ -96,6 +102,25 @@ public class MagicAttack : AAttackBehaviour
 
         Destroy(currentShield);
         NetworkServer.Destroy(currentShield);
+    }
+
+    public void shieldDown()
+    {
         shieldUp = false;
+    }
+
+    public ResourceManager getResourceManager()
+    {
+        return resourceManager;
+    }
+
+    public Coroutine getShieldEnergyDrain()
+    {
+        return shieldEnergyDrain;
+    }
+
+    private void debugVals()
+    {
+        Debug.Log("Shield up: " + shieldUp);
     }
 }

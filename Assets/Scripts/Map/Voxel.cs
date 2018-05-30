@@ -33,8 +33,7 @@ public class Voxel : NetworkBehaviour
     public HashSet<int> deletedPoints;
 
     public String info;
-
-
+    
     private void Start()
     {
         info = "";
@@ -45,7 +44,6 @@ public class Voxel : NetworkBehaviour
         gameObject.name = "TriVoxel";
         gameObject.tag = "TriVoxel";
         transform.parent = MapManager.Map.transform.GetChild(1);
-
 
         origonalPoints = new Dictionary<int, Vector3>();
         deletedPoints = new HashSet<int>();

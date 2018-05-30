@@ -9,7 +9,11 @@ public class NetHealth : NetworkBehaviour
     [SyncVar] private bool _isDead;
 
     // Do not delete this may be needed later
-//    [SerializeField] private Behaviour[] disableOnDeath;
+    // [SerializeField] private Behaviour[] disableOnDeath;
+    public float getHealth()
+    {
+        return health;
+    }
 
     public bool isDead
     {
@@ -29,8 +33,7 @@ public class NetHealth : NetworkBehaviour
         if (isDead) return;
 
         health -= amount;
-        Debug.LogError(health);
-        if (health < 0) die();
+        if (health <= 0) die();
     }
 
     // This completely removes the object from the game
