@@ -29,7 +29,7 @@ public class NetHealth : NetworkBehaviour
         if (isDead) return;
 
         health -= amount;
-
+        Debug.LogError(health);
         if (health < 0) die();
     }
 

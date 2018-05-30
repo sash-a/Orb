@@ -62,10 +62,10 @@ GameObject:
   - component: {fileID: 114926551303711396}
   - component: {fileID: 114547752219386138}
   - component: {fileID: 114438583288291570}
-  - component: {fileID: 114372349808740884}
   - component: {fileID: 114381299553199460}
   - component: {fileID: 114916188877172416}
   - component: {fileID: 114651163204481456}
+  - component: {fileID: 114246398569566174}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -257,6 +257,19 @@ AudioListener:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1274566497804174}
   m_Enabled: 1
+--- !u!114 &114246398569566174
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1307754806501666}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9544b27e1d260104a96026016ae230a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  id: 
+  typePrefix: Gunner
 --- !u!114 &114364330575356528
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -289,18 +302,6 @@ MonoBehaviour:
   m_MovementThreshold: 0.001
   m_InterpolateRotation: 0.3
   m_InterpolateMovement: 0
---- !u!114 &114372349808740884
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1307754806501666}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5cde76b94143a4c478279c5a9159a85c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 0
 --- !u!114 &114381299553199460
 MonoBehaviour:
   m_ObjectHideFlags: 1

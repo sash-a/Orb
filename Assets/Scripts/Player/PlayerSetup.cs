@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
 
-[RequireComponent(typeof(Player))]
+[RequireComponent(typeof(Identifier))]
 public class PlayerSetup : NetworkBehaviour
 {
     public Behaviour[] componentsToDisable;
@@ -34,7 +34,7 @@ public class PlayerSetup : NetworkBehaviour
     {
         base.OnStartClient();
 
-        GameManager.registerPlayer(GetComponent<NetworkIdentity>().netId.ToString(), GetComponent<Player>());
+        GameManager.register(GetComponent<NetworkIdentity>().netId.ToString(), GetComponent<Identifier>());
     }
 
     void assignRemotePlayer()
@@ -47,6 +47,6 @@ public class PlayerSetup : NetworkBehaviour
         if (mainCam != null && isLocalPlayer)
             mainCam.gameObject.SetActive(true);
 
-        GameManager.deregisterPlayer(transform.name);
+        GameManager.deregister(transform.name);
     }
 }

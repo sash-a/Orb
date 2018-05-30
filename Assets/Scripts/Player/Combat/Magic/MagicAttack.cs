@@ -27,7 +27,6 @@ public class MagicAttack : AAttackBehaviour
         {
             resourceManager.endEnergyDrain(shieldEnergyDrain);
             CmdDestroyShield();
-//            shieldEnergyDrain = null;
         }
 
         if (shieldUp && resourceManager.hasEnergy())
@@ -39,33 +38,54 @@ public class MagicAttack : AAttackBehaviour
     [Client]
     public override void attack()
     {
-        if (type.isShield && resourceManager.hasEnergy() && !shieldUp)
+        if (type.isDamage)
         {
-            CmdSpawnShield();
-            shieldEnergyDrain = resourceManager.beginEnergyDrain(1);
-        }
-        else if (type.isDamage)
-        {
-        }
-        else if (type.isTelekenetic)
-        {
+            RaycastHit hit;
+            if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask))
+            {
+                Debug.Log(hit.collider.tag);
+                if (hit.collider.tag == PLAYER_TAG)
+                    CmdPlayerAttacked(hit.collider.name, 50);
+                else if (hit.collider.tag == VOXEL_TAG)
+                    CmdVoxelDamaged(hit.collider.gameObject, 50); // weapontype.envDamage?
+                else if (hit.collider.tag == "Shield")
+                {
+                    Debug.Log("Damaging shield");
+                    CmdShieldHit(hit.collider.gameObject, 50);
+                }
+            }
         }
     }
 
     [Client]
     public override void endAttack()
     {
-        CmdDestroyShield();
-        resourceManager.endEnergyDrain(shieldEnergyDrain);
-        shieldEnergyDrain = null;
+    }
+
+    public override void secondaryAttack()
+    {
+        if (type.isShield && resourceManager.hasEnergy() && !shieldUp)
+        {
+            CmdSpawnShield();
+            shieldEnergyDrain = resourceManager.beginEnergyDrain(1);
+        }
+    }
+
+    public override void endSecondaryAttack()
+    {
+//        if (!type.isShield) return;
+//
+//        CmdDestroyShield();
+//        resourceManager.endEnergyDrain(shieldEnergyDrain);
     }
 
     [Command]
     public void CmdSpawnShield()
     {
         currentShield = Instantiate(shield, transform.position, Quaternion.identity);
-        currentShield.transform.parent = transform;
         NetworkServer.Spawn(currentShield);
+
+        currentShield.transform.parent = transform;
         shieldUp = true;
     }
 

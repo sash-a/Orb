@@ -25,6 +25,9 @@ public abstract class AAttackBehaviour : NetworkBehaviour
     {
         if (Input.GetButtonDown("Fire1")) attack();
         if (Input.GetButtonUp("Fire1")) endAttack();
+
+        if (Input.GetButtonDown("Fire2")) secondaryAttack();
+        if (Input.GetButtonUp("Fire2")) endSecondaryAttack();
     }
 
     [Client]
@@ -32,6 +35,12 @@ public abstract class AAttackBehaviour : NetworkBehaviour
 
     [Client]
     public abstract void endAttack();
+
+    [Client]
+    public abstract void secondaryAttack();
+
+    [Client]
+    public abstract void endSecondaryAttack();
 
     /// <summary>
     /// Notifies server that player has been shot
@@ -41,7 +50,7 @@ public abstract class AAttackBehaviour : NetworkBehaviour
     [Command]
     public void CmdPlayerAttacked(string id, float damage)
     {
-        var player = GameManager.getPlayer(id);
+        var player = GameManager.getObject(id);
         var health = player.GetComponent<NetHealth>();
 
         if (health == null)
@@ -69,5 +78,21 @@ public abstract class AAttackBehaviour : NetworkBehaviour
         }
 
         health.RpcDamage(damage);
+    }
+
+
+    [Command]
+    protected void CmdShieldHit(GameObject go, float damage)
+    {
+        Debug.Log("CmdShieldHit");
+        // This should be the shields health
+        var shield = go.GetComponent<NetHealth>();
+        if (shield == null)
+        {
+            Debug.LogError("No shield");
+            return;
+        }
+
+        shield.RpcDamage(damage);
     }
 }

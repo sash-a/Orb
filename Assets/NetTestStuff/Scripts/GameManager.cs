@@ -1,34 +1,32 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    private const string PLAYER_ID_PREFIX = "Player:";
+    private static Dictionary<string, Identifier> networkObjects = new Dictionary<string, Identifier>();
 
-    private static Dictionary<string, Player> players = new Dictionary<string, Player>();
-
-    public static void registerPlayer(string id, Player player)
+    public static void register(string id, Identifier identifier)
     {
-        string playerID = PLAYER_ID_PREFIX + id;
-        players.Add(playerID, player);
+        string playerID = identifier.typePrefix + id;
+        networkObjects.Add(playerID, identifier);
 
-        player.transform.name = playerID;
+        identifier.id = id;
+        identifier.transform.name = playerID;
     }
 
     /*
      * Player ID should always be = transform.name
      */
-    public static void deregisterPlayer(string playerID)
+    public static void deregister(string id)
     {
-        players.Remove(playerID);
+        networkObjects.Remove(id);
     }
 
     /*
      * Player ID should always be = transform.name
      */
-    public static Player getPlayer(string playerID)
+    public static Identifier getObject(string id)
     {
-        return players[playerID];
+        return networkObjects[id];
     }
 }

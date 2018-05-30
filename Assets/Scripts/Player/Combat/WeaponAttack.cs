@@ -38,4 +38,14 @@ public class WeaponAttack : AAttackBehaviour
     {
 //        throw new System.NotImplementedException();
     }
+
+    public override void secondaryAttack()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public override void endSecondaryAttack()
+    {
+        throw new System.NotImplementedException();
+    }
 }
