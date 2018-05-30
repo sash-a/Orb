@@ -73,10 +73,10 @@ public class MagicAttack : AAttackBehaviour
 
     public override void endSecondaryAttack()
     {
-//        if (!type.isShield) return;
-//
-//        CmdDestroyShield();
-//        resourceManager.endEnergyDrain(shieldEnergyDrain);
+        if (!type.isShield) return;
+
+        CmdDestroyShield();
+        resourceManager.endEnergyDrain(shieldEnergyDrain);
     }
 
     [Command]

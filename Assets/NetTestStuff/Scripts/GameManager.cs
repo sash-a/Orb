@@ -15,7 +15,7 @@ public class GameManager : MonoBehaviour
     }
 
     /*
-     * Player ID should always be = transform.name
+     * ID should always be = transform.name
      */
     public static void deregister(string id)
     {
