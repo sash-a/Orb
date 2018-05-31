@@ -95,4 +95,5 @@ public abstract class AAttackBehaviour : NetworkBehaviour
 
         shield.RpcDamage(damage);
     }
+
 }

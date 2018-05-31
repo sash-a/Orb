@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ManaDrain : MonoBehaviour {
+public class PlayerType : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {

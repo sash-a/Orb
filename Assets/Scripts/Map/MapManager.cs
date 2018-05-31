@@ -8,12 +8,12 @@ using UnityEditor;
 
 public class MapManager : MonoBehaviour
 {
-    public static int mapLayers = 10;
+    public static int mapLayers = 15;
     public static int mapSize = 200;
     public static int splits = 0;
 
     public static Dictionary<int, Dictionary<int, Voxel>> voxels; // indexed like voxels[layer][column]
-    public static Dictionary<int, Dictionary<int, Vector3>> voxelPositions; // the world coords of each vox center
+    public static Dictionary<int, Vector3> voxelPositions; // the object centers of the layer=0 voxels
 
     public static Dictionary<int, HashSet<int>> neighboursMap; //maps column id's onto a set of all column ids that that column is adjacent to
 
@@ -24,6 +24,9 @@ public class MapManager : MonoBehaviour
     public static GameObject Map;
     public static MapManager manager;
 
+    //public static Digger digger;
+
+
     // Use this for initialization
     void Start()
     {
@@ -33,12 +36,11 @@ public class MapManager : MonoBehaviour
 
         DeletedVoxel = new Voxel();
         voxels = new Dictionary<int, Dictionary<int, Voxel>>();
-        voxelPositions = new Dictionary<int, Dictionary<int, Vector3>>();
+        voxelPositions = new Dictionary<int, Vector3>();
         neighboursMap = new Dictionary<int, HashSet<int>>();
         for (int i = 0; i < mapLayers; i++)
         {
             voxels[i] = new Dictionary<int, Voxel>();
-            voxelPositions[i] = new Dictionary<int, Vector3>();
         }
 
         // Shane what does this do?
@@ -61,7 +63,10 @@ public class MapManager : MonoBehaviour
         {
             vox.gameObject.transform.localScale *= MapManager.mapSize;
             vox.checkNeighbourCount();
+            voxelPositions.Add(vox.columnID, vox.centreOfObject);
         }
+        //digger.createEntranceAt(50);
+        CaveManager.digCaves();
     }
 
     internal static bool doesVoxelExist(int layer, int columnID)
@@ -155,5 +160,12 @@ public class MapManager : MonoBehaviour
             //layer doesnt exist
             return true;
         }
+    }
+
+    //returns the position of a voxel whether it exists or not
+    public static Vector3 getPositionOf(int layer, int columnID) {
+        float scale =(float) Math.Pow(Voxel.scaleRatio, layer);
+        //Debug.Log("rec cen: " + voxelPositions[columnID] + " act cen " + voxels[0][columnID].centreOfObject);
+        return voxelPositions[columnID] * scale * mapSize;
     }
 }

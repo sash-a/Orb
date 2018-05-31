@@ -6,6 +6,7 @@ using UnityEngine.Networking;
 
 public class Voxel : NetworkBehaviour
 {
+    public static bool useSmoothing = false;
     public static bool use1factorSmoothing = true;
     public static bool use2factorSmoothing = true;
     public static bool use3factorSmoothing = true;
@@ -62,6 +63,7 @@ public class Voxel : NetworkBehaviour
 
             setColumnID(columnID);
         }
+        
 
         cloneMeshFilter();
         restoreVoxel();
@@ -305,6 +307,7 @@ public class Voxel : NetworkBehaviour
 
     internal void smoothBlockInPlace()
     {//implement order independant simplified smoothing
+        if (!useSmoothing) { return; }
         if (MapManager.isDeleted(layer + 1, columnID) || MapManager.isDeleted(layer - 1, columnID))
         {
             try
@@ -327,7 +330,7 @@ public class Voxel : NetworkBehaviour
                 if (MapManager.isDeleted(layer + 1, columnID) && MapManager.isDeleted(layer - 1, columnID))
                 {
                     //up and down deleted
-                    if (deletedAdjacents >= 2)
+                    if (deletedAdjacents >= 1)
                     {
                         releaseVoxel();
                     }
@@ -623,65 +626,21 @@ public class Voxel : NetworkBehaviour
                 triangles[1] = sameCorners[1]; //top
                 triangles[2] = sameCorners[0]; //top
 
-
-                /**
-                triangles[0] = horn; //top
-                triangles[1] = otherCorners[1]; //top
-                triangles[2] = sameCorners[0]; //top
-                */
-
-                /**
-                triangles[0] = 0; //top
-                triangles[1] = 0; //top
-                triangles[2] = 0; //top
-                */
-
-                //bottom working
                 triangles[3] = horn; //bottom
                 triangles[4] = otherCorners[0]; //bottom
                 triangles[5] = otherCorners[1]; //bottom
-
-
-                /**
-                triangles[3] = 0; //bottom
-                triangles[4] = 0; //bottom
-                triangles[5] = 0; //bottom
-                */
-
 
                 triangles[6] = horn; //side
                 triangles[7] = sameCorners[0]; //side
                 triangles[8] = otherCorners[0]; //side
 
-
-                /**
-                triangles[6] = 0; //side
-                triangles[7] = 0; //side
-                triangles[8] = 0; //side
-                */
-
-
                 triangles[9] = horn; //side
                 triangles[10] = otherCorners[1]; //side
                 triangles[11] = sameCorners[1]; //side
-
-
-                /**
-                triangles[9] = 0; //side
-                triangles[10] = 0; //side
-                triangles[11] = 0; //side
-                */
-
+                
                 triangles[12] = sameCorners[0]; //back
                 triangles[13] = sameCorners[1]; //back
                 triangles[14] = otherCorners[0]; //back
-
-
-                /**
-                triangles[12] = 0; //back
-                triangles[13] = 0; //back
-                triangles[14] = 0; //back
-                */
 
                 triangles[15] = sameCorners[1]; //back
                 triangles[16] = otherCorners[1]; //back

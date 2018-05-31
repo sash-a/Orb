@@ -16,11 +16,9 @@ public class NetworkMapGen : NetworkBehaviour
 
     //higher density = less trees (yes i know its weird)
     public int density;
-    public int splits;
 
     void Start()
     {
-        splits = 0;
     }
 
     private void spawnVoxelsOnServer(int splits)
@@ -56,7 +54,7 @@ public class NetworkMapGen : NetworkBehaviour
     {
         base.OnStartServer();
         Debug.Log("Spawning");
-        spawnVoxelsOnServer(splits);
+        spawnVoxelsOnServer(MapManager.splits);
         Debug.Log("Done Spawning");
         StartCoroutine(InitTrees());
     }
