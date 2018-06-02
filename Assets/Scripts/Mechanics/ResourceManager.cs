@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -10,27 +8,14 @@ public class ResourceManager : NetworkBehaviour
     [SerializeField] private int secondaryAmmo = 50;
     [SerializeField] private int maxAmmo = 1000;
 
-    [SerializeField] private int energy = 100;
-    [SerializeField] private int maxEnergy = 100;
-
-    // TODO I think energy gain and drain should have its own class
-    // List of origionalCoroutine
-    private List<Coroutine> origionalEnergyDrains;
-
-    // Maps the initial coroutine to the most recently called coroutine
-    private Dictionary<Coroutine, Coroutine> currentEnergyDrains;
-
-    void Start()
-    {
-        origionalEnergyDrains = new List<Coroutine>();
-        currentEnergyDrains = new Dictionary<Coroutine, Coroutine>();
-    }
+    [SerializeField] private float energy = 100;
+    [SerializeField] private float maxEnergy = 100;
 
     /// <summary>
     /// Adds energy to the players resource manager
     /// </summary>
     /// <param name="amount">Amount of energy to gain</param>
-    public void gainEnery(int amount)
+    public void gainEnery(float amount)
     {
         if (!isLocalPlayer || amount <= 0) return;
 
@@ -63,7 +48,7 @@ public class ResourceManager : NetworkBehaviour
     /// Uses players energy
     /// </summary>
     /// <param name="amount">Amount of energy to use</param>
-    public void useEnergy(int amount)
+    public void useEnergy(float amount)
     {
         if (!isLocalPlayer || amount <= 0) return;
 
@@ -97,34 +82,13 @@ public class ResourceManager : NetworkBehaviour
         return energy != 0;
     }
 
-    public int getEnergy()
+    public float getEnergy()
     {
         return energy;
     }
 
-    public Coroutine beginEnergyDrain(int rate)
+    public float getMaxEnergy()
     {
-        Debug.Log("Starting Energy drain");
-        var d = StartCoroutine(drainEnergy(rate, origionalEnergyDrains.Count));
-        origionalEnergyDrains.Add(d);
-        currentEnergyDrains.Add(d, d);
-        return d;
-    }
-
-    public void endEnergyDrain(Coroutine coroutine)
-    {
-        StopCoroutine(currentEnergyDrains[coroutine]);
-
-        Debug.Log("Ended energy drain");
-    }
-
-    private IEnumerator drainEnergy(int rate, int listPos)
-    {
-        useEnergy(1);
-        yield return new WaitForSeconds(1 / (float) rate);
-        // Calls itself
-        Debug.Log("Current energy: " + energy);
-        var d = StartCoroutine(drainEnergy(rate, listPos));
-        currentEnergyDrains[origionalEnergyDrains[listPos]] = d;
+        return maxEnergy;
     }
 }

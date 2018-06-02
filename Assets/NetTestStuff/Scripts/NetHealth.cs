@@ -1,9 +1,10 @@
-﻿using UnityEngine.Networking;
+﻿using UnityEngine;
+using UnityEngine.Networking;
 
 public class NetHealth : NetworkBehaviour
 {
-    [SyncVar] private float health;
-    public float maxHealth;
+    [SerializeField] [SyncVar] private float health;
+    [SerializeField] public float maxHealth;
 
     [SyncVar] private bool _isDead;
 
@@ -56,6 +57,11 @@ public class NetHealth : NetworkBehaviour
     public void setInitialHealth(float maxHealth)
     {
         this.maxHealth = maxHealth;
-        health = maxHealth;
+        this.health = maxHealth;
+    }
+
+    public float getHealthPercent()
+    {
+        return health / maxHealth;
     }
 }

@@ -25,15 +25,15 @@ public class CaveManager : NetworkBehaviour
 
     public static void digCaves()
     {
-        for (int i = 0; i < caveNo; i++)
-        {
-            GameObject digObj = (GameObject)Instantiate(diggerPrefab, new Vector3(0,0,0), Quaternion.LookRotation(new Vector3(0,0,1)));
-            digObj.transform.localScale = new Vector3(1, 1, 1);
-            Digger digger = digObj.GetComponent<Digger>();
-            digger.init();
-            digger.createEntranceAt(rand.Next(0,MapManager.neighboursMap.Count-1));
-            diggers.Add(digger);
-        }
+//        for (int i = 0; i < caveNo; i++)
+//        {
+//            GameObject digObj = (GameObject)Instantiate(diggerPrefab, new Vector3(0,0,0), Quaternion.LookRotation(new Vector3(0,0,1)));
+//            digObj.transform.localScale = new Vector3(1, 1, 1);
+//            Digger digger = digObj.GetComponent<Digger>();
+//            digger.init();
+//            digger.createEntranceAt(rand.Next(0,MapManager.neighboursMap.Count-1));
+//            diggers.Add(digger);
+//        }
 
     }
 

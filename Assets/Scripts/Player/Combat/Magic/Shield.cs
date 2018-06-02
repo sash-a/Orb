@@ -14,17 +14,22 @@ public class Shield : NetworkBehaviour
 
     // How will this be done for artifacts? Needs to be static as needs to be checked that has enough magic to use
     [SerializeField] public static int initialEnergyUsage = 20;
-    [SerializeField] public int energyDrainRate;
+    [SerializeField] public static int energyDrainRate = 2;
+    [SerializeField] public static int energyGainRate = 1;
 
     void Start()
     {
-        // TODO is this ever called doesn't seem to be registering
-        GameManager.register(GetComponent<NetworkIdentity>().netId.ToString(), GetComponent<Identifier>());
-
         shieldHealth = 100;
-        energyDrainRate = 2;
 
         if (!isLocalPlayer) assignRemoteLayer();
+    }
+
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        // TODO is this never called doesn't seem to be registering
+        GameManager.register(GetComponent<NetworkIdentity>().netId.ToString(), GetComponent<Identifier>());
+        Debug.Log("Registered shield");
     }
 
     [ClientRpc]
@@ -45,14 +50,10 @@ public class Shield : NetworkBehaviour
 
     private void OnDisable()
     {
-        Debug.Log("Disabling");
+        Debug.Log("Disabling: " + caster.id);
         var magic = GameManager.getObject(caster.id).GetComponent<MagicAttack>();
 
         magic.shieldDown();
-
-        if (magic.getShieldEnergyDrain() != null)
-            magic.getResourceManager().endEnergyDrain(magic.getShieldEnergyDrain());
-
         GameManager.deregister(transform.name);
     }
 }
