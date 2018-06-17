@@ -7,22 +7,20 @@ public class RegisterPrefabs : MonoBehaviour
 {
     void Start()
     {
-        for (int i = 0; i < 4; i++)
-        {
-            registerVoxelPrefabs(i);
-        }
+       registerVoxelPrefabs(MapManager.splits);
     }
 
-    private void registerVoxelPrefabs(int splits)
+    public static void registerVoxelPrefabs(int splits)
     {
         Object[] voxels = Resources.LoadAll("Voxels/Prefabs/Split" + splits, typeof(GameObject));
 
         foreach (var voxel in voxels)
         {
             int colID = Int32.Parse(voxel.name.Substring(5));
-            var voxelGameObj = (GameObject) voxel;
+            var voxelGameObj = (GameObject)voxel;
             voxelGameObj.GetComponent<Voxel>().columnID = colID;
             ClientScene.RegisterPrefab(voxelGameObj);
         }
+        if (voxels.Length > 0) Debug.Log("registering prefabs");
     }
 }

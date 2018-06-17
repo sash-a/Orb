@@ -47,15 +47,14 @@ public class NetworkMapGen : NetworkBehaviour
             NetworkServer.Spawn(inst);
         }
 
-//        MapManager.voxelsLoaded();
     }
 
     public override void OnStartServer()
     {
         base.OnStartServer();
-        Debug.Log("Spawning");
+        //Debug.Log("Spawning");
         spawnVoxelsOnServer(MapManager.splits);
-        Debug.Log("Done Spawning");
+        //Debug.Log("Done Spawning");
         StartCoroutine(InitTrees());
     }
 
@@ -63,6 +62,7 @@ public class NetworkMapGen : NetworkBehaviour
     public override void OnStartClient()
     {
         base.OnStartClient();
+        //RegisterPrefabs.registerVoxelPrefabs(MapManager.splits);
         StartCoroutine(InitVoxels());
     }
 

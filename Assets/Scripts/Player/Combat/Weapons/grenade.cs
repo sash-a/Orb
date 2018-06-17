@@ -27,6 +27,7 @@ public class grenade : AAttackBehaviour {
         countdown -= Time.deltaTime;
         if(countdown <= 0f && !hasExploded)
         {
+            Debug.Log("Boom!");
             attack();
             hasExploded = true;
         }

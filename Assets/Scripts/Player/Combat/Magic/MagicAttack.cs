@@ -13,6 +13,8 @@ public class MagicAttack : AAttackBehaviour
     [SerializeField] private bool shieldUp; // True if the player is currently using a shield
     private Shield currentShield; // The current instance of shield
 
+    private GameObject currentTelekeneticVoxel;
+
     void Start()
     {
         resourceManager = GetComponent<ResourceManager>();
@@ -37,14 +39,23 @@ public class MagicAttack : AAttackBehaviour
             RaycastHit hit;
             if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask))
             {
-                Debug.Log(hit.collider.tag);
-                if (hit.collider.tag == PLAYER_TAG)
+                if (hit.collider.CompareTag(PLAYER_TAG))
                     CmdPlayerAttacked(hit.collider.name, 50);
-                else if (hit.collider.tag == VOXEL_TAG)
+                else if (hit.collider.CompareTag(VOXEL_TAG))
                     CmdVoxelDamaged(hit.collider.gameObject, 50); // weapontype.envDamage?
-                else if (hit.collider.tag == "Shield")
-                {
+                else if (hit.collider.CompareTag("Shield"))
                     CmdShieldHit(hit.collider.gameObject, 50);
+            }
+        }
+        else if (type.isTelekenetic)
+        {
+            RaycastHit hit;
+            if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask))
+            {
+                if (hit.collider.CompareTag(VOXEL_TAG))
+                {
+                    var voxel = hit.collider.gameObject.GetComponent<Voxel>();
+                    CmdVoxelTeleken(voxel.columnID, voxel.layer);
                 }
             }
         }
@@ -56,6 +67,10 @@ public class MagicAttack : AAttackBehaviour
     [Client]
     public override void endAttack()
     {
+        if (type.isTelekenetic)
+        {
+            // Explode the voxel
+        }
     }
 
     /// <summary>
@@ -131,6 +146,24 @@ public class MagicAttack : AAttackBehaviour
 
         Destroy(currentShield.gameObject);
         NetworkServer.Destroy(currentShield.gameObject);
+    }
+
+    /// <summary>
+    /// Allows the player to control a voxel
+    /// </summary>
+    [Command]
+    private void CmdVoxelTeleken(int col, int layer)
+    {
+        RpcPrepVoxel(col, layer, GetComponent<Identifier>().id);
+    }
+
+    [ClientRpc]
+    private void RpcPrepVoxel(int col, int layer, string playerID)
+    {
+        // Add networktransform that it can be moved on network
+        var voxel = MapManager.voxels[col][layer];
+        voxel.gameObject.AddComponent<NetworkTransform>();
+        voxel.transform.parent = GameManager.getObject(playerID).transform;
     }
 
     /// <summary>

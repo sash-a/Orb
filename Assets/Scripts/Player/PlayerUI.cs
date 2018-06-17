@@ -15,7 +15,7 @@ public class PlayerUI : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("Local");
+        //Debug.Log("Local");
 
         health = player.GetComponent<NetHealth>();
         resourceManager = player.GetComponent<ResourceManager>();

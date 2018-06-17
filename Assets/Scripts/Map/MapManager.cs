@@ -33,6 +33,8 @@ public class MapManager : MonoBehaviour
         manager = this;
         Map = GameObject.Find("Map");
         Debug.Log("starting map manager");
+        //RegisterPrefabs.registerVoxelPrefabs(MapManager.splits);
+
 
         DeletedVoxel = new Voxel();
         voxels = new Dictionary<int, Dictionary<int, Voxel>>();
@@ -65,8 +67,7 @@ public class MapManager : MonoBehaviour
             vox.checkNeighbourCount();
             voxelPositions.Add(vox.columnID, vox.centreOfObject);
         }
-        //digger.createEntranceAt(50);
-        CaveManager.digCaves();
+        //CaveManager.digCaves();
     }
 
     internal static bool doesVoxelExist(int layer, int columnID)

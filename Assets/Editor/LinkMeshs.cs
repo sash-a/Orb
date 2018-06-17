@@ -66,5 +66,7 @@ public class LinkMeshs
             voxelGameObj.GetComponent<MeshFilter>().mesh = meshDict[colID];
             voxelGameObj.GetComponent<MeshCollider>().sharedMesh = meshDict[colID];
         }
+
+        Debug.Log("linked meshes split = " + MapGen.splits);
     }
 }

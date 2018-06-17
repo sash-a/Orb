@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 
 public class Voxel : NetworkBehaviour
 {
-    public static bool useSmoothing = false;
+    public static bool useSmoothing = true;
     public static bool use1factorSmoothing = true;
     public static bool use2factorSmoothing = true;
     public static bool use3factorSmoothing = true;
@@ -27,14 +27,14 @@ public class Voxel : NetworkBehaviour
     public Vector3 worldCentreOfObject; // the centre of this object as it is in world space
 
     System.Random rand;
-    private MeshFilter filter;
+    public MeshFilter filter;
 
 
     public Dictionary<int, Vector3> origonalPoints;
     public HashSet<int> deletedPoints;
 
     public String info;
-    
+
     private void Start()
     {
         info = "";
@@ -63,7 +63,7 @@ public class Voxel : NetworkBehaviour
 
             setColumnID(columnID);
         }
-        
+
 
         cloneMeshFilter();
         restoreVoxel();
@@ -212,6 +212,10 @@ public class Voxel : NetworkBehaviour
     {
         if (!isServer)
         {
+            if (deleted)
+            {
+                MapManager.informDeleted(layer, columnID);
+            }
             return;
         }
 
@@ -518,13 +522,15 @@ public class Voxel : NetworkBehaviour
                     }
                 }
             }
-            catch {
+            catch
+            {
 
             }
         }
     }
 
-    IEnumerator smoothBlockReatempt() {
+    IEnumerator smoothBlockReatempt()
+    {
         yield return new WaitForSeconds(0.3f);
         smoothBlockInPlace();
     }
@@ -637,7 +643,7 @@ public class Voxel : NetworkBehaviour
                 triangles[9] = horn; //side
                 triangles[10] = otherCorners[1]; //side
                 triangles[11] = sameCorners[1]; //side
-                
+
                 triangles[12] = sameCorners[0]; //back
                 triangles[13] = sameCorners[1]; //back
                 triangles[14] = otherCorners[0]; //back
@@ -853,7 +859,7 @@ public class Voxel : NetworkBehaviour
 
         for (int i = 0; i < points.Length; i++)
         {
-            debug += " remo"+i+":" + points[i];
+            debug += " remo" + i + ":" + points[i];
             set.Remove(points[i]);
         }
 
@@ -869,7 +875,7 @@ public class Voxel : NetworkBehaviour
             }
             catch
             {
-                Debug.LogError  (debug);
+                Debug.LogError(debug);
             }
 
             count++;

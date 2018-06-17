@@ -15,6 +15,7 @@ public class WeaponAttack : AAttackBehaviour
     public ParticleSystem PistolMuzzleFlash;
     public ParticleSystem AssaultMuzzleFlash;
     public ParticleSystem ShotgunMuzzleFlash;
+    public ParticleSystem SniperMuzzleFlash;
 
     public GameObject hitEffect;
     public GameObject VoxelDestroyEffect;
@@ -34,14 +35,16 @@ public class WeaponAttack : AAttackBehaviour
         resourceManager = GetComponent<ResourceManager>();
         weapons = new List<WeaponType>();
         //damage, range, rate of fire
-        WeaponType pistol = new WeaponType(5, 50, 5, PistolMuzzleFlash);
-        WeaponType assault = new WeaponType(3, 50, 8, AssaultMuzzleFlash);
-        WeaponType shotgun = new WeaponType(12, 20, 2, ShotgunMuzzleFlash);
-        WeaponType grenade = new WeaponType(20, 20, 1, 3, 5);
+        WeaponType pistol = new WeaponType(5, 60, 5, PistolMuzzleFlash);
+        WeaponType assault = new WeaponType(3, 70, 8, AssaultMuzzleFlash);
+        WeaponType shotgun = new WeaponType(12, 30, 2, ShotgunMuzzleFlash);
+        WeaponType sniper = new WeaponType(12, 350, 1, SniperMuzzleFlash);
+        WeaponType grenade = new WeaponType(20, 30, 1, 3, 5);
         //needs to be added in the exact same order as the prefabs under player camera to work
         weapons.Add(pistol);
         weapons.Add(assault);
         weapons.Add(shotgun);
+        weapons.Add(sniper);
         weapons.Add(grenade);
     }
 
@@ -84,14 +87,6 @@ public class WeaponAttack : AAttackBehaviour
             else
             {
                 throwGrenade();
-                float countdown = weapons[selectedWeapon].countdown;
-                countdown -= Time.deltaTime;
-                if (countdown <= 0f && !weapons[selectedWeapon].hasExploded)
-                {
-                    Debug.Log("hey");
-                    attack();
-                    weapons[selectedWeapon].hasExploded = true;
-                }
             }
 
             
@@ -155,43 +150,6 @@ public class WeaponAttack : AAttackBehaviour
 
             }
         }
-        else
-        {
-            if (isServer)
-            {
-                GameObject explosion = Instantiate(explosionEffect, transform.position, Quaternion.identity);
-                NetworkServer.Spawn(explosion);
-            }
-
-            //all items in blast radius
-            Collider[] colliders = Physics.OverlapSphere(transform.position, weapons[selectedWeapon].blastRadius);
-
-            foreach (Collider nearbyObject in colliders)
-            {
-                if (nearbyObject.tag == PLAYER_TAG)
-                    CmdPlayerAttacked(nearbyObject.name, weapons[selectedWeapon].damage);
-
-                // Only add this if we are sure that voxels are getting damaged by guns otherwise check gun type before damaging
-                if (nearbyObject.tag == VOXEL_TAG)
-                {
-                    CmdVoxelDamaged(nearbyObject.gameObject, weapons[selectedWeapon].damage); // weapontype.envDamage?
-
-                    if (nearbyObject.GetComponent<NetHealth>().getHealth() <= 0)
-                    {
-                        if (isServer)
-                        {
-                            GameObject VoxelParticle = Instantiate(VoxelDestroyEffect, nearbyObject.transform.position, nearbyObject.transform.rotation);
-                            NetworkServer.Spawn(VoxelParticle);
-                        }
-                    }
-                }
-            }
-
-            Destroy(gameObject);
-        }
-        
-
-        // For explosives someother kind of range check will be required and a grenade/explosive gameObject instead of raycasting
 
     }
 

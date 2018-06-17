@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
 
 public class WeaponSwitch : MonoBehaviour {
+    
+    //starting weapon
+    private int selectedWeapon = 0;
 
-    public int selectedWeapon = 0;
 	// Use this for initialization
 	void Start ()
     {
