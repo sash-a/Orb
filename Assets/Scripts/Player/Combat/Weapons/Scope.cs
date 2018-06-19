@@ -45,7 +45,7 @@ private void Update()
     //coroutine
     IEnumerator onScoped()
     {
-        //will wait certain amount of seconds before calling rest of the code
+        //will wait certain amount of seconds before calling rest of the code (animation transition time)
         yield return new WaitForSeconds(.15f);
         //display scope picture
         ScopeOverlay.SetActive(true);

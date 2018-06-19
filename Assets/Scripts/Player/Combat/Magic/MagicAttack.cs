@@ -15,18 +15,23 @@ public class MagicAttack : AAttackBehaviour
 
     private GameObject currentTelekeneticVoxel;
 
+
     void Start()
     {
         resourceManager = GetComponent<ResourceManager>();
+
         shieldUp = false;
     }
 
     void Update()
     {
+        // Checks when attack related keys are pressed
         base.Update();
 
+        // Ends the shield if no energy remaining
         if (!resourceManager.hasEnergy() && currentShield != null && shieldUp) endSecondaryAttack();
 
+        // Energy gain/drain
         if (!shieldUp) resourceManager.gainEnery(Shield.energyGainRate * Time.deltaTime);
         if (shieldUp) resourceManager.useEnergy(Shield.energyDrainRate * Time.deltaTime);
     }
@@ -119,7 +124,7 @@ public class MagicAttack : AAttackBehaviour
 
         shieldInst.GetComponent<NetHealth>().setInitialHealth(currentShield.shieldHealth);
         shieldInst.transform.parent = transform;
-        RpcMakeShieldChild(shieldInst.GetComponent<Identifier>().id, GetComponent<Identifier>().id);
+        RpcPrepShield(shieldInst.GetComponent<Identifier>().id, GetComponent<Identifier>().id);
     }
 
     /// <summary>
@@ -128,10 +133,10 @@ public class MagicAttack : AAttackBehaviour
     /// <param name="shieldInst">The game object to be the child</param>
     /// <param name="parent">The game object to be the parent</param>
     [ClientRpc]
-    private void RpcMakeShieldChild(string shieldID, string parentID)
+    private void RpcPrepShield(string shieldID, string parentID)
     {
-        Debug.Log("Shield id: " + shieldID + " Parent id: " + parentID);
-        GameManager.getObject(shieldID).transform.parent = GameManager.getObject(parentID).transform;
+        GameManager.getObject(shieldID).transform.parent =
+            GameManager.getObject(parentID).GetComponentInChildren<Camera>().transform;
         GameManager.getObject(shieldID).GetComponent<Shield>()
             .setCaster(GameManager.getObject(parentID).GetComponent<Identifier>());
     }
@@ -154,16 +159,40 @@ public class MagicAttack : AAttackBehaviour
     [Command]
     private void CmdVoxelTeleken(int col, int layer)
     {
+        var voxel = MapManager.voxels[layer][col];
+        // Prepare the voxel for telekenisis
         RpcPrepVoxel(col, layer, GetComponent<Identifier>().id);
+        // Move the voxel infront of the player
+//        voxel.transform.position = Vector3.zero;
+        // Make the voxel follow the players camera
     }
+
 
     [ClientRpc]
     private void RpcPrepVoxel(int col, int layer, string playerID)
     {
-        // Add networktransform that it can be moved on network
-        var voxel = MapManager.voxels[col][layer];
+        // Add networktransform and rigidbody so that it can be moved on network
+        var voxel = MapManager.voxels[layer][col];
+
+        // Needs to be true to work with a rigid body
+        voxel.GetComponent<MeshCollider>().convex = true;
+        var rb = voxel.gameObject.AddComponent<Rigidbody>();
+        rb.isKinematic = true;
+
         voxel.gameObject.AddComponent<NetworkTransform>();
-        voxel.transform.parent = GameManager.getObject(playerID).transform;
+        voxel.transform.parent = MapManager.Map.transform;
+        voxel.gameObject.name = playerID + "_teleken_voxel";
+
+        // I think best solution is to find a way to add collider to player that stops 
+        voxel.gameObject.AddComponent<Telekenises>()
+            .setUp(cam.transform.forward, 3, GameManager.getObject(playerID).transform);
+
+
+        // Creating the voxels below
+        voxel.showNeighbours(true); // TODO sometimes not creating voxels below
+
+        // Move voxel infront of player
+        voxel.transform.position = Vector3.zero;
     }
 
     /// <summary>

@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
-
 using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections;
@@ -9,8 +8,6 @@ using System.Collections.Generic;
 [RequireComponent(typeof(ResourceManager))]
 public class WeaponAttack : AAttackBehaviour
 {
-    //[SerializeField] private WeaponType WeaponType;
-    //[SerializeField] private GameObject gunModel;
 
     public ParticleSystem PistolMuzzleFlash;
     public ParticleSystem AssaultMuzzleFlash;
@@ -51,7 +48,7 @@ public class WeaponAttack : AAttackBehaviour
     private void Update()
     {
         //scroll up changes weapons
-        if (Input.GetAxis("Mouse ScrollWheel") > 0f)
+        if (Input.GetAxis("Mouse ScrollWheel") > 0f && localPlayerAuthority) //need to prevent weapon switching when aiming!
         {
             if (selectedWeapon >= weapons.Count - 1)
             {
@@ -61,10 +58,10 @@ public class WeaponAttack : AAttackBehaviour
             {
                 selectedWeapon++;
             }
-
         }
+
         //scroll down changes weapons
-        if (Input.GetAxis("Mouse ScrollWheel") < 0f)
+        if (Input.GetAxis("Mouse ScrollWheel") < 0f && localPlayerAuthority) 
         {
             if (selectedWeapon <= 0)
             {
@@ -74,32 +71,40 @@ public class WeaponAttack : AAttackBehaviour
             {
                 selectedWeapon--;
             }
-
         }
 
         if (Input.GetButton("Fire1") && Time.time >= weapons[selectedWeapon].nextTimeToFire)
         {
             weapons[selectedWeapon].nextTimeToFire = Time.time + 1f / weapons[selectedWeapon].fireRate;
-            if (!weapons[selectedWeapon].isExplosive)
-            {
-                attack();
-            }
-            else
-            {
-                throwGrenade();
-            }
 
-            
-            
+            attack();
         }
     }
 
-    public void throwGrenade()
+    [Command]
+    public void CmdthrowGrenade()
     {
         float force = 40;
-        GameObject grenade = Instantiate(grenadePrefab, grenadeSpawn.transform.position, grenadeSpawn.transform.rotation);
+        GameObject grenade =
+            Instantiate(grenadePrefab, grenadeSpawn.transform.position, grenadeSpawn.transform.rotation);
         Rigidbody rb = grenade.GetComponent<Rigidbody>();
         rb.AddForce(cam.transform.forward * force, ForceMode.VelocityChange);
+        NetworkServer.Spawn(grenade);
+    }
+
+    [Command]
+    private void CmdVoxelDestructionEffect(Vector3 position, Vector3 normal)
+    {
+        GameObject VoxelParticle = Instantiate(VoxelDestroyEffect, position,
+                                Quaternion.LookRotation(normal));
+        NetworkServer.Spawn(VoxelParticle);
+    }
+
+    [Command]
+    private void CmdObjectHitEffect(Vector3 position, Vector3 normal)
+    {
+        GameObject hitParticle = Instantiate(hitEffect, position, Quaternion.LookRotation(normal));
+        NetworkServer.Spawn(hitParticle);
     }
 
     [Client]
@@ -108,6 +113,7 @@ public class WeaponAttack : AAttackBehaviour
         if (!weapons[selectedWeapon].isExplosive)
         {
             //only works when the particle effect is dragged in directly from the gun's children for some reason 
+            // its because: it can't be prefab needs to specifically be particle effect - will modify this later
             weapons[selectedWeapon].muzzleFlash.Play();
 
             //Relevant to ammo
@@ -115,7 +121,8 @@ public class WeaponAttack : AAttackBehaviour
 
             //hit is the object that is hit (or not hit)
             RaycastHit hit;
-            if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, weapons[selectedWeapon].range, mask))
+            if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, weapons[selectedWeapon].range,
+                mask))
             {
                 //if we hit a player
                 if (hit.collider.tag == PLAYER_TAG)
@@ -124,33 +131,26 @@ public class WeaponAttack : AAttackBehaviour
                 }
                 else //if not a player
                 {
-                    if (isServer)
-                    {
-                        GameObject hitParticle = Instantiate(hitEffect, hit.point, Quaternion.LookRotation(hit.normal));
-                        NetworkServer.Spawn(hitParticle);
-                    }
+                    CmdObjectHitEffect(hit.point, hit.normal);
                 }
 
-
-                // Only add this if we are sure that voxels are getting damaged by guns otherwise check gun type before damaging
+                //if we hit voxel
                 if (hit.collider.tag == VOXEL_TAG)
                 {
                     CmdVoxelDamaged(hit.collider.gameObject, weapons[selectedWeapon].damage); // weapontype.envDamage?
 
-                    //This just isn't called
-                    if (hit.collider.GetComponent<NetHealth>().getHealth() <= 0)
+                    //finally works! checks if the damage done to voxel on a hit will cause voxel to destroy
+                    if (hit.collider.GetComponent<NetHealth>().getHealth() <= weapons[selectedWeapon].damage)
                     {
-                        if (isServer)
-                        {
-                            GameObject VoxelParticle = Instantiate(VoxelDestroyEffect, hit.point, Quaternion.LookRotation(hit.normal));
-                            NetworkServer.Spawn(VoxelParticle);
-                        }
+                        CmdVoxelDestructionEffect(hit.point, hit.normal);
                     }
                 }
-
             }
         }
-
+        else
+        {
+            CmdthrowGrenade();
+        }
     }
 
     public override void endAttack()

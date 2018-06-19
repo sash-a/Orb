@@ -17,7 +17,7 @@ public class WeaponSwitch : MonoBehaviour {
         int previousSelectedWeapon = selectedWeapon;
 
         //scroll up
-		if(Input.GetAxis("Mouse ScrollWheel") > 0f)
+		if(Input.GetAxis("Mouse ScrollWheel") > 0f) //shouldnt be able to switch when aiming!
         {
             if (selectedWeapon >= transform.childCount -1)
             {
@@ -29,6 +29,7 @@ public class WeaponSwitch : MonoBehaviour {
             }
             
         }
+
         //scroll down
         if (Input.GetAxis("Mouse ScrollWheel") < 0f)
         {

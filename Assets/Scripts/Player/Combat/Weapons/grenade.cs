@@ -2,8 +2,8 @@
 using UnityEngine.Networking;
 
 [RequireComponent(typeof(ResourceManager))]
-public class grenade : AAttackBehaviour {
-
+public class grenade : AAttackBehaviour
+{
     public float delay = 3f;
     public float blastRadius = 5f;
     public float damage = 10f;
@@ -13,36 +13,47 @@ public class grenade : AAttackBehaviour {
     bool hasExploded = false;
 
     public GameObject explosionEffect;
-    public GameObject hitGround;
+    public GameObject VoxelDestroyEffect;
 
     // Use this for initialization
-    void Start ()
+    void Start()
     {
         countdown = delay;
-	}
-	
-	// Update is called once per frame
-	void Update ()
+    }
+
+    // Update is called once per frame
+    void Update()
     {
         countdown -= Time.deltaTime;
-        if(countdown <= 0f && !hasExploded)
+        if (countdown <= 0f && !hasExploded)
         {
             Debug.Log("Boom!");
             attack();
             hasExploded = true;
         }
-	}
+    }
+
+    [Command]
+    private void CmdExplosionFX()
+    {
+        GameObject explosion = Instantiate(explosionEffect, transform.position, Quaternion.identity);
+        NetworkServer.Spawn(explosion);
+    }
+
+    [Command]
+    private void CmdVoxelDestructionEffect(Vector3 position, Vector3 normal)
+    {
+        GameObject VoxelParticle = Instantiate(VoxelDestroyEffect, position,
+                                Quaternion.LookRotation(normal));
+        NetworkServer.Spawn(VoxelParticle);
+    }
 
     //explodes
     [Client]
-    public override void attack()
+    public override void attack() //need to adjust damage so that the further away something is from grenade the less damage it does
     {
-        if (isServer)
-        {
-            GameObject explosion = Instantiate(explosionEffect, transform.position, Quaternion.identity);
-            NetworkServer.Spawn(explosion);
-        }
-
+        //Explosion effect
+        CmdExplosionFX();
         //all items in blast radius
         Collider[] colliders = Physics.OverlapSphere(transform.position, blastRadius);
 
@@ -51,22 +62,18 @@ public class grenade : AAttackBehaviour {
             if (nearbyObject.tag == PLAYER_TAG)
                 CmdPlayerAttacked(nearbyObject.name, damage);
 
-            // Only add this if we are sure that voxels are getting damaged by guns otherwise check gun type before damaging
             if (nearbyObject.tag == VOXEL_TAG)
             {
                 CmdVoxelDamaged(nearbyObject.gameObject, damage); // weapontype.envDamage?
-
-                if (nearbyObject.GetComponent<NetHealth>().getHealth() <= 0)
+                
+                if (nearbyObject.GetComponent<NetHealth>().getHealth() <= damage)
                 {
-                    if (isServer)
-                    {
-                        GameObject hitParticle = Instantiate(hitGround, nearbyObject.transform.position, nearbyObject.transform.rotation);
-                        NetworkServer.Spawn(hitParticle);
-                    }
+                    //spawning on grenade for now...spawning it on nearbyObject spawns it in the sky for some reason
+                    CmdVoxelDestructionEffect(transform.position, transform.position.normalized);
                 }
             }
         }
-
+        //destroy grenade when finished exploding
         Destroy(gameObject);
     }
 

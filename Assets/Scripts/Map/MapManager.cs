@@ -33,8 +33,6 @@ public class MapManager : MonoBehaviour
         manager = this;
         Map = GameObject.Find("Map");
         Debug.Log("starting map manager");
-        //RegisterPrefabs.registerVoxelPrefabs(MapManager.splits);
-
 
         DeletedVoxel = new Voxel();
         voxels = new Dictionary<int, Dictionary<int, Voxel>>();
@@ -47,10 +45,8 @@ public class MapManager : MonoBehaviour
 
         // Shane what does this do?
         Map.transform.localScale *= mapSize;
-        
     }
-
-
+    
     public static void voxelsLoaded()
     {
         //Debug.Log("voxels loaded called");
@@ -87,7 +83,6 @@ public class MapManager : MonoBehaviour
 
     internal static void informDeleted(int layer, int columnID) //block at layer columnID
     {
-
         Vector3 centre = voxels[layer][columnID].centreOfObject;
         voxels[layer][columnID] = MapManager.DeletedVoxel;
 

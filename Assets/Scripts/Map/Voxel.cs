@@ -67,9 +67,8 @@ public class Voxel : NetworkBehaviour
 
         cloneMeshFilter();
         restoreVoxel();
-
     }
-
+    
     public void setColumnID(int colID)
     {
         columnID = colID;
@@ -292,7 +291,6 @@ public class Voxel : NetworkBehaviour
             childScript.origonalPoints = origonalPoints;
             childScript.cloneMeshFilter();
             MapManager.voxels[newVoxelLayer][childScript.columnID] = childScript;
-
 
             NetworkServer.Spawn(childObject);
             return true;
