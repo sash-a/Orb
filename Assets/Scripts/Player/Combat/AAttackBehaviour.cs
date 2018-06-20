@@ -3,8 +3,8 @@ using UnityEngine.Networking;
 
 public abstract class AAttackBehaviour : NetworkBehaviour
 {
-    protected const string PLAYER_TAG = "Player";
-    protected const string VOXEL_TAG = "TriVoxel";
+    public const string PLAYER_TAG = "Player";
+    public const string VOXEL_TAG = "TriVoxel";
 
     // Local players camera.
     [SerializeField] protected Camera cam;
@@ -68,7 +68,7 @@ public abstract class AAttackBehaviour : NetworkBehaviour
     /// <param name="go">GameObject that was hit</param>
     /// <param name="damage">Damage to be done to the voxel</param>
     [Command]
-    protected void CmdVoxelDamaged(GameObject go, float damage)
+    public void CmdVoxelDamaged(GameObject go, float damage)
     {
         var health = go.GetComponent<NetHealth>();
         if (health == null)
@@ -82,7 +82,7 @@ public abstract class AAttackBehaviour : NetworkBehaviour
 
 
     [Command]
-    protected void CmdShieldHit(GameObject go, float damage)
+    public void CmdShieldHit(GameObject go, float damage)
     {
         Debug.Log("CmdShieldHit");
         // This should be the shields health

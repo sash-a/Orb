@@ -8,12 +8,16 @@ public class MagicAttack : AAttackBehaviour
 {
     [SerializeField] private MagicType type;
     [SerializeField] private GameObject shield;
+    [SerializeField] private GameObject telekenObjectPos;
+
+    [SerializeField] private GameObject currentTelekeneticVoxel;
+
+    [SerializeField] private bool shieldUp; // True if the player is currently using a shield
+    [SerializeField] private bool canCastPush; // True once player can recast forcePush
+    [SerializeField] private float force;
 
     private ResourceManager resourceManager;
-    [SerializeField] private bool shieldUp; // True if the player is currently using a shield
     private Shield currentShield; // The current instance of shield
-
-    private GameObject currentTelekeneticVoxel;
 
 
     void Start()
@@ -64,6 +68,36 @@ public class MagicAttack : AAttackBehaviour
                 }
             }
         }
+        else if (type.isForcePush)
+        {
+            Debug.Log("Pushing");
+//            force.setUp(transform.position, 50);
+            if (!canCastPush) return;
+
+            var myColl = GetComponent<Collider>();
+            foreach (var coll in Physics.OverlapSphere(transform.position, 15))
+            {
+                Debug.Log(coll.name);
+                if (coll.CompareTag(PLAYER_TAG) && coll != myColl)
+                {
+                    Debug.LogWarning(coll.gameObject.GetComponent<Identifier>().id);
+
+                    var direction = coll.transform.position - transform.position;
+
+                    if (coll.gameObject.GetComponent<Rigidbody>() == null)
+                    {
+                        Debug.LogError("Null");
+                    }
+
+                    coll.gameObject.GetComponent<Rigidbody>()
+                        .AddForce(direction.normalized * force  /* * (1 / direction.sqrMagnitude)*/,
+                            ForceMode.Impulse);
+//                    CmdPush(coll.gameObject.GetComponent<Identifier>().id);
+                }
+            }
+
+            canCastPush = false;
+        }
     }
 
     /// <summary>
@@ -72,9 +106,14 @@ public class MagicAttack : AAttackBehaviour
     [Client]
     public override void endAttack()
     {
+        // TODO huge bug if player changes weapons while holding down attack!
         if (type.isTelekenetic)
         {
-            // Explode the voxel
+            CmdEndTeleken();
+        }
+        else if (type.isForcePush)
+        {
+            canCastPush = true;
         }
     }
 
@@ -104,10 +143,11 @@ public class MagicAttack : AAttackBehaviour
     [Client]
     public override void endSecondaryAttack()
     {
-        if (!type.isShield) return;
-
-        CmdDestroyShield();
-        shieldUp = false;
+        if (type.isShield)
+        {
+            CmdDestroyShield();
+            shieldUp = false;
+        }
     }
 
     /// <summary>
@@ -159,12 +199,9 @@ public class MagicAttack : AAttackBehaviour
     [Command]
     private void CmdVoxelTeleken(int col, int layer)
     {
-        var voxel = MapManager.voxels[layer][col];
+        currentTelekeneticVoxel = MapManager.voxels[layer][col].gameObject;
         // Prepare the voxel for telekenisis
         RpcPrepVoxel(col, layer, GetComponent<Identifier>().id);
-        // Move the voxel infront of the player
-//        voxel.transform.position = Vector3.zero;
-        // Make the voxel follow the players camera
     }
 
 
@@ -175,24 +212,43 @@ public class MagicAttack : AAttackBehaviour
         var voxel = MapManager.voxels[layer][col];
 
         // Needs to be true to work with a rigid body
-        voxel.GetComponent<MeshCollider>().convex = true;
+        voxel.gameObject.GetComponent<MeshCollider>().convex = true; // Still throws error
         var rb = voxel.gameObject.AddComponent<Rigidbody>();
-        rb.isKinematic = true;
+        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        rb.useGravity = false;
 
         voxel.gameObject.AddComponent<NetworkTransform>();
         voxel.transform.parent = MapManager.Map.transform;
         voxel.gameObject.name = playerID + "_teleken_voxel";
 
         // I think best solution is to find a way to add collider to player that stops 
-        voxel.gameObject.AddComponent<Telekenises>()
-            .setUp(cam.transform.forward, 3, GameManager.getObject(playerID).transform);
-
+        voxel.gameObject.AddComponent<Telekenises>().setUp(telekenObjectPos.transform, Telekenises.VOXEL, playerID);
 
         // Creating the voxels below
-        voxel.showNeighbours(true); // TODO sometimes not creating voxels below
+        voxel.showNeighbours(true); // TODO sometimes not creating voxels below (because of double shooting)
+    }
 
-        // Move voxel infront of player
-        voxel.transform.position = Vector3.zero;
+    [Command]
+    void CmdEndTeleken()
+    {
+        currentTelekeneticVoxel.GetComponent<Telekenises>().throwObject(cam.transform.forward);
+    }
+
+    [Command]
+    void CmdPush(string id)
+    {
+        RpcPush(id);
+    }
+
+    [ClientRpc]
+    void RpcPush(string id)
+    {
+        Debug.LogWarning("in rpc");
+        var direction = GameManager.getObject(id).transform.position - transform.position;
+        Debug.LogError(direction);
+
+        GameManager.getObject(id).gameObject.GetComponent<Rigidbody>()
+            .AddForce(direction.normalized * force * 1000000 /* * (1 / direction.sqrMagnitude)*/, ForceMode.Impulse);
     }
 
     /// <summary>

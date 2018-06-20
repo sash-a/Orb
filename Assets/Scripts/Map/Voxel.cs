@@ -202,7 +202,7 @@ public class Voxel : NetworkBehaviour
     internal void releaseVoxel()
     {
         gameObject.GetComponent<MeshCollider>().convex = true;
-        gameObject.AddComponent<Rigidbody>();
+        gameObject.AddComponent<Rigidbody>(); // surely use gravity = false?
         gameObject.AddComponent<Gravity>();
         showNeighbours(true); //will be destroyed shortly
     }
