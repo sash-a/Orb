@@ -61,7 +61,7 @@ public class WeaponAttack : AAttackBehaviour
         }
 
         //scroll down changes weapons
-        if (Input.GetAxis("Mouse ScrollWheel") < 0f && localPlayerAuthority) 
+        if (Input.GetAxis("Mouse ScrollWheel") < 0f && localPlayerAuthority)
         {
             if (selectedWeapon <= 0)
             {
@@ -124,6 +124,7 @@ public class WeaponAttack : AAttackBehaviour
             if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, weapons[selectedWeapon].range,
                 mask))
             {
+                Debug.Log("weapon hit something");
                 //if we hit a player
                 if (hit.collider.tag == PLAYER_TAG)
                 {
@@ -134,17 +135,36 @@ public class WeaponAttack : AAttackBehaviour
                     CmdObjectHitEffect(hit.point, hit.normal);
                 }
 
-                //if we hit voxel
-                if (hit.collider.tag == VOXEL_TAG)
-                {
-                    CmdVoxelDamaged(hit.collider.gameObject, weapons[selectedWeapon].damage); // weapontype.envDamage?
 
-                    //finally works! checks if the damage done to voxel on a hit will cause voxel to destroy
-                    if (hit.collider.GetComponent<NetHealth>().getHealth() <= weapons[selectedWeapon].damage)
+                // Only add this if we are sure that voxels are getting damaged by guns otherwise check gun type before damaging
+                if (hit.collider.gameObject.tag == VOXEL_TAG)
+                {
+                    if (hit.collider.gameObject.name.Equals("SubVoxel"))
                     {
-                        CmdVoxelDestructionEffect(hit.point, hit.normal);
+                        //Debug.Log("weapon hit subvoxel");
+                        Health health = hit.collider.gameObject.GetComponent<Health>();
+                        if (health != null)
+                        {
+                            health.takeDamage(weapons[selectedWeapon].damage);
+                        }
                     }
+                    else
+                    {
+                        Debug.Log("weapon hit voxel ("+ hit.collider.gameObject .name+ ") at layer " + hit.collider.gameObject.GetComponent<Voxel>().layer);
+                        CmdVoxelDamaged(hit.collider.gameObject, weapons[selectedWeapon].damage); // weapontype.envDamage?
+                                                                                                  //This just isn't called
+                        if (hit.collider.GetComponent<NetHealth>().getHealth() <= 0)
+                        {
+                            CmdVoxelDestructionEffect(hit.point, hit.normal);
+                        }
+                    }
+
+                    hit.collider.gameObject.GetComponent<Voxel>().lastHitRay = new Ray(cam.transform.position, cam.transform.forward);
+                    hit.collider.gameObject.GetComponent<Voxel>().lastHitPosition = hit.point;
+
+
                 }
+
             }
         }
         else
@@ -153,9 +173,10 @@ public class WeaponAttack : AAttackBehaviour
         }
     }
 
+
     public override void endAttack()
     {
-//        throw new System.NotImplementedException();
+        //        throw new System.NotImplementedException();
     }
 
     public override void secondaryAttack()

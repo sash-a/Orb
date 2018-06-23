@@ -31,7 +31,7 @@ public class CaveManager : NetworkBehaviour
             digObj.transform.localScale = new Vector3(1, 1, 1);
             Digger digger = digObj.GetComponent<Digger>();
             digger.init();
-            digger.createEntranceAt(rand.Next(0,MapManager.neighboursMap.Count-1));
+            digger.createEntranceAt(rand.Next(0,MapManager.manager.neighboursMap.Count-1));
             diggers.Add(digger);
         }
 
@@ -40,16 +40,16 @@ public class CaveManager : NetworkBehaviour
     static IEnumerator SmoothVoxels() {
         yield return new WaitForSeconds(1f);
 
-        Voxel.useSmoothing = true;
+        MapManager.useSmoothing = true;
         for (int i = 0; i < MapManager.mapLayers; i++)
         {
             ArrayList keys = new ArrayList();
-            foreach (int n in MapManager.voxels[i].Keys) {
+            foreach (int n in MapManager.manager.voxels[i].Keys) {
                 keys.Add(n);
             }
             for (int j = 0; j < keys.Count; j++)
             {
-                MapManager.voxels[i][(int)keys[j]].smoothBlockInPlace();
+                MapManager.manager.voxels[i][(int)keys[j]].smoothBlockInPlace();
             }
 
         }
@@ -57,13 +57,13 @@ public class CaveManager : NetworkBehaviour
         for (int i = 0; i < MapManager.mapLayers; i++)
         {
             ArrayList keys = new ArrayList();
-            foreach (int n in MapManager.voxels[i].Keys)
+            foreach (int n in MapManager.manager.voxels[i].Keys)
             {
                 keys.Add(n);
             }
             for (int j = 0; j < keys.Count; j++)
             {
-                MapManager.voxels[i][(int)keys[j]].smoothBlockInPlace();
+                MapManager.manager.voxels[i][(int)keys[j]].smoothBlockInPlace();
             }
 
         }

@@ -18,7 +18,7 @@ public class AssetOrientation : MonoBehaviour
 
     IEnumerator SetParent() {
         yield return new WaitForSeconds(0.3f);
-        transform.parent = MapManager.Map.transform.GetChild(2);
+        transform.parent = MapManager.manager.Map.transform.GetChild(2);
     }
 
     public Vector3 getFoward()

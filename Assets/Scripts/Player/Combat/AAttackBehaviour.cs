@@ -73,7 +73,7 @@ public abstract class AAttackBehaviour : NetworkBehaviour
         var health = go.GetComponent<NetHealth>();
         if (health == null)
         {
-            Debug.LogError("Voxel did not have health component");
+            //Debug.LogError("Voxel did not have health component");
             return;
         }
 

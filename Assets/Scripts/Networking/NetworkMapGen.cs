@@ -30,20 +30,24 @@ public class NetworkMapGen : NetworkBehaviour
             Debug.LogWarning("failed to load voxels");
         }
 
+        int count = 0;
         foreach (var voxel in voxels)
         {
-            int colID = Int32.Parse(voxel.name.Substring(5));
+            //int colID = Int32.Parse(voxel.name.Substring(5));
             var voxelGameObj = (GameObject) voxel;
-            voxelGameObj.GetComponent<Voxel>().columnID = colID;
-
-            voxelDict.Add(colID, voxelGameObj.GetComponent<Voxel>());
+            voxelGameObj.GetComponent<Voxel>().columnID = count;
+            //voxelGameObj.name = "Voxel" + colID;
+            voxelDict.Add(count, voxelGameObj.GetComponent<Voxel>());
+            count++;
         }
 
         foreach (var colID in voxelDict.Keys)
         {
             GameObject inst = Instantiate(voxelDict[colID].gameObject);
             inst.GetComponent<Voxel>().setColumnID(colID);
-//            Debug.Log("World center according to server: " + inst.GetComponent<Voxel>().worldCentreOfObject);
+            inst.name = "Voxel" + colID;
+
+            //            Debug.Log("World center according to server: " + inst.GetComponent<Voxel>().worldCentreOfObject);
             NetworkServer.Spawn(inst);
         }
 
@@ -52,10 +56,17 @@ public class NetworkMapGen : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
+
+        GameObject mapSync = Instantiate(Resources.Load<GameObject>("Prefabs/MapSync"), Vector3.zero, Quaternion.identity);
+        mapSync.GetComponent<MapManager>().start();
+
+        NetworkServer.Spawn(mapSync);
+
         //Debug.Log("Spawning");
         spawnVoxelsOnServer(MapManager.splits);
-        //Debug.Log("Done Spawning");
         StartCoroutine(InitTrees());
+
+        
     }
 
 
@@ -87,22 +98,8 @@ public class NetworkMapGen : NetworkBehaviour
             }
         }
 
-        //Debug.Log("on start client called childcount = " + parent.transform.GetChild(1).childCount);
-        for (int i = 0; i < parent.transform.GetChild(1).childCount; i++)
-        {
-            GameObject voxObj = parent.transform.GetChild(1).GetChild(i).gameObject;
-            if (!(voxObj.name.Contains("voxel") || voxObj.name.Equals("TriVoxel")))
-            {
-                Debug.LogError("incorect child load - loaded" + voxObj.name);
-            }
-            else
-            {
-                Voxel v = voxObj.GetComponent<Voxel>();
-                v.setColumnID(i);
-            }
-        }
 
-        MapManager.voxelsLoaded();
+        MapManager.manager.voxelsLoaded();
     }
 
     public void GenerateTrees(int density)
@@ -113,7 +110,7 @@ public class NetworkMapGen : NetworkBehaviour
         int d = density;
         //loop through every surface voxel
         //Debug.LogWarning(MapManager.voxels[0].Count);
-        foreach (Voxel vox in MapManager.voxels[0].Values)
+        foreach (Voxel vox in MapManager.manager.voxels[0].Values)
         {
             //when the appropriate number of voxels have been skipped
             if (d == 0)

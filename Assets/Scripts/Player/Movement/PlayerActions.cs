@@ -110,11 +110,11 @@ public class PlayerActions : MonoBehaviour
 
     void OnCollisionEnter(Collision other)
     {
-        isJumping = other.gameObject.name.Equals("TriVoxel");
+        isJumping = other.gameObject.name.Contains("Voxel")  ;
         if (other.gameObject.name.Equals("TriVoxel"))
         {
             Voxel vox = other.gameObject.GetComponent<Voxel>();
-            if (MapManager.isDeleted(vox.layer - 2, vox.columnID) || MapManager.isDeleted(vox.layer - 1, vox.columnID))
+            if (MapManager.manager.isDeleted(vox.layer - 2, vox.columnID) || MapManager.manager.isDeleted(vox.layer - 1, vox.columnID))
             // &&  vox.deletedPoints.Count==0)//difficult to tell if infront it has deleted points
             {
                 Vector3 diff = transform.position - vox.worldCentreOfObject;

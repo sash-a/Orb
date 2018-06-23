@@ -37,7 +37,7 @@ public class Digger : NetworkBehaviour
     {
         //rand = new System.Random();
         //if (!isServer) { return; }
-        //MapManager.digger = this;
+        //MapManager.manager.digger = this;
         //body = GetComponent<Rigidbody>();
         //gameObject.SetActive(false);
         //body.AddForce(Vector3.forward*80f, ForceMode.VelocityChange);
@@ -143,17 +143,17 @@ public class Digger : NetworkBehaviour
 
         Vector3 dir = Vector3.zero;
         int neighbour = -1; ;
-        foreach (int nei in MapManager.neighboursMap[colID]) {
+        foreach (int nei in MapManager.manager.neighboursMap[colID]) {
             if (count == n) {
-                dir = MapManager.getPositionOf(0, nei)- MapManager.getPositionOf(0, colID)  ;
+                dir = MapManager.manager.getPositionOf(0, nei)- MapManager.manager.getPositionOf(0, colID)  ;
                 neighbour = nei;
                 break;
             }
             count++;
         }
-        right = Vector3.Cross(dir, -MapManager.getPositionOf(0, neighbour));
+        right = Vector3.Cross(dir, -MapManager.manager.getPositionOf(0, neighbour));
         travelDir = dir.normalized;
-        nextDest = MapManager.getPositionOf(0, colID);
+        nextDest = MapManager.manager.getPositionOf(0, colID);
 
         gameObject.SetActive(true);
 
@@ -181,9 +181,9 @@ public class Digger : NetworkBehaviour
             int bestID = -1;
             double bestComp = double.MinValue;
 
-            foreach (int n in MapManager.neighboursMap[colID])
+            foreach (int n in MapManager.manager.neighboursMap[colID])
             {//finds neighbour in dir closest to desired dir
-                double comp = Vector3.Dot((MapManager.getPositionOf(layer, n) - transform.position).normalized, travelDir);
+                double comp = Vector3.Dot((MapManager.manager.getPositionOf(layer, n) - transform.position).normalized, travelDir);
                 if (comp > bestComp)
                 {
                     bestComp = comp;
@@ -198,14 +198,14 @@ public class Digger : NetworkBehaviour
                 neighbourCount = 0;
             }
             colID = bestID;
-            return MapManager.getPositionOf(layer, bestID);
+            return MapManager.manager.getPositionOf(layer, bestID);
         }
         else
         {
             neighbourCount++;
             layer--;
             //Debug.Log("sending digger to voxel above - layer " +( layer));
-            return MapManager.getPositionOf(layer, colID);
+            return MapManager.manager.getPositionOf(layer, colID);
         }
     }
 

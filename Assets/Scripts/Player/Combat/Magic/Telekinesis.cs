@@ -51,14 +51,16 @@ public class Telekenises : MonoBehaviour
     {
         if (hasReleased) return;
 
-        // TODO need some way to track voxel world pos and update it (transform pos is 0,0,0)
-//        rb.MovePosition(vox.worldCentreOfObject +
-//                        (requiredPos.position - vox.worldCentreOfObject) * Time.deltaTime * speed);
+        var oldPos = new Vector3(rb.position.x, rb.position.y, rb.position.z);
+        rb.MovePosition(rb.position + (requiredPos.position - vox.worldCentreOfObject).normalized * Time.deltaTime * voxelSpeed);
+        
+        var diff = rb.position - oldPos;
+        vox.worldCentreOfObject += diff; // Updating the voxels position in world co-ords
 
 
-        test.GetComponent<Rigidbody>().MovePosition(test.transform.position +
-                                                    (requiredPos.position - test.transform.position) *
-                                                    Time.deltaTime * speed);
+//        test.GetComponent<Rigidbody>().MovePosition(test.transform.position +
+//        (requiredPos.position - test.transform.position) *
+//            Time.deltaTime * speed);
     }
 
     public void throwObject(Vector3 direction)

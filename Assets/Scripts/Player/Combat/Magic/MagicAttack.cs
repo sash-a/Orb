@@ -199,7 +199,7 @@ public class MagicAttack : AAttackBehaviour
     [Command]
     private void CmdVoxelTeleken(int col, int layer)
     {
-        currentTelekeneticVoxel = MapManager.voxels[layer][col].gameObject;
+        currentTelekeneticVoxel = MapManager.manager.voxels[layer][col].gameObject;
         // Prepare the voxel for telekenisis
         RpcPrepVoxel(col, layer, GetComponent<Identifier>().id);
     }
@@ -209,16 +209,17 @@ public class MagicAttack : AAttackBehaviour
     private void RpcPrepVoxel(int col, int layer, string playerID)
     {
         // Add networktransform and rigidbody so that it can be moved on network
-        var voxel = MapManager.voxels[layer][col];
+        var voxel = MapManager.manager.voxels[layer][col];
 
         // Needs to be true to work with a rigid body
-        voxel.gameObject.GetComponent<MeshCollider>().convex = true; // Still throws error
+//        voxel.gameObject.GetComponent<MeshCollider>().convex = true; // Still throws error
         var rb = voxel.gameObject.AddComponent<Rigidbody>();
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         rb.useGravity = false;
+        rb.isKinematic = true;
 
         voxel.gameObject.AddComponent<NetworkTransform>();
-        voxel.transform.parent = MapManager.Map.transform;
+        voxel.transform.parent = MapManager.manager.Map.transform;
         voxel.gameObject.name = playerID + "_teleken_voxel";
 
         // I think best solution is to find a way to add collider to player that stops 

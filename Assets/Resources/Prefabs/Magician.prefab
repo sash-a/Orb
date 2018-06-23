@@ -1511,14 +1511,16 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967039
   type:
-    isTelekenetic: 0
+    isTelekenetic: 1
     isDamage: 0
     isShield: 1
-    isForcePush: 1
+    isForcePush: 0
   shield: {fileID: 1247925137036356, guid: 6dfdb12675b98d94791c722206d2f34c, type: 2}
   telekenObjectPos: {fileID: 1497520791924924}
-  force: {fileID: 114202960830645816}
+  currentTelekeneticVoxel: {fileID: 0}
   shieldUp: 0
+  canCastPush: 0
+  force: NaN
 --- !u!124 &124836616443880968
 Behaviour:
   m_ObjectHideFlags: 1

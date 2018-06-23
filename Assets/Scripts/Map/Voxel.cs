@@ -6,16 +6,17 @@ using UnityEngine.Networking;
 
 public class Voxel : NetworkBehaviour
 {
-    public static bool useSmoothing = true;
-    public static bool use1factorSmoothing = true;
-    public static bool use2factorSmoothing = true;
-    public static bool use3factorSmoothing = true;
+    public bool isBottom;
+    public String subVoxelID;
+    public int shatterLevel;
+    public Ray lastHitRay;
+    public Vector3 lastHitPosition;
 
     public static float extrudeLength = 0.014f; //0.02
 
     // decrease constant to move blocks further away from eachother//0.0025 - overlaps slightly ; 0.00249 leaves minute gap
     public static float scaleRatio = (0.002491f * MapManager.mapSize + extrudeLength) / (0.00249f * MapManager.mapSize);
-
+    public double scale;
 
     public int columnID;
     [SyncVar] public int layer;
@@ -26,25 +27,25 @@ public class Voxel : NetworkBehaviour
     public Vector3 centreOfObject; // centre of the object in object space
     public Vector3 worldCentreOfObject; // the centre of this object as it is in world space
 
-    System.Random rand;
+    public System.Random rand;
     public MeshFilter filter;
 
 
     public Dictionary<int, Vector3> origonalPoints;
     public HashSet<int> deletedPoints;
 
-    public String info;
+    public String info = "";
+ 
 
     private void Start()
     {
-        info = "";
 
         setTexture();
 
 
-        gameObject.name = "TriVoxel";
+        //gameObject.name = "TriVoxel";
         gameObject.tag = "TriVoxel";
-        transform.parent = MapManager.Map.transform.GetChild(1);
+        transform.parent = MapManager.manager.Map.transform.GetChild(1);
 
         origonalPoints = new Dictionary<int, Vector3>();
         deletedPoints = new HashSet<int>();
@@ -52,10 +53,13 @@ public class Voxel : NetworkBehaviour
         filter = gameObject.GetComponent<MeshFilter>();
         GetComponent<MeshCollider>().convex = false;
 
-        double scale = Math.Pow(scaleRatio, Math.Abs(layer));
+        scale = Math.Pow(scaleRatio, Math.Abs(layer));
         worldCentreOfObject = centreOfObject * (float)scale * MapManager.mapSize;
         //Debug.Log("Voxel center obj: " + worldCentreOfObject);
-        MapManager.voxels[layer][columnID] = this;
+        if ((!MapManager.manager.voxels[layer].ContainsKey(columnID)) || MapManager.manager.voxels[layer][columnID] == null)
+        {
+            MapManager.manager.voxels[layer][columnID] = this;
+        }
 
         if (layer > 0)
         {
@@ -64,15 +68,47 @@ public class Voxel : NetworkBehaviour
             setColumnID(columnID);
         }
 
+        if (gameObject.name.Contains("TriVoxel") || gameObject.name.Contains("voxel"))
+        {
+            cloneMeshFilter();
+            restoreVoxel();
+            shatterLevel = 0;
+            isBottom = false;
+            gameObject.name = "TriVoxel";
+        }
+        else
+        {//is subvoxel
+            //Debug.Log("starting subvoxel: " + gameObject.name);
+            Debug.Log("naming " + gameObject.name + " :  subvoxel");
+            gameObject.name = "SubVoxel";
+        }
 
-        cloneMeshFilter();
-        restoreVoxel();
+        if (isServer&&rand.NextDouble() < 0.2f) {
+            bool farEnough = true;
+            foreach (Portal p in MapManager.manager.portals) {
+                if (Vector3.Distance(p.gameObject.GetComponent<MeshFilter>().mesh.vertices[0] *p.gameObject.transform.localScale.x, worldCentreOfObject ) < 75 ) {
+                    //Debug.Log("cant place portal because its too close: " + (Vector3.Distance(p.gameObject.GetComponent<MeshFilter>().mesh.vertices[0] * MapManager.mapSize, worldCentreOfObject)));
+                    farEnough = false;
+                }
+            }
+            if (farEnough) {
+                GameObject portal = (GameObject)Instantiate(Resources.Load<UnityEngine.Object>("Prefabs/Portal"));
+                portal.GetComponent<Portal>().createFromVoxel(this);
+                NetworkServer.Spawn(portal);
+            }
+        }
+
     }
-    
+
     public void setColumnID(int colID)
     {
         columnID = colID;
-        MapManager.voxels[layer][colID] = this;
+        //Debug.Log(MapManager.manager);
+        //Debug.Log(MapManager.manager.voxels);
+        if (!MapManager.manager.voxels[layer].ContainsKey(columnID))
+        {
+            MapManager.manager.voxels[layer][colID] = this;
+        }
     }
 
     private void setTexture()
@@ -96,22 +132,77 @@ public class Voxel : NetworkBehaviour
 
     internal void destroyVoxel()
     {
+        //if (layer > 0) Debug.Log("destroy voxel called");  
         if (!isServer)
         {
-            Debug.Log("destroy vox called from in vox");
+            //Debug.Log("destroy vox called from in vox");
         }
-        showNeighbours(true);
+        if (MapManager.shatters > 0)//using shattering
+        {
+            if (gameObject.name != "SubVoxel")//not subvoxel - regular voxel
+            {
+                //if(layer>0)Debug.Log("shattering a TriVoxel");
+                showNeighbours(false);
+                //VoxelContainer vc = new VoxelContainer(this);
+                gameObject.AddComponent<VoxelContainer>();
+                VoxelContainer vc = gameObject.GetComponent<VoxelContainer>();
+                vc.start(this);
+                MapManager.manager.voxels[layer][columnID] = vc;
+                //if (layer > 0) Debug.Log("replaced trivoxel with: " + vc + " type: " + vc.GetType());
+                CmdMeltVoxel();
+
+                //NetworkServer.Destroy(this);//
+            }
+            else
+            {//is subVoxel
+             //Debug.Log("destroying a subVoxel");
+             //GetComponent<NetworkIdentity>().localPlayerAuthority = true;
+                MapManager.manager.CmdDestroyNextSubVoxel(layer, columnID, subVoxelID);
+                //MapManager.manager.RpcDestroyNextSubvoxel(layer, columnID, subVoxelID);
+
+                //Destroy(gameObject);
+            }
+        }
+        else
+        {
+            //Debug.Log("destroying voxel at layer: " + layer + "  no shattering");
+            showNeighbours(true);
+            NetworkServer.Destroy(gameObject);
+        }
+
+
         //Destroy(gameObject);
-        NetworkServer.Destroy(gameObject);
     }
 
+    [Server]//the melt feature allows a voxel to be network deleted without deleting the containing gameObject - this is so the VoxelContainer created when this voxel is shattered still has a gameobject home
+    private void CmdMeltVoxel()//should only be called on a trivoxel - not a subvoxel as subvoxels are not networked synced
+    {
+        RpcMeltVoxel();
+    }
+
+    [ClientRpc]
+    void RpcMeltVoxel()
+    {
+        //Debug.Log("rpc melting voxel " + layer + " ; " + columnID + " ; " + subVoxelID);
+        melt();
+
+    }
+
+    public void melt()
+    {
+        Destroy(gameObject.GetComponent<MeshCollider>());
+        Destroy(gameObject.GetComponent<MeshRenderer>());
+        Destroy(gameObject.GetComponent<MeshFilter>());
+        //Destroy(gameObject.GetComponent<>());
+        //Destroy(gameObject.GetComponent<Voxel>());//destoys this script
+    }
 
     internal void checkNeighbourCount()
     {
         //Debug.Log("checking neighbour count");
-        if (MapManager.neighboursMap[columnID].Count != 3)
+        if (MapManager.manager.neighboursMap[columnID].Count != 3)
         {
-            Debug.LogError("column " + columnID + " has " + MapManager.neighboursMap[columnID].Count + " neighbours");
+            Debug.LogError("column " + columnID + " has " + MapManager.manager.neighboursMap[columnID].Count + " neighbours");
         }
     }
 
@@ -176,33 +267,33 @@ public class Voxel : NetworkBehaviour
             gameObject.SetActive(true);
         }
 
-        //        worldCentreOfObject = centreOfObject * MapManager.mapSize;
+        //        worldCentreOfObject = centreOfObject * MapManager.manager.mapSize;
     }
 
     public void addNeighbour(Voxel n)
     {
         //Debug.Log("adding neighbour " + n.columnID + " to vox " + columnID);
 
-        if (!MapManager.neighboursMap.ContainsKey(columnID))
+        if (!MapManager.manager.neighboursMap.ContainsKey(columnID))
         {
             //.Log("recreating element for " + columnID + " in neighbours map-------------------------------------");
-            MapManager.neighboursMap.Add(columnID, new HashSet<int>());
+            MapManager.manager.neighboursMap.Add(columnID, new HashSet<int>());
         }
 
-        if (!MapManager.neighboursMap.ContainsKey(n.columnID))
+        if (!MapManager.manager.neighboursMap.ContainsKey(n.columnID))
         {
             //Debug.Log("recreating element for " + n.columnID + " in neighbours map-------------------------------------");
-            MapManager.neighboursMap.Add(n.columnID, new HashSet<int>());
+            MapManager.manager.neighboursMap.Add(n.columnID, new HashSet<int>());
         }
 
-        MapManager.neighboursMap[columnID].Add(n.columnID);
-        MapManager.neighboursMap[n.columnID].Add(columnID);
+        MapManager.manager.neighboursMap[columnID].Add(n.columnID);
+        MapManager.manager.neighboursMap[n.columnID].Add(columnID);
     }
 
     internal void releaseVoxel()
     {
         gameObject.GetComponent<MeshCollider>().convex = true;
-        gameObject.AddComponent<Rigidbody>(); // surely use gravity = false?
+        gameObject.AddComponent<Rigidbody>();
         gameObject.AddComponent<Gravity>();
         showNeighbours(true); //will be destroyed shortly
     }
@@ -213,7 +304,7 @@ public class Voxel : NetworkBehaviour
         {
             if (deleted)
             {
-                MapManager.informDeleted(layer, columnID);
+                MapManager.manager.informDeleted(layer, columnID);
             }
             return;
         }
@@ -223,26 +314,26 @@ public class Voxel : NetworkBehaviour
         /*Voxel up = */
         createNewVoxel(-1); // when i am deleted- create block above
 
-        foreach (int newColID in MapManager.neighboursMap[columnID])
+        foreach (int newColID in MapManager.manager.neighboursMap[columnID])
         {
             //for all of the voxels adjacent to this one
 
-            if (!MapManager.doesVoxelExist(layer, newColID) && //doesnt exist right now
-                !(MapManager.voxels[layer].ContainsKey(newColID) &&
-                  MapManager.voxels[layer][newColID].Equals(MapManager.DeletedVoxel)))
+            if (!MapManager.manager.doesVoxelExist(layer, newColID) && //doesnt exist right now
+                !(MapManager.manager.voxels[layer].ContainsKey(newColID) &&
+                  MapManager.manager.voxels[layer][newColID].Equals(MapManager.DeletedVoxel)))
             {
                 // hasn't existed before
                 bool created = false;
-                if (MapManager.doesVoxelExist(layer - 1, newColID))
+                if (MapManager.manager.doesVoxelExist(layer - 1, newColID))
                 {
                     // my soon to be created neighbour has an existing above voxel- make it create down
-                    created = MapManager.voxels[layer - 1][newColID].createNewVoxel(1);
+                    created = MapManager.manager.voxels[layer - 1][newColID].createNewVoxel(1);
                 }
 
-                if (MapManager.doesVoxelExist(layer + 1, newColID))
+                if (MapManager.manager.doesVoxelExist(layer + 1, newColID))
                 {
                     //my soon to be created neighbour has an existing below voxel- make it create up
-                    created = MapManager.voxels[layer + 1][newColID].createNewVoxel(-1);
+                    created = MapManager.manager.voxels[layer + 1][newColID].createNewVoxel(-1);
                 }
 
                 if (!created)
@@ -250,8 +341,8 @@ public class Voxel : NetworkBehaviour
                     //loop through the entire column and find a voxel that exists and use it to create this voxel
                     for (int i = 0; i < MapManager.mapLayers; i++)
                     {
-                        if (MapManager.doesVoxelExist(i, newColID) &&
-                            MapManager.voxels[i][newColID].createNewVoxel(layer - i))
+                        if (MapManager.manager.doesVoxelExist(i, newColID) &&
+                            MapManager.manager.voxels[i][newColID].createNewVoxel(layer - i))
                         {
                             break;
                         }
@@ -262,7 +353,7 @@ public class Voxel : NetworkBehaviour
 
         if (deleted)
         {
-            MapManager.informDeleted(layer, columnID);
+            MapManager.manager.informDeleted(layer, columnID);
         }
     }
 
@@ -281,7 +372,7 @@ public class Voxel : NetworkBehaviour
         int newVoxelLayer = layer + dir;
         // Don't create this block if it has existed before and has been deleted or if it exists right now
         if (newVoxelLayer > 0 && newVoxelLayer < MapManager.mapLayers &&
-            !MapManager.voxels[newVoxelLayer].ContainsKey(columnID))
+            !MapManager.manager.voxels[newVoxelLayer].ContainsKey(columnID))
         {
             GameObject childObject = Instantiate(gameObject, gameObject.transform.position,
                 gameObject.transform.localRotation);
@@ -290,7 +381,8 @@ public class Voxel : NetworkBehaviour
             childScript.layer = newVoxelLayer;
             childScript.origonalPoints = origonalPoints;
             childScript.cloneMeshFilter();
-            MapManager.voxels[newVoxelLayer][childScript.columnID] = childScript;
+            MapManager.manager.voxels[newVoxelLayer][childScript.columnID] = childScript;
+
 
             NetworkServer.Spawn(childObject);
             return true;
@@ -309,16 +401,16 @@ public class Voxel : NetworkBehaviour
 
     internal void smoothBlockInPlace()
     {//implement order independant simplified smoothing
-        if (!useSmoothing) { return; }
-        if (MapManager.isDeleted(layer + 1, columnID) || MapManager.isDeleted(layer - 1, columnID))
+        if (!MapManager.useSmoothing) { return; }
+        if (MapManager.manager.isDeleted(layer + 1, columnID) || MapManager.manager.isDeleted(layer - 1, columnID))
         {
             try
             {
                 int deletedAdjacents = 0;
                 ArrayList neighbourIDs = new ArrayList();
-                foreach (int nei in MapManager.neighboursMap[columnID])
+                foreach (int nei in MapManager.manager.neighboursMap[columnID])
                 {
-                    if (MapManager.isDeleted(layer, nei))
+                    if (MapManager.manager.isDeleted(layer, nei))
                     {
                         deletedAdjacents++;
                     }
@@ -329,7 +421,7 @@ public class Voxel : NetworkBehaviour
                 }
 
                 info = "del adj=" + deletedAdjacents;
-                if (MapManager.isDeleted(layer + 1, columnID) && MapManager.isDeleted(layer - 1, columnID))
+                if (MapManager.manager.isDeleted(layer + 1, columnID) && MapManager.manager.isDeleted(layer - 1, columnID))
                 {
                     //up and down deleted
                     if (deletedAdjacents >= 1)
@@ -340,7 +432,7 @@ public class Voxel : NetworkBehaviour
                 else
                 {//exactly 1 vertical neighbour is deleted
 
-                    if (deletedAdjacents == 1 && use1factorSmoothing)
+                    if (deletedAdjacents == 1 && MapManager.use1factorSmoothing)
                     {
                         Vector3[] verts = filter.mesh.vertices;
                         showNeighbours(false);
@@ -356,7 +448,7 @@ public class Voxel : NetworkBehaviour
 
                             foreach (int n in neighbourIDs)
                             {
-                                smoothDirVec -= (MapManager.voxels[layer][n].centreOfObject - centreOfObject).normalized;
+                                smoothDirVec -= (MapManager.manager.voxels[layer][n].centreOfObject - centreOfObject).normalized;
                             }
 
                             smoothDirVec.Normalize();
@@ -415,7 +507,7 @@ public class Voxel : NetworkBehaviour
                                 closestIDs[1] = (closestIDs[1] + 3) % 6;
                             }
 
-                            if (MapManager.isDeleted(layer + dir, columnID))
+                            if (MapManager.manager.isDeleted(layer + dir, columnID))
                             {
                                 info += "|1 fac smoothing|";
                                 if (Math.Sign(2.5 - closestIDs[0]) == Math.Sign(2.5 - closestIDs[1]))
@@ -443,7 +535,7 @@ public class Voxel : NetworkBehaviour
 
                     }
 
-                    if (deletedAdjacents == 2 && use2factorSmoothing)
+                    if (deletedAdjacents == 2 && MapManager.use2factorSmoothing)
                     {
                         //ready to smooth if up or down is deleted
                         Vector3[] verts = gameObject.GetComponent<MeshFilter>().mesh.vertices;
@@ -454,7 +546,7 @@ public class Voxel : NetworkBehaviour
                             //down is deleted, suck in point
                             //Debug.Log("down and 2 adjacent smoothing");
 
-                            Vector3 smoothDirVec = centreOfObject - MapManager.voxels[layer][(int)neighbourIDs[0]].centreOfObject;
+                            Vector3 smoothDirVec = centreOfObject - MapManager.manager.voxels[layer][(int)neighbourIDs[0]].centreOfObject;
 
 
                             smoothDirVec.Normalize();
@@ -482,7 +574,7 @@ public class Voxel : NetworkBehaviour
                             }
 
                             //shrink(closestID, 0.3f);
-                            if (MapManager.isDeleted(layer + dir, columnID))
+                            if (MapManager.manager.isDeleted(layer + dir, columnID))
                             {
                                 deletePoint(closestID);
                                 info += "|using 2fac smoothing|";
@@ -494,11 +586,11 @@ public class Voxel : NetworkBehaviour
 
                     } //smooth 1 point
 
-                    if (deletedAdjacents == 3 && use3factorSmoothing)
+                    if (deletedAdjacents == 3 && MapManager.use3factorSmoothing)
                     {
                         restoreVoxel();
 
-                        if (MapManager.isDeleted(layer + 1, columnID))
+                        if (MapManager.manager.isDeleted(layer + 1, columnID))
                         {
                             //down is deleted, suck in bottom 3 points
                             shrink(3, 0.5f);
@@ -508,7 +600,7 @@ public class Voxel : NetworkBehaviour
 
                         }
 
-                        if (MapManager.isDeleted(layer - 1, columnID))
+                        if (MapManager.manager.isDeleted(layer - 1, columnID))
                         {
                             //up is deleted, suck in top 3 points
                             shrink(0, 0.5f);
@@ -537,11 +629,11 @@ public class Voxel : NetworkBehaviour
     {
         Vector3[] verts = filter.mesh.vertices;
 
-        foreach (int neighbourCol in MapManager.neighboursMap[columnID])
+        foreach (int neighbourCol in MapManager.manager.neighboursMap[columnID])
         {
-            if (MapManager.doesVoxelExist(layer, neighbourCol)) //if neighbour exists rn
+            if (MapManager.manager.doesVoxelExist(layer, neighbourCol)) //if neighbour exists rn
             {
-                Voxel neighbour = MapManager.voxels[layer][neighbourCol];
+                Voxel neighbour = MapManager.manager.voxels[layer][neighbourCol];
                 int sameID;
                 if (origonalPoints.ContainsKey(pID))
                 {
@@ -560,10 +652,10 @@ public class Voxel : NetworkBehaviour
                     //found the shared vert in neighbour vox
                     //if ((MapGen.isDeleted(layer + 1, columnID) == MapGen.isDeleted(layer + 1, neighbour.columnID) && pID<=2)
                     //|| (MapGen.isDeleted(layer - 1, columnID) == MapGen.isDeleted(layer - 1, neighbour.columnID) && pID>2))
-                    if ((MapManager.isDeleted(layer + 1, columnID) ==
-                         MapManager.isDeleted(layer + 1, neighbour.columnID))
-                        && (MapManager.isDeleted(layer - 1, columnID) ==
-                            MapManager.isDeleted(layer - 1, neighbour.columnID)))
+                    if ((MapManager.manager.isDeleted(layer + 1, columnID) ==
+                         MapManager.manager.isDeleted(layer + 1, neighbour.columnID))
+                        && (MapManager.manager.isDeleted(layer - 1, columnID) ==
+                            MapManager.manager.isDeleted(layer - 1, neighbour.columnID)))
                     {
                         //the neighbour has the same up/down block situation
                         int otherSameId = neighbour.findVertIn(verts[towards]);
@@ -836,7 +928,7 @@ public class Voxel : NetworkBehaviour
         }
     }
 
-    private int[] findRemainingOnSide(int[] points)
+    public int[] findRemainingOnSide(int[] points)
     {
         //assuming points on same side of vox- finds the third point on that same side
         string debug = "";
@@ -959,9 +1051,9 @@ public class Voxel : NetworkBehaviour
     private int getDeletedAdjacentCount()
     {
         int deletedAdjacents = 0;
-        foreach (int nei in MapManager.neighboursMap[columnID])
+        foreach (int nei in MapManager.manager.neighboursMap[columnID])
         {
-            if (MapManager.isDeleted(layer, nei))
+            if (MapManager.manager.isDeleted(layer, nei))
             {
                 deletedAdjacents++;
             }
