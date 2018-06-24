@@ -13,6 +13,8 @@
           <e p="MapGen.cs" t="Include" />
           <e p="VoxelGen.cs" t="Include" />
         </e>
+        <e p="ForcePush.cs" t="Include" />
+        <e p="MapSync.cs" t="Include" />
         <e p="Plugins" t="Include">
           <e p="GitHub" t="Include">
             <e p="Editor" t="Include">
@@ -28,9 +30,17 @@
         </e>
         <e p="Scripts" t="Include">
           <e p="Map" t="Include">
-            <e p="CaveManager.cs" t="Include" />
-            <e p="Digger.cs" t="Include" />
+            <e p="Caves" t="Include">
+              <e p="CaveBody.cs" t="Include" />
+              <e p="CaveComponent.cs" t="Include" />
+              <e p="CaveEntrance.cs" t="Include" />
+              <e p="CaveManager.cs" t="Include" />
+              <e p="Digger.cs" t="Include" />
+              <e p="Tunnel.cs" t="Include" />
+            </e>
             <e p="MapManager.cs" t="Include" />
+            <e p="Portal.cs" t="Include" />
+            <e p="SubVoxel.cs" t="Include" />
             <e p="Voxel.cs" t="Include" />
             <e p="VoxelContainer.cs" t="Include" />
           </e>
@@ -39,6 +49,7 @@
             <e p="CursorLock.cs" t="Include" />
             <e p="FPSShower.cs" t="Include" />
             <e p="Gravity.cs" t="Include" />
+            <e p="Health.cs" t="Include" />
             <e p="NetHealth.cs" t="Include" />
             <e p="ResourceManager.cs" t="Include" />
           </e>
