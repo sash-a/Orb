@@ -123,31 +123,34 @@ public class Voxel : NetworkBehaviour
 
         if (layer == 0)
         {
-            var matt = new Material(Resources.Load<Material>("Materials/LowPolyGrass"));
-            var colour = matt.color;
-
-            // Setting the colour depending on the steepness of the angle of the voxel
-            var norm = Vector3.Cross(filter.mesh.vertices[0] - filter.mesh.vertices[1],
-                filter.mesh.vertices[2] - filter.mesh.vertices[1]);
-
-            var angle = Vector3.Angle(norm, centreOfObject);
-
-            colour.a += angle;
-            colour.g -= angle;
-            colour.b -= angle;
-
-            matt.SetColor(layer + "_" + columnID + "_TexCol", colour);
-            gameObject.GetComponent<MeshRenderer>().material = matt;
+            setTexture(Resources.Load<Material>("Materials/LowPolyGrass"));
         }
         else if (layer == MapManager.mapLayers - 1)
         {
-            gameObject.GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/EarthShell2");
+            setTexture(Resources.Load<Material>("Materials/LowPolyCrust"));
         }
         else
         {
-            string mat = ("Materials/Earth" + rand.Next(1, 4));
-            gameObject.GetComponent<MeshRenderer>().material = Resources.Load<Material>(mat);
+            setTexture(Resources.Load<Material>("Materials/LowPolyGround"));
         }
+    }
+
+    private void setTexture(Material material)
+    {
+        var matt = new Material(material);
+        var colour = matt.color;
+
+        // Setting the colour depending on the steepness of the angle of the voxel
+        var norm = Vector3.Cross(filter.mesh.vertices[0] - filter.mesh.vertices[1],
+            filter.mesh.vertices[2] - filter.mesh.vertices[1]);
+        var angle = Vector3.Angle(norm, centreOfObject);
+
+        colour.a += angle;
+        colour.g -= angle;
+        colour.b -= angle;
+
+        matt.SetColor(layer + "_" + columnID + "_TexCol", colour);
+        gameObject.GetComponent<MeshRenderer>().material = matt;
     }
 
     internal void destroyVoxel()

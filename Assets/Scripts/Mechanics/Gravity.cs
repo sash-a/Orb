@@ -12,13 +12,12 @@ public class Gravity : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.useGravity = false;
-        acceleration = 30;
     }
 
     Vector3 oldPos;
     void Update()
     {
-        if (!(gameObject.name == "TriVoxel"))
+        if (gameObject.name != "TriVoxel")
         {
             rb.AddForce(transform.position.normalized * acceleration);
         }
