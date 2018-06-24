@@ -12,7 +12,11 @@ public class CaveEntrance : CaveComponent
     static int entrancesize = 4;
 
     public CaveEntrance() : base(){
+        destDepth = 6;
+    }
 
+    public CaveEntrance(int depth) : this(){
+        destDepth = depth;
     }
 
     public void createEntranceAt(int colID)
@@ -21,8 +25,9 @@ public class CaveEntrance : CaveComponent
 
         GameObject digObj = CaveManager.getNewDigger();
         digObj.transform.localScale = new Vector3(1, 1, 1);
-        Digger digger = digObj.GetComponent<Digger>();
+        digger = digObj.GetComponent<Digger>();
         digger.init(this);
+        CaveManager.diggers.Add(digger);
 
         int n = rand.Next(0, 2);
 
@@ -32,6 +37,7 @@ public class CaveEntrance : CaveComponent
         digger.neighbourCount = 0;
         digger.transform.position = Vector3.zero;
         digger.setScale(entrancesize);
+        digger.gradient = 2;
 
         int count = 0;
         Vector3 dir = Vector3.zero;
@@ -60,11 +66,15 @@ public class CaveEntrance : CaveComponent
     {
         digger.gameObject.transform.localScale *= 0.999f;
 
-        if (digger.layer == destDepth)//done digging entrance
+        if (digger.layer >= destDepth)//done digging entrance
         {
             digger.neighbourCount = 0;
             digger.travelDir = digger.travelDir.normalized + digger.right * (float)(rand.NextDouble() * 1.5f - 0.75f);
             digger.right = Vector3.Cross(digger.travelDir, -digger.gameObject.transform.position);
+
+            //digger.gameObject.active = false;
+            CaveManager.removeDigger(digger);
+            Debug.Log("digger finished digging entrance");
 
         }
     }

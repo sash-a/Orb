@@ -3,12 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using Random = UnityEngine.Random;
 
 public class Voxel : NetworkBehaviour
 {
-    public bool isBottom;
-    public String subVoxelID;
-    public int shatterLevel;
+    [SyncVar] public bool isBottom;
+    [SyncVar] public String subVoxelID;
+    [SyncVar] public int shatterLevel;
     public Ray lastHitRay;
     public Vector3 lastHitPosition;
 
@@ -18,32 +19,27 @@ public class Voxel : NetworkBehaviour
     public static float scaleRatio = (0.002491f * MapManager.mapSize + extrudeLength) / (0.00249f * MapManager.mapSize);
     public double scale;
 
-    public int columnID;
+    [SyncVar] public int columnID;
     [SyncVar] public int layer;
 
     // the point on the top side{0,1,2} which is opposite the longest side of the triangle
     public int obtusePoint;
 
-    public Vector3 centreOfObject; // centre of the object in object space
-    public Vector3 worldCentreOfObject; // the centre of this object as it is in world space
+    [SyncVar] public Vector3 centreOfObject; // centre of the object in object space
+    [SyncVar] public Vector3 worldCentreOfObject; // the centre of this object as it is in world space
 
     public System.Random rand;
     public MeshFilter filter;
-
 
     public Dictionary<int, Vector3> origonalPoints;
     public HashSet<int> deletedPoints;
 
     public String info = "";
- 
 
     private void Start()
     {
-
         setTexture();
 
-
-        //gameObject.name = "TriVoxel";
         gameObject.tag = "TriVoxel";
         transform.parent = MapManager.manager.Map.transform.GetChild(1);
 
@@ -54,51 +50,59 @@ public class Voxel : NetworkBehaviour
         GetComponent<MeshCollider>().convex = false;
 
         scale = Math.Pow(scaleRatio, Math.Abs(layer));
-        worldCentreOfObject = centreOfObject * (float)scale * MapManager.mapSize;
+        worldCentreOfObject = centreOfObject * (float) scale * MapManager.mapSize;
         //Debug.Log("Voxel center obj: " + worldCentreOfObject);
-        if ((!MapManager.manager.voxels[layer].ContainsKey(columnID)) || MapManager.manager.voxels[layer][columnID] == null)
+        if ((!MapManager.manager.voxels[layer].ContainsKey(columnID)) ||
+            MapManager.manager.voxels[layer][columnID] == null)
         {
             MapManager.manager.voxels[layer][columnID] = this;
         }
 
         if (layer > 0)
         {
-            transform.localScale = Vector3.one * (float)scale;
-
+            transform.localScale = Vector3.one * (float) scale;
             setColumnID(columnID);
         }
 
-        if (gameObject.name.Contains("TriVoxel") || gameObject.name.Contains("voxel"))
+        if (!(gameObject.name.Contains("sub") || gameObject.name.Contains("Sub")))
         {
+            //Debug.Log("renaming " + gameObject.name + " to trivoxel");
             cloneMeshFilter();
             restoreVoxel();
             shatterLevel = 0;
             isBottom = false;
             gameObject.name = "TriVoxel";
-        }
-        else
-        {//is subvoxel
-            //Debug.Log("starting subvoxel: " + gameObject.name);
-            Debug.Log("naming " + gameObject.name + " :  subvoxel");
-            gameObject.name = "SubVoxel";
-        }
 
-        if (isServer&&rand.NextDouble() < 0.2f) {
-            bool farEnough = true;
-            foreach (Portal p in MapManager.manager.portals) {
-                if (Vector3.Distance(p.gameObject.GetComponent<MeshFilter>().mesh.vertices[0] *p.gameObject.transform.localScale.x, worldCentreOfObject ) < 75 ) {
-                    //Debug.Log("cant place portal because its too close: " + (Vector3.Distance(p.gameObject.GetComponent<MeshFilter>().mesh.vertices[0] * MapManager.mapSize, worldCentreOfObject)));
-                    farEnough = false;
+            if (isServer && rand.NextDouble() < 0.2f)
+            {
+                bool farEnough = true;
+                foreach (Portal p in MapManager.manager.portals)
+                {
+                    if (Vector3.Distance(
+                            p.gameObject.GetComponent<MeshFilter>().mesh.vertices[0] *
+                            p.gameObject.transform.localScale.x, worldCentreOfObject) < 75)
+                    {
+                        //Debug.Log("cant place portal because its too close: " + (Vector3.Distance(p.gameObject.GetComponent<MeshFilter>().mesh.vertices[0] * MapManager.mapSize, worldCentreOfObject)));
+                        farEnough = false;
+                    }
+                }
+
+                if (farEnough)
+                {
+                    GameObject portal = (GameObject) Instantiate(Resources.Load<UnityEngine.Object>("Prefabs/Portal"));
+                    portal.GetComponent<Portal>().createFromVoxel(this);
+                    NetworkServer.Spawn(portal);
                 }
             }
-            if (farEnough) {
-                GameObject portal = (GameObject)Instantiate(Resources.Load<UnityEngine.Object>("Prefabs/Portal"));
-                portal.GetComponent<Portal>().createFromVoxel(this);
-                NetworkServer.Spawn(portal);
-            }
         }
-
+        else
+        {
+            //is subvoxel
+            //Debug.Log("starting subvoxel: " + gameObject.name);
+            gameObject.name = "SubVoxel";
+        }
     }
+
 
     public void setColumnID(int colID)
     {
@@ -111,13 +115,13 @@ public class Voxel : NetworkBehaviour
         }
     }
 
-    private void setTexture()
+    public void setTexture()
     {
         rand = new System.Random();
 
         if (layer == 0)
         {
-            gameObject.GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Grass");
+            gameObject.GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/LowPolyGrass" + rand.Next(1, 8));
         }
         else if (layer == MapManager.mapLayers - 1)
         {
@@ -132,40 +136,30 @@ public class Voxel : NetworkBehaviour
 
     internal void destroyVoxel()
     {
-        //if (layer > 0) Debug.Log("destroy voxel called");  
+        Debug.Log("destroy voxel called");
         if (!isServer)
         {
-            //Debug.Log("destroy vox called from in vox");
+            Debug.LogError("destroy vox called from in vox");
         }
-        if (MapManager.shatters > 0)//using shattering
-        {
-            if (gameObject.name != "SubVoxel")//not subvoxel - regular voxel
-            {
-                //if(layer>0)Debug.Log("shattering a TriVoxel");
-                showNeighbours(false);
-                //VoxelContainer vc = new VoxelContainer(this);
-                gameObject.AddComponent<VoxelContainer>();
-                VoxelContainer vc = gameObject.GetComponent<VoxelContainer>();
-                vc.start(this);
-                MapManager.manager.voxels[layer][columnID] = vc;
-                //if (layer > 0) Debug.Log("replaced trivoxel with: " + vc + " type: " + vc.GetType());
-                CmdMeltVoxel();
 
-                //NetworkServer.Destroy(this);//
+        if (MapManager.shatters > 0) //using shattering
+        {
+            if (gameObject.name != "SubVoxel") //not subvoxel - regular voxel
+            {
+                Debug.Log("shattering a TriVoxel");
+                showNeighbours(false);
+                RpcShatterVoxel();
             }
             else
-            {//is subVoxel
-             //Debug.Log("destroying a subVoxel");
-             //GetComponent<NetworkIdentity>().localPlayerAuthority = true;
-                MapManager.manager.CmdDestroyNextSubVoxel(layer, columnID, subVoxelID);
-                //MapManager.manager.RpcDestroyNextSubvoxel(layer, columnID, subVoxelID);
-
-                //Destroy(gameObject);
+            {
+                //is subVoxel
+                Debug.Log("destroying a subVoxel");
+                MapManager.manager.RpcDestroyNextSubvoxel(layer, columnID, subVoxelID);
             }
         }
         else
         {
-            //Debug.Log("destroying voxel at layer: " + layer + "  no shattering");
+            Debug.Log("destroying voxel at layer: " + layer + "  no shattering");
             showNeighbours(true);
             NetworkServer.Destroy(gameObject);
         }
@@ -174,27 +168,28 @@ public class Voxel : NetworkBehaviour
         //Destroy(gameObject);
     }
 
-    [Server]//the melt feature allows a voxel to be network deleted without deleting the containing gameObject - this is so the VoxelContainer created when this voxel is shattered still has a gameobject home
-    private void CmdMeltVoxel()//should only be called on a trivoxel - not a subvoxel as subvoxels are not networked synced
-    {
-        RpcMeltVoxel();
-    }
-
     [ClientRpc]
-    void RpcMeltVoxel()
+    private void RpcShatterVoxel()
     {
-        //Debug.Log("rpc melting voxel " + layer + " ; " + columnID + " ; " + subVoxelID);
-        melt();
+        gameObject.AddComponent<VoxelContainer>();
+        VoxelContainer vc = gameObject.GetComponent<VoxelContainer>();
+        vc.start(this);
+        MapManager.manager.voxels[layer][columnID] = vc;
 
+        StartCoroutine(Melt());
     }
 
-    public void melt()
+
+    public IEnumerator Melt()
     {
-        Destroy(gameObject.GetComponent<MeshCollider>());
+        transform.position = Vector3.one * 1000f; //moves far away
+        yield return new WaitForSeconds(1f); //waits for subvoxels to generate on all systems
+
+        Destroy(gameObject.GetComponent<MeshCollider>()); //deconstruct this voxel locally
         Destroy(gameObject.GetComponent<MeshRenderer>());
         Destroy(gameObject.GetComponent<MeshFilter>());
-        //Destroy(gameObject.GetComponent<>());
-        //Destroy(gameObject.GetComponent<Voxel>());//destoys this script
+
+        transform.position = Vector3.zero; //moves back
     }
 
     internal void checkNeighbourCount()
@@ -202,7 +197,8 @@ public class Voxel : NetworkBehaviour
         //Debug.Log("checking neighbour count");
         if (MapManager.manager.neighboursMap[columnID].Count != 3)
         {
-            Debug.LogError("column " + columnID + " has " + MapManager.manager.neighboursMap[columnID].Count + " neighbours");
+            Debug.LogError("column " + columnID + " has " + MapManager.manager.neighboursMap[columnID].Count +
+                           " neighbours");
         }
     }
 
@@ -247,7 +243,7 @@ public class Voxel : NetworkBehaviour
                 else
                 {
                     //Debug.Log("missed normal ray casting");
-                    int[] other = findRemainingOnSide(new int[] { i });
+                    int[] other = findRemainingOnSide(new int[] {i});
                     dir = ((filter.sharedMesh.vertices[other[0]] +
                             filter.sharedMesh.vertices[other[0] + 3] +
                             filter.sharedMesh.vertices[other[1]] +
@@ -306,6 +302,7 @@ public class Voxel : NetworkBehaviour
             {
                 MapManager.manager.informDeleted(layer, columnID);
             }
+
             return;
         }
 
@@ -391,7 +388,7 @@ public class Voxel : NetworkBehaviour
         return false;
     }
 
-    private void cloneMeshFilter()
+    public void cloneMeshFilter()
     {
         MeshFilter mf = GetComponent<MeshFilter>();
         Mesh meshCopy = Mesh.Instantiate(mf.sharedMesh) as Mesh; //make a deep copy
@@ -400,8 +397,13 @@ public class Voxel : NetworkBehaviour
 
 
     internal void smoothBlockInPlace()
-    {//implement order independant simplified smoothing
-        if (!MapManager.useSmoothing) { return; }
+    {
+        //implement order independant simplified smoothing
+        if (!MapManager.useSmoothing)
+        {
+            return;
+        }
+
         if (MapManager.manager.isDeleted(layer + 1, columnID) || MapManager.manager.isDeleted(layer - 1, columnID))
         {
             try
@@ -421,7 +423,8 @@ public class Voxel : NetworkBehaviour
                 }
 
                 info = "del adj=" + deletedAdjacents;
-                if (MapManager.manager.isDeleted(layer + 1, columnID) && MapManager.manager.isDeleted(layer - 1, columnID))
+                if (MapManager.manager.isDeleted(layer + 1, columnID) &&
+                    MapManager.manager.isDeleted(layer - 1, columnID))
                 {
                     //up and down deleted
                     if (deletedAdjacents >= 1)
@@ -430,7 +433,8 @@ public class Voxel : NetworkBehaviour
                     }
                 }
                 else
-                {//exactly 1 vertical neighbour is deleted
+                {
+                    //exactly 1 vertical neighbour is deleted
 
                     if (deletedAdjacents == 1 && MapManager.use1factorSmoothing)
                     {
@@ -439,22 +443,22 @@ public class Voxel : NetworkBehaviour
 
 
                         int dir = 1;
-                        int[] closestIDs = new int[] { -1, -1 };
+                        int[] closestIDs = new int[] {-1, -1};
                         for (int c = 0; c < 2; c++)
                         {
-
                             //down is deleted, suck in 2 points
                             Vector3 smoothDirVec = Vector3.zero;
 
                             foreach (int n in neighbourIDs)
                             {
-                                smoothDirVec -= (MapManager.manager.voxels[layer][n].centreOfObject - centreOfObject).normalized;
+                                smoothDirVec -= (MapManager.manager.voxels[layer][n].centreOfObject - centreOfObject)
+                                    .normalized;
                             }
 
                             smoothDirVec.Normalize();
                             //now find the two closest points and shrink them in
-                            double[] closestDs = new double[] { double.MaxValue, double.MaxValue };
-                            closestIDs = new int[] { -1, -1 };
+                            double[] closestDs = new double[] {double.MaxValue, double.MaxValue};
+                            closestIDs = new int[] {-1, -1};
 
                             String debug = "";
                             for (int i = 0; i < 6; i++)
@@ -473,22 +477,26 @@ public class Voxel : NetworkBehaviour
                                         closestIDs[1] = i;
                                     }
                                 }
+
                                 debug += "{0:" + closestIDs[0] + " 1:" + closestIDs[1] + "}";
                             }
+
                             if (closestIDs[0] == closestIDs[1] || closestIDs[0] == (closestIDs[1] + 3 % 6))
-                            {//invalid search
-                             //closest0 is the closest
-                                int[] id = findRemainingOnSide(new int[] { closestIDs[1] });
+                            {
+                                //invalid search
+                                //closest0 is the closest
+                                int[] id = findRemainingOnSide(new int[] {closestIDs[1]});
 
                                 if ((verts[id[0]] - smoothDirVec).magnitude > (verts[id[1]] - smoothDirVec).magnitude)
-                                {//verts 1 closer
+                                {
+                                    //verts 1 closer
                                     closestIDs[0] = id[1];
                                 }
                                 else
                                 {
                                     closestIDs[0] = id[0];
-
                                 }
+
                                 //info += debug;
                             }
 
@@ -513,7 +521,7 @@ public class Voxel : NetworkBehaviour
                                 if (Math.Sign(2.5 - closestIDs[0]) == Math.Sign(2.5 - closestIDs[1]))
                                 {
                                     //both points on same side of voxel- if not there has been an error
-                                    int corner = findRemainingOnSide(new int[] { closestIDs[0], closestIDs[1] })[0];
+                                    int corner = findRemainingOnSide(new int[] {closestIDs[0], closestIDs[1]})[0];
 
                                     //receedPoint(closestIDs[0], corner);
                                     //receedPoint(closestIDs[1], corner);
@@ -530,9 +538,9 @@ public class Voxel : NetworkBehaviour
                                     Debug.LogError("error finding shrink points for adj=1");
                                 }
                             }
+
                             dir = -1;
                         }
-
                     }
 
                     if (deletedAdjacents == 2 && MapManager.use2factorSmoothing)
@@ -542,11 +550,12 @@ public class Voxel : NetworkBehaviour
                         int dir = 1;
                         for (int c = 0; c < 2; c++)
                         {
-
                             //down is deleted, suck in point
                             //Debug.Log("down and 2 adjacent smoothing");
 
-                            Vector3 smoothDirVec = centreOfObject - MapManager.manager.voxels[layer][(int)neighbourIDs[0]].centreOfObject;
+                            Vector3 smoothDirVec = centreOfObject -
+                                                   MapManager.manager.voxels[layer][(int) neighbourIDs[0]]
+                                                       .centreOfObject;
 
 
                             smoothDirVec.Normalize();
@@ -583,7 +592,6 @@ public class Voxel : NetworkBehaviour
 
                             dir = -1;
                         }
-
                     } //smooth 1 point
 
                     if (deletedAdjacents == 3 && MapManager.use3factorSmoothing)
@@ -597,7 +605,6 @@ public class Voxel : NetworkBehaviour
                             shrink(4, 0.5f);
                             shrink(5, 0.5f);
                             info += "|using 3fac smoothing|";
-
                         }
 
                         if (MapManager.manager.isDeleted(layer - 1, columnID))
@@ -607,14 +614,12 @@ public class Voxel : NetworkBehaviour
                             shrink(1, 0.5f);
                             shrink(2, 0.5f);
                             info += "|using 3fac smoothing|";
-
                         }
                     }
                 }
             }
             catch
             {
-
             }
         }
     }
@@ -665,7 +670,7 @@ public class Voxel : NetworkBehaviour
                             //found the towards point in neighbour vox
 
                             neighbour.deletePoint(sameID);
-                            neighbour.smoothNeighbours(sameID, findRemainingOnSide(new int[] { otherSameId, sameID })[0]);
+                            neighbour.smoothNeighbours(sameID, findRemainingOnSide(new int[] {otherSameId, sameID})[0]);
                             neighbour.showNeighbours(false);
                             //MapGen.voxels[layer][neighbourCol].shrink(sameID, 0);
                         }
@@ -690,7 +695,8 @@ public class Voxel : NetworkBehaviour
     {
         //Debug.Log("deleting point " + pID + " from vox " + columnID);
         if (!deletedPoints.Contains(pID))
-        {//hasnt deleted this point already
+        {
+            //hasnt deleted this point already
             if (filter.mesh.triangles.Length == 24)
             {
                 //info += "|deleting:" + pID + "|";
@@ -700,7 +706,7 @@ public class Voxel : NetworkBehaviour
                 //info += "|horn:" + horn + "|";
 
 
-                int[] sameCorners = findRemainingOnSide(new int[] { pID });
+                int[] sameCorners = findRemainingOnSide(new int[] {pID});
                 //info += "|ss corners: " + sameCorners[0] + "," + sameCorners[1] + "|";
 
                 if (pID == 1 || pID == 4)
@@ -711,7 +717,7 @@ public class Voxel : NetworkBehaviour
                     sameCorners[1] = temp;
                 }
 
-                int[] otherCorners = new int[] { (sameCorners[0] + 3) % 6, (sameCorners[1] + 3) % 6 };
+                int[] otherCorners = new int[] {(sameCorners[0] + 3) % 6, (sameCorners[1] + 3) % 6};
                 //info += "|os corners: " + otherCorners[0] + "," + otherCorners[1] + "|";
 
 
@@ -766,9 +772,9 @@ public class Voxel : NetworkBehaviour
                 if ((delt <= 2) == (pID <= 2))
                 {
                     //points on same side of vox
-                    int tip = findRemainingOnSide(new int[] { pID, delt })[0];
+                    int tip = findRemainingOnSide(new int[] {pID, delt})[0];
                     int underTip = (tip + 3) % 6;
-                    int[] rest = findRemainingOnSide(new int[] { underTip });
+                    int[] rest = findRemainingOnSide(new int[] {underTip});
 
                     if (underTip == 1 || underTip == 4)
                     {
@@ -928,7 +934,7 @@ public class Voxel : NetworkBehaviour
         }
     }
 
-    public int[] findRemainingOnSide(int[] points)
+    public static int[] findRemainingOnSide(int[] points)
     {
         //assuming points on same side of vox- finds the third point on that same side
         string debug = "";
@@ -936,12 +942,12 @@ public class Voxel : NetworkBehaviour
         if (Math.Sign(2.5 - points[0]) > 0)
         {
             //point is part of {0,1,2}
-            set = new HashSet<int> { 0, 1, 2 };
+            set = new HashSet<int> {0, 1, 2};
             debug = "set started 0,1,2 ";
         }
         else
         {
-            set = new HashSet<int> { 3, 4, 5 };
+            set = new HashSet<int> {3, 4, 5};
             debug = "set started 3,4,5 ";
         }
 
@@ -976,7 +982,11 @@ public class Voxel : NetworkBehaviour
 
     private int findVertIn(Vector3 vert)
     {
-        if (filter == null) { filter = GetComponent<MeshFilter>(); }
+        if (filter == null)
+        {
+            filter = GetComponent<MeshFilter>();
+        }
+
         for (int i = 0; i < 6; i++)
         {
             if (Vector3.Distance(filter.mesh.vertices[i], vert) < 0.01 &&
@@ -986,7 +996,7 @@ public class Voxel : NetworkBehaviour
             }
 
             if (filter.mesh.vertices[i] == vert)
-            //if(Vector3.Distance(filter.mesh.vertices[i], vert)< 0.05)
+                //if(Vector3.Distance(filter.mesh.vertices[i], vert)< 0.05)
             {
                 return i;
             }
@@ -1058,7 +1068,7 @@ public class Voxel : NetworkBehaviour
                 deletedAdjacents++;
             }
         }
+
         return deletedAdjacents;
     }
-
 }

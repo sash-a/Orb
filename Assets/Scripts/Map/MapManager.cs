@@ -13,7 +13,7 @@ public class MapManager : NetworkBehaviour
     public static bool use2factorSmoothing = true;
     public static bool use3factorSmoothing = true;
 
-    public static int shatters = 0;//make zero to turn off shattering
+    public static int shatters = 2;//make zero to turn off shattering
 
     public static int mapLayers = 15;
     public static int mapSize = 200;
@@ -68,6 +68,22 @@ public class MapManager : NetworkBehaviour
         //deleteIDs = new ArrayList();
     }
 
+    internal void replaceSubVoxel(Voxel spawnedVox)
+    {
+        Voxel v = voxels[spawnedVox.layer][spawnedVox.columnID];//v should be a voxel container for this to be a valid call to destroy subvoxel
+                                          //Debug.Log("found top level container: " + v + " of type: " + v.GetType());
+        int shatterLevel = spawnedVox.subVoxelID.Split(',').Length - 1;
+
+        VoxelContainer vc = null;
+        for (int i = 1; i <= shatterLevel; i++)
+        {
+            vc = v.gameObject.GetComponent<VoxelContainer>();
+            //Debug.Log("opening container " + vc + " - " + vc.subVoxelID);
+            v = (Voxel)vc.subVoxels[int.Parse(spawnedVox.subVoxelID.Split(',')[i])];
+            //Debug.Log("opening contained subVoxel " + v + " - " + v.subVoxelID);
+        }
+        vc.subVoxels[int.Parse(spawnedVox.subVoxelID.Split(',')[shatterLevel])] = spawnedVox;        
+    }
 
     public void voxelsLoaded()
     {
@@ -131,6 +147,7 @@ public class MapManager : NetworkBehaviour
         //manager.StartCoroutine(informNeighbours(layer, columnID));
     }
 
+
     IEnumerator informNeighbours(int layer, int columnID)
     {
         yield return new WaitForSeconds(0.15f);
@@ -157,27 +174,6 @@ public class MapManager : NetworkBehaviour
         }
     }
 
-    //[SyncVar] ArrayList deleteIDs;
-    /**
-    [SyncVar] String deleteCode;
-    internal void destroySubVoxel(int layer, int columnID, String subID)
-    {
-        //Debug.Log("destroying subvoxel: " + layer + " ; " + columnID + " ; " + subID + " globally");
-        //deleteIDs.Add(layer + ";" + columnID + ";" + subID);
-        deleteCode += layer + ";" + columnID + ";" + subID + "|";
-        CmdDestroyNextSubVoxel();
-    }
-    */
-
-    [Command]
-    public void CmdDestroyNextSubVoxel(int layer, int columnID, String subID)
-    {
-        //Debug.Log("server command destroy next subvoxel");
-        RpcDestroyNextSubvoxel(layer, columnID, subID);
-        //deleteIDs.RemoveAt(0);
-        //FinalDestroyNextSubVoxel();
-        //deleteID = "";
-    }
 
     [ClientRpc]
     public void RpcDestroyNextSubvoxel(int layer, int columnID, String subID)
@@ -189,32 +185,30 @@ public class MapManager : NetworkBehaviour
     int destroyID = 0;//local
     void FinalDestroyNextSubVoxel(int layer, int columnID, String subID)
     {
-        //String code = deleteCode.Split('|')[destroyID];
-        /**
-        int layer = -1;
-        int columnID = -1;
-        String subID="";
-        try
-        {
-            layer = int.Parse((code.Split(';')[0]));
 
-            columnID = int.Parse((code.Split(';')[1]));
-            subID = code.Split(';')[2];
+        //Debug.Log("finally destroying sub: '" + subID + "' determines shatter level: " + (subID.Split(',').Length - 1));
 
-            destroyID++;
+        Voxel v = getSubVoxelAt(layer, columnID, subID);
+
+        if (v.shatterLevel < MapManager.shatters)
+        {//can shatter more
+            //Debug.Log("destroyed subvoxel being made a new container");
+            v.gameObject.AddComponent<VoxelContainer>();
+            VoxelContainer vc = v.gameObject.GetComponent<VoxelContainer>();
+            vc.start(v);
+            StartCoroutine(v.Melt());
         }
-        catch
+        else
         {
-            Debug.LogError("bad code: " + code + " full delete code: " + deleteCode + " destroyID: " + destroyID);
+            Destroy(v.gameObject);
         }
-    */
+    }
+
+    public Voxel getSubVoxelAt(int layer, int columnID, String subID) {
+        Voxel v = voxels[layer][columnID];//v should be a voxel container for this to be a valid call to destroy subvoxel
+                                          //Debug.Log("found top level container: " + v + " of type: " + v.GetType());
         int shatterLevel = subID.Split(',').Length - 1;
 
-
-        //Debug.Log("finally destroying sub: '" + code + "' determines shatter level: " + shatterLevel);
-
-        Voxel v = voxels[layer][columnID];//v should be a voxel container for this to be a valid call to destroy subvoxel
-        //Debug.Log("found top level container: " + v + " of type: " + v.GetType());
         for (int i = 1; i <= shatterLevel; i++)
         {
             VoxelContainer vc = v.gameObject.GetComponent<VoxelContainer>();
@@ -223,18 +217,7 @@ public class MapManager : NetworkBehaviour
             //Debug.Log("opening contained subVoxel " + v + " - " + v.subVoxelID);
         }
 
-        if (v.shatterLevel < MapManager.shatters)
-        {//can shatter more
-            //Debug.Log("destroyed subvoxel being made a new container");
-            v.gameObject.AddComponent<VoxelContainer>();
-            VoxelContainer vc = v.gameObject.GetComponent<VoxelContainer>();
-            vc.start(v);
-            v.melt();
-        }
-        else
-        {
-            Destroy(v.gameObject);
-        }
+        return v;
     }
 
 

@@ -29,7 +29,10 @@ public class NetHealth : NetworkBehaviour
         if (isDead) return;
 
         health -= amount;
-        if (health <= 0) die();
+        if (isServer)
+        {
+            if (health <= 0) die();
+        }
     }
 
     // This completely removes the object from the game

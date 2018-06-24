@@ -124,7 +124,7 @@ public class WeaponAttack : AAttackBehaviour
             if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, weapons[selectedWeapon].range,
                 mask))
             {
-                Debug.Log("weapon hit something");
+                //Debug.Log("weapon hit something");
                 //if we hit a player
                 if (hit.collider.tag == PLAYER_TAG)
                 {
@@ -139,25 +139,15 @@ public class WeaponAttack : AAttackBehaviour
                 // Only add this if we are sure that voxels are getting damaged by guns otherwise check gun type before damaging
                 if (hit.collider.gameObject.tag == VOXEL_TAG)
                 {
-                    if (hit.collider.gameObject.name.Equals("SubVoxel"))
+
+                    //Debug.Log("weapon hit voxel ("+ hit.collider.gameObject .name+ ") at layer " + hit.collider.gameObject.GetComponent<Voxel>().layer);
+                    CmdVoxelDamaged(hit.collider.gameObject, weapons[selectedWeapon].damage); // weapontype.envDamage?
+                                                                                              //This just isn't called
+                    if (hit.collider.GetComponent<NetHealth>().getHealth() <= 0)
                     {
-                        //Debug.Log("weapon hit subvoxel");
-                        Health health = hit.collider.gameObject.GetComponent<Health>();
-                        if (health != null)
-                        {
-                            health.takeDamage(weapons[selectedWeapon].damage);
-                        }
+                        CmdVoxelDestructionEffect(hit.point, hit.normal);
                     }
-                    else
-                    {
-                        Debug.Log("weapon hit voxel ("+ hit.collider.gameObject .name+ ") at layer " + hit.collider.gameObject.GetComponent<Voxel>().layer);
-                        CmdVoxelDamaged(hit.collider.gameObject, weapons[selectedWeapon].damage); // weapontype.envDamage?
-                                                                                                  //This just isn't called
-                        if (hit.collider.GetComponent<NetHealth>().getHealth() <= 0)
-                        {
-                            CmdVoxelDestructionEffect(hit.point, hit.normal);
-                        }
-                    }
+
 
                     hit.collider.gameObject.GetComponent<Voxel>().lastHitRay = new Ray(cam.transform.position, cam.transform.forward);
                     hit.collider.gameObject.GetComponent<Voxel>().lastHitPosition = hit.point;

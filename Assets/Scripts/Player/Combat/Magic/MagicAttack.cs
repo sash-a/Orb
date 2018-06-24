@@ -212,11 +212,10 @@ public class MagicAttack : AAttackBehaviour
         var voxel = MapManager.manager.voxels[layer][col];
 
         // Needs to be true to work with a rigid body
-//        voxel.gameObject.GetComponent<MeshCollider>().convex = true; // Still throws error
+        voxel.gameObject.GetComponent<MeshCollider>().convex = true; // Still throws error
         var rb = voxel.gameObject.AddComponent<Rigidbody>();
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         rb.useGravity = false;
-        rb.isKinematic = true;
 
         voxel.gameObject.AddComponent<NetworkTransform>();
         voxel.transform.parent = MapManager.manager.Map.transform;

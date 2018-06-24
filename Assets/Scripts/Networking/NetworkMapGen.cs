@@ -10,8 +10,8 @@ using Object = UnityEngine.Object;
 public class NetworkMapGen : NetworkBehaviour
 {
     Dictionary<int, Voxel> voxelDict = new Dictionary<int, Voxel>();
-    public GameObject parent;
 
+    public GameObject parent;
     public GameObject treePrefab;
 
     //higher density = less trees (yes i know its weird)
@@ -19,6 +19,8 @@ public class NetworkMapGen : NetworkBehaviour
 
     void Start()
     {
+        parent = GameObject.Find("Map");
+        //treePrefab = Resources.Load<GameObject>("Prefabs/");
     }
 
     private void spawnVoxelsOnServer(int splits)
@@ -34,7 +36,7 @@ public class NetworkMapGen : NetworkBehaviour
         foreach (var voxel in voxels)
         {
             //int colID = Int32.Parse(voxel.name.Substring(5));
-            var voxelGameObj = (GameObject) voxel;
+            var voxelGameObj = (GameObject)voxel;
             voxelGameObj.GetComponent<Voxel>().columnID = count;
             //voxelGameObj.name = "Voxel" + colID;
             voxelDict.Add(count, voxelGameObj.GetComponent<Voxel>());
@@ -66,7 +68,7 @@ public class NetworkMapGen : NetworkBehaviour
         spawnVoxelsOnServer(MapManager.splits);
         StartCoroutine(InitTrees());
 
-        
+
     }
 
 
@@ -104,6 +106,7 @@ public class NetworkMapGen : NetworkBehaviour
 
     public void GenerateTrees(int density)
     {
+        //Debug.Log("generating trees - " + MapManager.manager.voxels[0].Count + " voxels");
         //random group of trees between 10 and 20
         int numTrees = UnityEngine.Random.Range(10, 20);
         // d is related to density
@@ -112,9 +115,11 @@ public class NetworkMapGen : NetworkBehaviour
         //Debug.LogWarning(MapManager.voxels[0].Count);
         foreach (Voxel vox in MapManager.manager.voxels[0].Values)
         {
+            //Debug.Log("considering vox " + vox + " " + vox.gameObject.name + " for a tree");
             //when the appropriate number of voxels have been skipped
             if (d == 0)
             {
+                //Debug.Log("pumping tree count back up");
                 //a new tree group size is selected
                 numTrees = UnityEngine.Random.Range(10, 20);
                 //and d is reset to chosen density value
@@ -125,12 +130,16 @@ public class NetworkMapGen : NetworkBehaviour
             //spawn trees on voxels when conditions met
             if (numTrees > 0 && density > 0)
             {
+                //Debug.Log("trying to gen tree; isserver:" + isServer);
                 if (isServer)
                 {
-                    //Debug.Log("Center: " + vox.worldCentreOfObject);
+                    //Debug.Log("putting tree at Center: " + vox.worldCentreOfObject);
                     GameObject tree = Instantiate(treePrefab, vox.worldCentreOfObject, Quaternion.identity);
                     NetworkServer.Spawn(tree);
                 }
+            }
+            else {
+                //Debug.Log("skipping vox for tree; nt=" + numTrees + " d=" + d);
             }
 
             //if trees are still spawning, decrement numTree counter
@@ -140,7 +149,7 @@ public class NetworkMapGen : NetworkBehaviour
             }
 
             //once a group of trees has been instantiated, skip a number of voxels related to density
-            if (numTrees == 0)
+            if (numTrees <= 0)
             {
                 d--;
                 continue;

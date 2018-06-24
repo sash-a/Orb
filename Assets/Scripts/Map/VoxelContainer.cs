@@ -14,6 +14,7 @@ public class VoxelContainer : Voxel
      */
 
     public ArrayList subVoxels;
+    
 
     //NB: the old voxel object should be deleted once this voxel container has been created
     public void start(Voxel majorVoxel)
@@ -41,21 +42,6 @@ public class VoxelContainer : Voxel
        
     }
 
-    
-
-    private void Start()
-    {
-        //Debug.Log("started container");
-        if (shatterLevel == 0)
-        {
-            //Debug.Log("replacing triVoxel with voxel container at: " + layer + " ," + columnID);
-            //container = this;
-            //MapManager.manager.voxels[layer][columnID] = this;
-
-            //var test = MapManager.manager.voxels[layer][columnID];
-            //Debug.Log("replaced tlv with: " + test + " type: " + test.GetType());
-        }
-    }
 
     private void damageContainer()
     {
@@ -112,6 +98,7 @@ public class VoxelContainer : Voxel
 
     public void createVoxelContainer(Voxel majorVoxel)
     {
+  
         Mesh majorMesh = majorVoxel.filter.mesh;
         if (majorVoxel.deletedPoints.Count == 0)
         {//is a full voxel
@@ -124,7 +111,7 @@ public class VoxelContainer : Voxel
                 Voxel subVoxelScript = subVoxelObject.GetComponent<Voxel>();
 
                 MeshFilter subMesh = subVoxelObject.GetComponent<MeshFilter>();
-                Vector3[] verts = getSubMesh(majorMesh, centerPoints, i);
+                Vector3[] verts = getSubMesh(majorMesh, centerPoints, i, shatterLevel);
                 subMesh.mesh.vertices = verts;
                 subMesh.mesh.triangles = getTriangles(i, majorVoxel.isBottom);
                 //Debug.Log("binding i=" + i + " triangles : " + subMesh.mesh.triangles[0] + " ; " + subMesh.mesh.triangles[1] + " ; " + subMesh.mesh.triangles[2] + " ; " + subMesh.mesh.triangles[3] + " ; " + subMesh.mesh.triangles[4] + " ; " + subMesh.mesh.triangles[5] + " ; ");
@@ -157,14 +144,21 @@ public class VoxelContainer : Voxel
                 subVoxelScript.worldCentreOfObject = subVoxelScript.centreOfObject * (float)scale * MapManager.mapSize;
                 //Debug.Log("scaling up subVoxel from " + subVoxelObject.transform.localScale + " to " + (Vector3.one * (float)scale));
                 subVoxelObject.transform.localScale = Vector3.one * (float)scale * MapManager.mapSize;
-                subVoxelObject.transform.parent = gameObject.transform;
+                //subVoxelObject.transform.parent = gameObject.transform;
                 subVoxels.Add(subVoxelScript);
+
+                if (isServer)
+                {
+                    NetworkServer.Spawn(subVoxelObject);
+                }
             }
         }
 
         layer = majorVoxel.layer;
         columnID = majorVoxel.columnID;
     }
+
+    
 
     private int[] getTriangles(int i, bool parentIsBottom)
     {
@@ -194,7 +188,7 @@ public class VoxelContainer : Voxel
     }
 
 
-    private Vector3[] getSubMesh(Mesh majorMesh, Vector3[] centerPoints, int i)
+    public static Vector3[] getSubMesh(Mesh majorMesh, Vector3[] centerPoints, int i, int shatterLevel)
     {
         int subsequent = (i + 1) % 3 + (i > 2 ? 3 : 0);
         Vector3[] verts = new Vector3[6];
@@ -240,7 +234,7 @@ public class VoxelContainer : Voxel
 
     }
 
-    private Vector3 getMidPoint(Mesh majorMesh, int i)
+    private static Vector3 getMidPoint(Mesh majorMesh, int i)
     {
         i = i % 3;
         return (majorMesh.vertices[i] + majorMesh.vertices[i + 3]) / 2.0f;
@@ -269,14 +263,20 @@ public class VoxelContainer : Voxel
 
     GameObject genNewSubVoxel()
     {
-        GameObject subVoxelObject = new GameObject();
+        GameObject subVoxelObject = (GameObject)Instantiate(Resources.Load("Prefabs/SubVoxel"));
+        subVoxelObject.transform.position = Vector3.zero;
+        /*
         subVoxelObject.AddComponent<MeshFilter>();
         subVoxelObject.AddComponent<Voxel>();
         subVoxelObject.AddComponent<MeshCollider>();
         subVoxelObject.AddComponent<MeshRenderer>();
         //subVoxelObject.AddComponent<NetworkIdentity>();
+        
         subVoxelObject.AddComponent<Health>().fullHealth = 10;
+        */
+        
         subVoxelObject.tag = "TriVoxel";
+        subVoxelObject.name = "SubVoxel";
 
         return subVoxelObject;
     }

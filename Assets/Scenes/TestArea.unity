@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 0.246
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18366486, g: 0.18791297, b: 0.17564136, a: 0.246}
+  m_IndirectSpecularColor: {r: 0.18366459, g: 0.18791288, b: 0.17564139, a: 0.246}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -155,9 +155,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe2977bd5c30688408b6ebb9b985ca65, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  parent: {fileID: 811708537}
+  parent: {fileID: 0}
   treePrefab: {fileID: 188006, guid: c6b7fb383a3534b039692b5485b6e739, type: 2}
-  density: 10
+  density: 16
 --- !u!114 &1953523
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -881,23 +881,23 @@ Light:
   m_Enabled: 1
   serializedVersion: 8
   m_Type: 2
-  m_Color: {r: 0.16875224, g: 0.2794118, b: 0.13354239, a: 1}
+  m_Color: {r: 0.12156863, g: 0.19607843, b: 0.20784314, a: 1}
   m_Intensity: 15
-  m_Range: 1000
+  m_Range: 450
   m_SpotAngle: 30
   m_CookieSize: 10
   m_Shadows:
-    m_Type: 0
+    m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
-    m_Strength: 1
+    m_Strength: 0.4
     m_Bias: 0.05
     m_NormalBias: 0.4
     m_NearPlane: 0.2
   m_Cookie: {fileID: 0}
-  m_DrawHalo: 0
+  m_DrawHalo: 1
   m_Flare: {fileID: 0}
-  m_RenderMode: 2
+  m_RenderMode: 0
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -1004,6 +1004,7 @@ MonoBehaviour:
   - {fileID: 1404482007908908, guid: beb6e44ae8b90074cbc88fa9111cadc0, type: 2}
   - {fileID: 1744485104198092, guid: 415c14cc2f214a842a3a59ce7098d87d, type: 2}
   - {fileID: 1989940702272966, guid: 7fbcfc6d61908424d9de4502175ad820, type: 2}
+  - {fileID: 1024043239652966, guid: a6977d1620182d34ba0a3834a30482d4, type: 2}
   m_CustomConfig: 0
   m_MaxConnections: 4
   m_ConnectionConfig:
