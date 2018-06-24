@@ -26,13 +26,14 @@ public class Portal : NetworkBehaviour
         if (!created) {
             createFromVoxel(MapManager.manager.voxels[layer][columnID]);
         }
+        transform.parent = MapManager.manager.Map.transform.GetChild(3);
     }
 
 
     public void createFromVoxel(Voxel seed)
     {
         created = true;
-        portalDims = new Vector3(0.04f, 0.07f, 0.002f);
+        portalDims = new Vector3(0.03f, 0.05f, 0.002f);
         columnID = seed.columnID;
         layer = seed.layer;
 

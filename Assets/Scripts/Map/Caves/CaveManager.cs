@@ -81,7 +81,10 @@ public class CaveManager : NetworkBehaviour
         {
             SmoothVoxels();
             MapManager.shatters = shatters;
-
+            if (MapManager.useHills)
+            {
+                MapManager.manager.deviateHeights();
+            }
         }
     }
 

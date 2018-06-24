@@ -5,6 +5,7 @@ using UnityEngine;
 using System.Linq;
 using UnityEngine.Networking;
 using UnityEditor;
+using System.IO;
 
 public class MapManager : NetworkBehaviour
 {
@@ -14,6 +15,8 @@ public class MapManager : NetworkBehaviour
     public static bool use3factorSmoothing = true;
 
     public static int shatters = 2;//make zero to turn off shattering
+    public static bool useHills = true;
+    public static bool digCaves = true;
 
     public static int mapLayers = 15;
     public static int mapSize = 200;
@@ -71,7 +74,7 @@ public class MapManager : NetworkBehaviour
     internal void replaceSubVoxel(Voxel spawnedVox)
     {
         Voxel v = voxels[spawnedVox.layer][spawnedVox.columnID];//v should be a voxel container for this to be a valid call to destroy subvoxel
-                                          //Debug.Log("found top level container: " + v + " of type: " + v.GetType());
+                                                                //Debug.Log("found top level container: " + v + " of type: " + v.GetType());
         int shatterLevel = spawnedVox.subVoxelID.Split(',').Length - 1;
 
         VoxelContainer vc = null;
@@ -82,18 +85,14 @@ public class MapManager : NetworkBehaviour
             v = (Voxel)vc.subVoxels[int.Parse(spawnedVox.subVoxelID.Split(',')[i])];
             //Debug.Log("opening contained subVoxel " + v + " - " + v.subVoxelID);
         }
-        vc.subVoxels[int.Parse(spawnedVox.subVoxelID.Split(',')[shatterLevel])] = spawnedVox;        
+        vc.subVoxels[int.Parse(spawnedVox.subVoxelID.Split(',')[shatterLevel])] = spawnedVox;
     }
 
     public void voxelsLoaded()
     {
         //Debug.Log("voxels loaded called");
         Debug.Log("voxels loaded - found " + voxels[0].Count + " initialised  voxels");
-        foreach (Voxel vox in voxels[0].Values)
-        {
-            neighboursMap[vox.columnID] = new HashSet<int>();
-            vox.gatherAdjacentNeighbours();
-        }
+        loadNeighboursMap();
 
         foreach (Voxel vox in voxels[0].Values)
         {
@@ -102,7 +101,150 @@ public class MapManager : NetworkBehaviour
             voxelPositions.Add(vox.columnID, vox.centreOfObject);
             vox.gameObject.name = "TriVoxel";
         }
-        //CaveManager.digCaves();
+
+
+
+        if (digCaves && isServer)
+        {
+            CaveManager.digCaves();
+        }
+        else
+        {
+            if (useHills)
+            {
+                deviateHeights();
+            }
+        }
+
+        foreach (Voxel vox in voxels[0].Values)
+            vox.setTexture();
+    }
+
+    private void loadNeighboursMap()
+    {
+
+
+        bool found = false;
+        string readText = "";
+        try
+        {
+            readText = File.ReadAllText("Assets/Resources/Voxels/split" + splits + ".neiMap");
+            if (readText != null && readText.Length > 0)
+            {
+                found = true;
+            }
+        }
+        catch
+        {
+
+        }
+        if (found)
+        {//load
+            string[] vs = readText.Split('|');
+            for (int i = 0; i < vs.Length; i++)
+            {
+                neighboursMap[i] = new HashSet<int>();
+                string[] ns = vs[i].Split(',');
+                foreach (String n in ns)
+                {
+                    neighboursMap[i].Add(int.Parse(n));
+                }
+            }
+            //Debug.Log("read in neighbours map from file");
+        }
+        else
+        {//gen and save
+            foreach (Voxel vox in voxels[0].Values)
+            {
+                neighboursMap[vox.columnID] = new HashSet<int>();
+                vox.gatherAdjacentNeighbours();
+            }
+
+            String map = "";
+            for (int v = 0; v < voxels[0].Count; v++)
+            {
+                foreach (int n in neighboursMap[v])
+                {
+                    map += n + ",";
+                }
+                map = map.Substring(0, map.Length - 1) + "|";
+            }
+            map = map.Substring(0, map.Length - 1);
+
+            File.WriteAllText("Assets/Resources/Voxels/split" + splits + ".neiMap", map);
+            Debug.Log("generated and saved neighbours map to file");
+
+        }
+
+    }
+
+    public void deviateHeights()
+    {
+        System.Random r = new System.Random(0);
+        int waveNo = 4;
+        float averageAmp = 0.01f;
+        float avWaveLength = 10f;
+
+
+        float[] frequencies = new float[waveNo];
+        float[] offsets = new float[waveNo];
+        float[] amplitudes = new float[waveNo];
+
+        {
+            float ampTot = 0;
+            for (int i = 0; i < waveNo; i++)
+            {
+                frequencies[i] = (float)(r.NextDouble() * avWaveLength + avWaveLength);
+                offsets[i] = (float)(r.NextDouble() * avWaveLength + avWaveLength);
+                amplitudes[i] = (float)r.NextDouble();
+                ampTot += amplitudes[i];
+            }
+            ampTot /= waveNo;
+
+            for (int i = 0; i < waveNo; i++)
+            {
+                amplitudes[i] *= averageAmp / ampTot;
+            }
+        }
+
+
+        for (int j = 0; j < MapManager.mapLayers; j++)
+        {
+            foreach (Voxel vox in voxels[j].Values)
+            {
+                //System.Random rand = vox.rand;
+                try
+                {
+                    Vector3[] verts = new Vector3[6];
+                    MeshFilter filter = vox.gameObject.GetComponent<MeshFilter>();
+
+                    for (int v = 0; v < 3; v++)
+                    {
+                        Vector3 func = filter.mesh.vertices[v].normalized;
+
+                        float height = 0;
+                        for (int i = 0; i < waveNo; i++)
+                        {
+                            //a sinusoidal func of x,y,z
+                            height += (float)(amplitudes[i] * Math.Sin(frequencies[i] * (func.x - offsets[i])) + amplitudes[i] * Math.Sin(frequencies[(i + 1) % waveNo] * (func.y - offsets[(i + 1) % waveNo])) + amplitudes[i] * Math.Sin(frequencies[(i + 2) % waveNo] * (func.z - offsets[(i + 2) % waveNo])));
+                        }
+
+                        verts[v] = filter.mesh.vertices[v] + func * height;
+                        verts[v + 3] = filter.mesh.vertices[v + 3] + func * height;
+                    }
+                    filter.mesh.vertices = verts;
+                    vox.updateCollider();
+                    vox.recalcCenters();
+                    filter.mesh.RecalculateNormals();
+                }
+                catch {
+
+                }
+            }
+        }
+
+        
+
     }
 
     internal bool doesVoxelExist(int layer, int columnID)
@@ -204,7 +346,8 @@ public class MapManager : NetworkBehaviour
         }
     }
 
-    public Voxel getSubVoxelAt(int layer, int columnID, String subID) {
+    public Voxel getSubVoxelAt(int layer, int columnID, String subID)
+    {
         Voxel v = voxels[layer][columnID];//v should be a voxel container for this to be a valid call to destroy subvoxel
                                           //Debug.Log("found top level container: " + v + " of type: " + v.GetType());
         int shatterLevel = subID.Split(',').Length - 1;

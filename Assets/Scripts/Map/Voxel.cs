@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
-using Random = UnityEngine.Random;
 
 public class Voxel : NetworkBehaviour
 {
@@ -31,15 +30,15 @@ public class Voxel : NetworkBehaviour
     public System.Random rand;
     public MeshFilter filter;
 
+
     public Dictionary<int, Vector3> origonalPoints;
     public HashSet<int> deletedPoints;
 
     public String info = "";
 
+
     private void Start()
     {
-        setTexture();
-
         gameObject.tag = "TriVoxel";
         transform.parent = MapManager.manager.Map.transform.GetChild(1);
 
@@ -63,6 +62,9 @@ public class Voxel : NetworkBehaviour
             transform.localScale = Vector3.one * (float) scale;
             setColumnID(columnID);
         }
+        
+        // Would like to put in if above, but this gives errors
+        setTexture();
 
         if (!(gameObject.name.Contains("sub") || gameObject.name.Contains("Sub")))
         {
@@ -80,7 +82,7 @@ public class Voxel : NetworkBehaviour
                 {
                     if (Vector3.Distance(
                             p.gameObject.GetComponent<MeshFilter>().mesh.vertices[0] *
-                            p.gameObject.transform.localScale.x, worldCentreOfObject) < 75)
+                            p.gameObject.transform.localScale.x, worldCentreOfObject) < 150)
                     {
                         //Debug.Log("cant place portal because its too close: " + (Vector3.Distance(p.gameObject.GetComponent<MeshFilter>().mesh.vertices[0] * MapManager.mapSize, worldCentreOfObject)));
                         farEnough = false;
@@ -117,11 +119,25 @@ public class Voxel : NetworkBehaviour
 
     public void setTexture()
     {
-        rand = new System.Random();
+        rand = new System.Random(layer * columnID + columnID);
 
         if (layer == 0)
         {
-            gameObject.GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/LowPolyGrass" + rand.Next(1, 8));
+            var matt = new Material(Resources.Load<Material>("Materials/LowPolyGrass"));
+            var colour = matt.color;
+
+            // Setting the colour depending on the steepness of the angle of the voxel
+            var norm = Vector3.Cross(filter.mesh.vertices[0] - filter.mesh.vertices[1],
+                filter.mesh.vertices[2] - filter.mesh.vertices[1]);
+
+            var angle = Vector3.Angle(norm, centreOfObject);
+
+            colour.a += angle;
+            colour.g -= angle;
+            colour.b -= angle;
+
+            matt.SetColor(layer + "_" + columnID + "_TexCol", colour);
+            gameObject.GetComponent<MeshRenderer>().material = matt;
         }
         else if (layer == MapManager.mapLayers - 1)
         {
@@ -136,7 +152,7 @@ public class Voxel : NetworkBehaviour
 
     internal void destroyVoxel()
     {
-        Debug.Log("destroy voxel called");
+        //Debug.Log("destroy voxel called");  
         if (!isServer)
         {
             Debug.LogError("destroy vox called from in vox");
@@ -146,20 +162,20 @@ public class Voxel : NetworkBehaviour
         {
             if (gameObject.name != "SubVoxel") //not subvoxel - regular voxel
             {
-                Debug.Log("shattering a TriVoxel");
+                //Debug.Log("shattering a TriVoxel");
                 showNeighbours(false);
                 RpcShatterVoxel();
             }
             else
             {
                 //is subVoxel
-                Debug.Log("destroying a subVoxel");
+                //Debug.Log("destroying a subVoxel");
                 MapManager.manager.RpcDestroyNextSubvoxel(layer, columnID, subVoxelID);
             }
         }
         else
         {
-            Debug.Log("destroying voxel at layer: " + layer + "  no shattering");
+            //Debug.Log("destroying voxel at layer: " + layer + "  no shattering");
             showNeighbours(true);
             NetworkServer.Destroy(gameObject);
         }
@@ -617,6 +633,13 @@ public class Voxel : NetworkBehaviour
                         }
                     }
                 }
+
+                if (filter == null)
+                {
+                    filter = gameObject.GetComponent<MeshFilter>();
+                }
+
+                filter.mesh.RecalculateNormals();
             }
             catch
             {
@@ -825,7 +848,7 @@ public class Voxel : NetworkBehaviour
         updateCollider();
     }
 
-    private void updateCollider()
+    public void updateCollider()
     {
         Mesh m = new Mesh();
         Vector3[] verts = new Vector3[filter.mesh.vertices.Length];
@@ -1070,5 +1093,18 @@ public class Voxel : NetworkBehaviour
         }
 
         return deletedAdjacents;
+    }
+
+    public void recalcCenters()
+    {
+        Vector3[] vertices = filter.mesh.vertices;
+        Vector3 av = new Vector3(0, 0, 0);
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            av += vertices[i];
+        }
+
+        centreOfObject = av / vertices.Length;
+        worldCentreOfObject = centreOfObject * (float) scale * MapManager.mapSize;
     }
 }
