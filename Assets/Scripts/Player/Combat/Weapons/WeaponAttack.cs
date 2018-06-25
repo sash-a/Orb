@@ -48,7 +48,7 @@ public class WeaponAttack : AAttackBehaviour
     private void Update()
     {
         //scroll up changes weapons
-        if (Input.GetAxis("Mouse ScrollWheel") > 0f && localPlayerAuthority) //need to prevent weapon switching when aiming!
+        if (Input.GetAxis("Mouse ScrollWheel") > 0f && isLocalPlayer) //need to prevent weapon switching when aiming!
         {
             if (selectedWeapon >= weapons.Count - 1)
             {
@@ -61,7 +61,7 @@ public class WeaponAttack : AAttackBehaviour
         }
 
         //scroll down changes weapons
-        if (Input.GetAxis("Mouse ScrollWheel") < 0f && localPlayerAuthority)
+        if (Input.GetAxis("Mouse ScrollWheel") < 0f && isLocalPlayer)
         {
             if (selectedWeapon <= 0)
             {

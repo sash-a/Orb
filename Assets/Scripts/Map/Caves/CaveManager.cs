@@ -42,7 +42,7 @@ public class CaveManager : NetworkBehaviour
 
     static void SmoothVoxels()
     {
-        Debug.Log("smoothing voxels");
+        //Debug.Log("smoothing voxels");
         MapManager.useSmoothing = true;
         for (int i = 0; i < MapManager.mapLayers; i++)
         {

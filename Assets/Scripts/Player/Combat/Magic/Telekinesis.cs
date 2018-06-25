@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 
 [RequireComponent(typeof(Rigidbody), typeof(Voxel))]
 public class Telekenises : MonoBehaviour
@@ -8,9 +9,9 @@ public class Telekenises : MonoBehaviour
     [SerializeField] private Rigidbody rb;
     [SerializeField] private Voxel vox;
 
-    private const float voxelSpeed = 3;
-    private const float gunnerSpeed = 1;
-    private const float beastSpeed = 0.5f;
+    private const float voxelSpeed = 5;
+    private const float gunnerSpeed = 2;
+    private const float beastSpeed = 0;
     private float speed;
 
     public static int VOXEL = 0;
@@ -21,17 +22,10 @@ public class Telekenises : MonoBehaviour
     private float throwForce;
 
 
-    private GameObject test;
-
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         vox = GetComponent<Voxel>();
-
-        // Testing
-        test = Instantiate(GameObject.CreatePrimitive(PrimitiveType.Cube), vox.worldCentreOfObject,
-            Quaternion.identity);
-        test.AddComponent<Rigidbody>().useGravity = false;
 
         hasReleased = false;
         throwForce = 150;
@@ -49,7 +43,7 @@ public class Telekenises : MonoBehaviour
 
     void Update()
     {
-        if (hasReleased) return;
+        if (hasReleased) return; // Timer + explode
 
         var oldPos = new Vector3(rb.position.x, rb.position.y, rb.position.z);
         rb.MovePosition(rb.position + (requiredPos.position - vox.worldCentreOfObject).normalized * Time.deltaTime * voxelSpeed);
@@ -66,8 +60,8 @@ public class Telekenises : MonoBehaviour
     public void throwObject(Vector3 direction)
     {
         hasReleased = true;
-//        rb.AddForce(direction * 200f, ForceMode.Impulse);
-        test.GetComponent<Rigidbody>().AddForce(direction * 200f, ForceMode.Impulse);
+        gameObject.AddComponent<Gravity>();
+        rb.AddForce(direction * 200f, ForceMode.Impulse);
     }
 
 
@@ -85,7 +79,8 @@ public class Telekenises : MonoBehaviour
         else if (hit.collider.CompareTag("Shield")) // TODO constant
             casterAttack.CmdShieldHit(hit.collider.gameObject, 75);
 
-        vox.GetComponent<NetHealth>().RpcDamage(10); // kill the voxel
+//        vox.GetComponent<NetHealth>().RpcDamage(10); // kill the voxel
         // TODO FX
+        NetworkServer.Destroy(gameObject);
     }
 }

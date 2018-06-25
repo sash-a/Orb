@@ -39,6 +39,8 @@ public class Voxel : NetworkBehaviour
 
     private void Start()
     {
+        rand = new System.Random(layer * columnID + columnID);
+
         gameObject.tag = "TriVoxel";
         transform.parent = MapManager.manager.Map.transform.GetChild(1);
 
@@ -49,7 +51,7 @@ public class Voxel : NetworkBehaviour
         GetComponent<MeshCollider>().convex = false;
 
         scale = Math.Pow(scaleRatio, Math.Abs(layer));
-        worldCentreOfObject = centreOfObject * (float) scale * MapManager.mapSize;
+        worldCentreOfObject = centreOfObject * (float)scale * MapManager.mapSize;
         //Debug.Log("Voxel center obj: " + worldCentreOfObject);
         if ((!MapManager.manager.voxels[layer].ContainsKey(columnID)) ||
             MapManager.manager.voxels[layer][columnID] == null)
@@ -59,12 +61,15 @@ public class Voxel : NetworkBehaviour
 
         if (layer > 0)
         {
-            transform.localScale = Vector3.one * (float) scale;
+            transform.localScale = Vector3.one * (float)scale;
             setColumnID(columnID);
         }
-        
+
         // Would like to put in if above, but this gives errors
-        setTexture();
+        if (MapManager.manager.mapDoneLocally)
+        {
+            setTexture();
+        }
 
         if (!(gameObject.name.Contains("sub") || gameObject.name.Contains("Sub")))
         {
@@ -91,7 +96,7 @@ public class Voxel : NetworkBehaviour
 
                 if (farEnough)
                 {
-                    GameObject portal = (GameObject) Instantiate(Resources.Load<UnityEngine.Object>("Prefabs/Portal"));
+                    GameObject portal = (GameObject)Instantiate(Resources.Load<UnityEngine.Object>("Prefabs/Portal"));
                     portal.GetComponent<Portal>().createFromVoxel(this);
                     NetworkServer.Spawn(portal);
                 }
@@ -119,10 +124,10 @@ public class Voxel : NetworkBehaviour
 
     public void setTexture()
     {
-        rand = new System.Random(layer * columnID + columnID);
 
         if (layer == 0)
         {
+
             setTexture(Resources.Load<Material>("Materials/LowPolyGrass"));
         }
         else if (layer == MapManager.mapLayers - 1)
@@ -144,12 +149,19 @@ public class Voxel : NetworkBehaviour
         var norm = Vector3.Cross(filter.mesh.vertices[0] - filter.mesh.vertices[1],
             filter.mesh.vertices[2] - filter.mesh.vertices[1]);
         var angle = Vector3.Angle(norm, centreOfObject);
+        if (angle > 90) angle = 180 - angle;
 
-        colour.a += angle;
-        colour.g -= angle;
-        colour.b -= angle;
 
-        matt.SetColor(layer + "_" + columnID + "_TexCol", colour);
+        //Debug.Log("found vox with grad = " + angle + " taking colour from: " + colour.r + "," + colour.g + "," + colour.b);
+
+
+        colour.r += 0.8f * (angle / 90);
+        //colour.g -= 0.8f * (angle / 90);
+        //colour.b -= 0.4f * (angle / 90);
+
+        //Debug.Log("to:  " + colour.r + "," + colour.g + "," + colour.b);
+
+        matt.SetColor("_Color", colour);//this feild HAS to be "_Color" otherwise call is ignored
         gameObject.GetComponent<MeshRenderer>().material = matt;
     }
 
@@ -262,7 +274,7 @@ public class Voxel : NetworkBehaviour
                 else
                 {
                     //Debug.Log("missed normal ray casting");
-                    int[] other = findRemainingOnSide(new int[] {i});
+                    int[] other = findRemainingOnSide(new int[] { i });
                     dir = ((filter.sharedMesh.vertices[other[0]] +
                             filter.sharedMesh.vertices[other[0] + 3] +
                             filter.sharedMesh.vertices[other[1]] +
@@ -462,7 +474,7 @@ public class Voxel : NetworkBehaviour
 
 
                         int dir = 1;
-                        int[] closestIDs = new int[] {-1, -1};
+                        int[] closestIDs = new int[] { -1, -1 };
                         for (int c = 0; c < 2; c++)
                         {
                             //down is deleted, suck in 2 points
@@ -476,8 +488,8 @@ public class Voxel : NetworkBehaviour
 
                             smoothDirVec.Normalize();
                             //now find the two closest points and shrink them in
-                            double[] closestDs = new double[] {double.MaxValue, double.MaxValue};
-                            closestIDs = new int[] {-1, -1};
+                            double[] closestDs = new double[] { double.MaxValue, double.MaxValue };
+                            closestIDs = new int[] { -1, -1 };
 
                             String debug = "";
                             for (int i = 0; i < 6; i++)
@@ -504,7 +516,7 @@ public class Voxel : NetworkBehaviour
                             {
                                 //invalid search
                                 //closest0 is the closest
-                                int[] id = findRemainingOnSide(new int[] {closestIDs[1]});
+                                int[] id = findRemainingOnSide(new int[] { closestIDs[1] });
 
                                 if ((verts[id[0]] - smoothDirVec).magnitude > (verts[id[1]] - smoothDirVec).magnitude)
                                 {
@@ -540,7 +552,7 @@ public class Voxel : NetworkBehaviour
                                 if (Math.Sign(2.5 - closestIDs[0]) == Math.Sign(2.5 - closestIDs[1]))
                                 {
                                     //both points on same side of voxel- if not there has been an error
-                                    int corner = findRemainingOnSide(new int[] {closestIDs[0], closestIDs[1]})[0];
+                                    int corner = findRemainingOnSide(new int[] { closestIDs[0], closestIDs[1] })[0];
 
                                     //receedPoint(closestIDs[0], corner);
                                     //receedPoint(closestIDs[1], corner);
@@ -573,7 +585,7 @@ public class Voxel : NetworkBehaviour
                             //Debug.Log("down and 2 adjacent smoothing");
 
                             Vector3 smoothDirVec = centreOfObject -
-                                                   MapManager.manager.voxels[layer][(int) neighbourIDs[0]]
+                                                   MapManager.manager.voxels[layer][(int)neighbourIDs[0]]
                                                        .centreOfObject;
 
 
@@ -696,7 +708,7 @@ public class Voxel : NetworkBehaviour
                             //found the towards point in neighbour vox
 
                             neighbour.deletePoint(sameID);
-                            neighbour.smoothNeighbours(sameID, findRemainingOnSide(new int[] {otherSameId, sameID})[0]);
+                            neighbour.smoothNeighbours(sameID, findRemainingOnSide(new int[] { otherSameId, sameID })[0]);
                             neighbour.showNeighbours(false);
                             //MapGen.voxels[layer][neighbourCol].shrink(sameID, 0);
                         }
@@ -732,7 +744,7 @@ public class Voxel : NetworkBehaviour
                 //info += "|horn:" + horn + "|";
 
 
-                int[] sameCorners = findRemainingOnSide(new int[] {pID});
+                int[] sameCorners = findRemainingOnSide(new int[] { pID });
                 //info += "|ss corners: " + sameCorners[0] + "," + sameCorners[1] + "|";
 
                 if (pID == 1 || pID == 4)
@@ -743,7 +755,7 @@ public class Voxel : NetworkBehaviour
                     sameCorners[1] = temp;
                 }
 
-                int[] otherCorners = new int[] {(sameCorners[0] + 3) % 6, (sameCorners[1] + 3) % 6};
+                int[] otherCorners = new int[] { (sameCorners[0] + 3) % 6, (sameCorners[1] + 3) % 6 };
                 //info += "|os corners: " + otherCorners[0] + "," + otherCorners[1] + "|";
 
 
@@ -798,9 +810,9 @@ public class Voxel : NetworkBehaviour
                 if ((delt <= 2) == (pID <= 2))
                 {
                     //points on same side of vox
-                    int tip = findRemainingOnSide(new int[] {pID, delt})[0];
+                    int tip = findRemainingOnSide(new int[] { pID, delt })[0];
                     int underTip = (tip + 3) % 6;
-                    int[] rest = findRemainingOnSide(new int[] {underTip});
+                    int[] rest = findRemainingOnSide(new int[] { underTip });
 
                     if (underTip == 1 || underTip == 4)
                     {
@@ -968,12 +980,12 @@ public class Voxel : NetworkBehaviour
         if (Math.Sign(2.5 - points[0]) > 0)
         {
             //point is part of {0,1,2}
-            set = new HashSet<int> {0, 1, 2};
+            set = new HashSet<int> { 0, 1, 2 };
             debug = "set started 0,1,2 ";
         }
         else
         {
-            set = new HashSet<int> {3, 4, 5};
+            set = new HashSet<int> { 3, 4, 5 };
             debug = "set started 3,4,5 ";
         }
 
@@ -1022,7 +1034,7 @@ public class Voxel : NetworkBehaviour
             }
 
             if (filter.mesh.vertices[i] == vert)
-                //if(Vector3.Distance(filter.mesh.vertices[i], vert)< 0.05)
+            //if(Vector3.Distance(filter.mesh.vertices[i], vert)< 0.05)
             {
                 return i;
             }
@@ -1108,6 +1120,6 @@ public class Voxel : NetworkBehaviour
         }
 
         centreOfObject = av / vertices.Length;
-        worldCentreOfObject = centreOfObject * (float) scale * MapManager.mapSize;
+        worldCentreOfObject = centreOfObject * (float)scale * MapManager.mapSize;
     }
 }

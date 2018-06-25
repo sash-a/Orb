@@ -23,6 +23,8 @@ public class MapManager : NetworkBehaviour
     public static int splits = 0;
 
 
+    public bool mapDoneLocally;
+
 
     public Dictionary<int, Dictionary<int, Voxel>> voxels; // indexed like voxels[layer][column]
     public Dictionary<int, Vector3> voxelPositions; // the object centers of the layer=0 voxels
@@ -49,7 +51,7 @@ public class MapManager : NetworkBehaviour
     // Use this for initialization
     public void start()
     {
-
+        mapDoneLocally = false;
         manager = this;
         Map = GameObject.Find("Map");
         Debug.Log("starting map manager");
@@ -116,8 +118,7 @@ public class MapManager : NetworkBehaviour
             }
         }
 
-        foreach (Voxel vox in voxels[0].Values)
-            vox.setTexture();
+       
     }
 
     private void loadNeighboursMap()
@@ -182,8 +183,8 @@ public class MapManager : NetworkBehaviour
     {
         System.Random r = new System.Random(0);
         int waveNo = 4;
-        float averageAmp = 0.01f;
-        float avWaveLength = 10f;
+        float averageAmp = 0.008f;//0.006
+        float avWaveLength = 15f;
 
 
         float[] frequencies = new float[waveNo];
@@ -236,14 +237,19 @@ public class MapManager : NetworkBehaviour
                     vox.updateCollider();
                     vox.recalcCenters();
                     filter.mesh.RecalculateNormals();
+                    filter.mesh.RecalculateBounds();
+                    filter.mesh.RecalculateTangents();
+                    vox.setTexture();
+
                 }
-                catch {
+                catch
+                {
 
                 }
             }
         }
 
-        
+        mapDoneLocally = true;
 
     }
 

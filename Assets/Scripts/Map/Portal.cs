@@ -23,7 +23,8 @@ public class Portal : NetworkBehaviour
     // Use this for initialization
     void Start()
     {
-        if (!created) {
+        if (!created)
+        {
             createFromVoxel(MapManager.manager.voxels[layer][columnID]);
         }
         transform.parent = MapManager.manager.Map.transform.GetChild(3);
@@ -48,7 +49,7 @@ public class Portal : NetworkBehaviour
         Vector3 top2 = verts[ind2];
 
         Vector3 mid = (top + top2) / 2.0f;
-        Vector3 accross = (top2 - top).normalized * portalDims.x/2.0f;
+        Vector3 accross = (top2 - top).normalized * portalDims.x / 2.0f;
 
         top = mid - accross;
         top2 = mid + accross;
@@ -99,6 +100,10 @@ public class Portal : NetworkBehaviour
     IEnumerator ReturnPlayer()
     {
         yield return new WaitForSeconds(supplyTime);
-        player.transform.position = new Vector3(0, 40, 0);
+        try
+        {
+            player.transform.position = new Vector3(0, 40, 0);
+        }
+        catch { }
     }
 }
