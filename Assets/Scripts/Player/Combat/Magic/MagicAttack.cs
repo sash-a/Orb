@@ -77,6 +77,10 @@ public class MagicAttack : AAttackBehaviour
     [Client]
     public override void attack()
     {
+        if (!MapManager.manager.mapDoneLocally) {
+            Debug.LogError("attacking before map finished");
+            return;
+        }
         isAttacking = true;
         if (type.isDamage)
         {

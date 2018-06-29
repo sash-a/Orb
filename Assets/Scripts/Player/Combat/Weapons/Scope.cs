@@ -18,18 +18,20 @@ private void Update()
     {
         if(Input.GetButtonDown("Fire2"))
         {
-            scopedIn = true;
-            StartCoroutine(onScoped());
+            scopedIn = !scopedIn;
+            animator.SetBool("isScoped", scopedIn);
+            
+            if(scopedIn)
+            {
+                StartCoroutine(onScoped());
+            }
+            else
+            {
+                onUnscoped();
+            }
            
         }
-
-        if (Input.GetButtonUp("Fire2"))
-        {
-            scopedIn = false;
-            onUnscoped();
-        }
-
-        animator.SetBool("isScoped", scopedIn);
+       
     }
 
     void onUnscoped()
@@ -51,10 +53,11 @@ private void Update()
         ScopeOverlay.SetActive(true);
         //disable camera that sees guns (when scoping)
         weaponCamera.SetActive(false);
-        //zoom
+        //zooming in (and saving normal view)
         normalZoom = mainCamera.fieldOfView;
         mainCamera.fieldOfView = zoom;
     }
 
     //Note: use of second camera also good for when player is colliding with other objects, preventing gun from clipping through
+    //may cause issues down the line, but keeping it for now
 }

@@ -17,10 +17,12 @@ public class NetworkMapGen : NetworkBehaviour
     //higher density = less trees (yes i know its weird)
     public int density;
 
+    public static NetworkMapGen mapGen;
+
     void Start()
     {
         parent = GameObject.Find("Map");
-        //treePrefab = Resources.Load<GameObject>("Prefabs/");
+        mapGen = this;
     }
 
     private void spawnVoxelsOnServer(int splits)
@@ -58,8 +60,9 @@ public class NetworkMapGen : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
+        mapGen = this;
 
-        GameObject mapSync = Instantiate(Resources.Load<GameObject>("Prefabs/MapSync"), Vector3.zero, Quaternion.identity);
+        GameObject mapSync = Instantiate(Resources.Load<GameObject>("Prefabs/Map/MapSync"), Vector3.zero, Quaternion.identity);
         mapSync.GetComponent<MapManager>().start();
 
         NetworkServer.Spawn(mapSync);
@@ -75,8 +78,9 @@ public class NetworkMapGen : NetworkBehaviour
     public override void OnStartClient()
     {
         base.OnStartClient();
-        //RegisterPrefabs.registerVoxelPrefabs(MapManager.splits);
-        StartCoroutine(InitVoxels());
+        mapGen = this;
+
+        StartCoroutine(CountSpawnedVoxels());
     }
 
     IEnumerator InitTrees()
@@ -86,11 +90,21 @@ public class NetworkMapGen : NetworkBehaviour
         //Debug.Log("Generated trees");
     }
 
-    IEnumerator InitVoxels()
+    IEnumerator CountSpawnedVoxels()
     {
-        yield return new WaitForSeconds(0.5f);
-
-
+        yield return new WaitForSeconds(5);
+        if (MapManager.manager.spawnedVoxels.Count < 768 * Math.Pow(2, MapManager.splits))
+        {
+            Debug.LogError("waited 5 seconds and not all voxels have been spawned - only found " + MapManager.manager.spawnedVoxels.Count + " unique column id's; should be: " + 768 * Math.Pow(2, MapManager.splits));
+        }
+        else {
+            MapManager.SmoothVoxels();
+        }
+    }
+    public IEnumerator InitVoxels()
+    {
+        yield return new WaitForSecondsRealtime(1.3f);
+     
         GameObject[] objs = FindObjectsOfType<GameObject>();
         for (int i = 0; i < objs.Length; i++)
         {
@@ -134,8 +148,8 @@ public class NetworkMapGen : NetworkBehaviour
                 if (isServer)
                 {
                     //Debug.Log("putting tree at Center: " + vox.worldCentreOfObject);
-                    GameObject tree = Instantiate(treePrefab, vox.worldCentreOfObject, Quaternion.identity);
-                    NetworkServer.Spawn(tree);
+                    //GameObject tree = Instantiate(treePrefab, vox.worldCentreOfObject, Quaternion.identity);
+                    vox.addAsset();
                 }
             }
             else {

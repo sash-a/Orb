@@ -7,20 +7,28 @@ using UnityEngine.Networking;
 public class CaveManager : NetworkBehaviour
 {
     public static HashSet<Digger> diggers;
-    static int caveNo = 1;
+    static int caveNo = 4;
     static int shatters;
 
     public static UnityEngine.Object diggerPrefab;
 
+    public HashSet<CaveBody> caves;
+    public HashSet<CaveEntrance> entrances;
+
     static System.Random rand;
+
+    public static CaveManager manager;
 
     // Use this for initialization
     void Start()
     {
         if (!isServer) { return; }
+        caves = new HashSet<CaveBody>();
+        entrances = new HashSet<CaveEntrance>();
         rand = new System.Random();
         diggers = new HashSet<Digger>();
-        diggerPrefab = Resources.Load("Prefabs/Digger");
+        diggerPrefab = Resources.Load("Prefabs/Map/Digger");
+        manager = this;
         //Debug.Log("found digger : " + diggerPrefab);
     }
 
@@ -36,42 +44,30 @@ public class CaveManager : NetworkBehaviour
         for (int i = 0; i < caveNo; i++)
         {
             CaveEntrance entrance = new CaveEntrance();
-            entrance.createEntranceAt(rand.Next(0, MapManager.manager.neighboursMap.Count - 1));
+            int colID = rand.Next(0, MapManager.manager.voxels[0].Count - 1);
+            bool farEnough = false;
+            while (!farEnough)
+            {
+                farEnough = true;
+                foreach (CaveEntrance ent in manager.entrances)
+                {
+                    double dist = Vector3.Distance(MapManager.manager.getPositionOf(0, colID), MapManager.manager.getPositionOf(0, ent.columnID));
+                    if (dist < 110)
+                    {
+                        farEnough = false;
+                        //Debug.Log("found another entrance too close: " + dist);
+                    }
+                }
+                if (!farEnough)
+                {
+                    colID = rand.Next(0, MapManager.manager.voxels[0].Count - 1);
+                }
+            }
+            entrance.createEntranceAt(colID);
         }
     }
 
-    static void SmoothVoxels()
-    {
-        //Debug.Log("smoothing voxels");
-        MapManager.useSmoothing = true;
-        for (int i = 0; i < MapManager.mapLayers; i++)
-        {
-            ArrayList keys = new ArrayList();
-            foreach (int n in MapManager.manager.voxels[i].Keys)
-            {
-                keys.Add(n);
-            }
-            for (int j = 0; j < keys.Count; j++)
-            {
-                MapManager.manager.voxels[i][(int)keys[j]].smoothBlockInPlace();
-            }
-
-        }
-
-        for (int i = 0; i < MapManager.mapLayers; i++)
-        {
-            ArrayList keys = new ArrayList();
-            foreach (int n in MapManager.manager.voxels[i].Keys)
-            {
-                keys.Add(n);
-            }
-            for (int j = 0; j < keys.Count; j++)
-            {
-                MapManager.manager.voxels[i][(int)keys[j]].smoothBlockInPlace();
-            }
-
-        }
-    }
+    
 
     public static void removeDigger(Digger d)
     {
@@ -79,13 +75,24 @@ public class CaveManager : NetworkBehaviour
         Destroy(d.gameObject);
         if (diggers.Count <= 0)
         {
-            SmoothVoxels();
-            MapManager.shatters = shatters;
+            //MapManager.SmoothVoxels();
             if (MapManager.useHills)
             {
                 MapManager.manager.deviateHeights();
             }
+            else
+            {
+                MapManager.manager.finishMap();
+            }
+            manager.StartCoroutine(manager.RestoreShatters());
         }
+    }
+
+    IEnumerator RestoreShatters()
+    {
+        yield return new WaitForSecondsRealtime(1);
+        MapManager.shatters = shatters;
+
     }
 
     // Update is called once per frame

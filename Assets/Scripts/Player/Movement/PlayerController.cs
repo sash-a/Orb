@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
     {
         actions = GetComponent<PlayerActions>();
         //StartCoroutine(hackPos());
+        MapManager.manager.localPlayer = gameObject;
     }
 
     void Update()

@@ -14,38 +14,34 @@ public class WeaponType : Item
     public ParticleSystem muzzleFlash;
 
     //grenade specific
-    public float delay;
-    public float countdown;
-    public float blastRadius;
     public bool hasExploded;
     public bool isExplosive;
+    int numGrenades;
 
-    //public int weaponLevel = 1;
+    //ammo
+    int primaryAmmo;
+    int magazineAmmo;
+    int maxAmmo;
+    public Ammo ammunition;
     
 
-    public WeaponType(float damage, float range, float fireRate, ParticleSystem muzzleFlash)
+    public WeaponType(float damage, float range, float fireRate, ParticleSystem muzzleFlash, int prA, int mgA, int mxA, int mgSz)
     {
         this.damage = damage;
         this.range = range;
         this.fireRate = fireRate;
         this.muzzleFlash = muzzleFlash;
-        this.isExplosive = false;
+        isExplosive = false;
+        ammunition = new Ammo(prA, mgA, mxA, mgSz);
     }
 
-    //grenade constructor
-    public WeaponType(float damage, float range, float fireRate, float delay, float blastRadius)
+    //grenade constructor (attributes assigned in grenade script)
+    public WeaponType(int numGr, int maxNum)
     {
-        this.damage = damage;
-        this.range = range;
-        this.fireRate = fireRate;
-        this.delay = delay;
-        this.countdown = delay;
-        this.blastRadius = blastRadius;
-        this.isExplosive = true;
+        isExplosive = true;
         hasExploded = false;
+        ammunition = new Ammo(numGr, maxNum);
     }
-
-    // isExplosive = false; float blast radius; or some implementation like this
 
     // These will likely be stored as a list in player
     // Store effects in here too like bullet impact gun smoke and that kinda shit

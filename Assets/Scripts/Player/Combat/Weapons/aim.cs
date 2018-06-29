@@ -7,8 +7,6 @@ public class aim : MonoBehaviour {
     public Animator animator;
     private bool scopedIn = false;
 
-    public GameObject weaponCamera;
-
     public Camera mainCamera;
 
     private void Update()
@@ -26,7 +24,6 @@ public class aim : MonoBehaviour {
         }
 
         animator.SetBool("isScoped", scopedIn);
-        //Debug.Log(animator.GetBool("isScoped"));
     }
 
     //coroutine

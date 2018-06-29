@@ -29,7 +29,7 @@ public class Shield : NetworkBehaviour
         base.OnStartClient();
         // TODO is this never called doesn't seem to be registering
         GameManager.register(GetComponent<NetworkIdentity>().netId.ToString(), GetComponent<Identifier>());
-        Debug.Log("Registered shield");
+        //Debug.Log("Registered shield");
     }
 
     [ClientRpc]
@@ -50,7 +50,7 @@ public class Shield : NetworkBehaviour
 
     private void OnDisable()
     {
-        Debug.Log("Disabling: " + caster.id);
+        //Debug.Log("Disabling: " + caster.id);
         var magic = GameManager.getObject(caster.id).GetComponent<MagicAttack>();
 
         magic.shieldDown();

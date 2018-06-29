@@ -20,6 +20,7 @@ public class VoxelContainer : Voxel
     public void start(Voxel majorVoxel)
     {//creates the voxel container from the old voxel scripts data - then replaces it in the mapManager
         //Debug.Log("creating voxel container");
+        gameObject.name = "Container";
 
         layer = majorVoxel.layer;
         columnID = majorVoxel.columnID;
@@ -40,6 +41,11 @@ public class VoxelContainer : Voxel
         }
         //Debug.Log("created container: " + this);
 
+    }
+
+    private void Start()
+    {
+        //gameObject.name = "Container";
     }
 
 
@@ -198,7 +204,7 @@ public class VoxelContainer : Voxel
         int subsequent = (i + 1) % 3 + (i > 2 ? 3 : 0);
         Vector3[] verts = new Vector3[6];
 
-        float heightVar = 0.5f;
+        float variation = 0.5f;
 
         if (shatterLevel == 0)
         {
@@ -221,19 +227,19 @@ public class VoxelContainer : Voxel
                 int remaining = findRemainingOnSide(new int[] { i, subsequent })[0];
                 verts[0] = majorMesh.vertices[i];
                 //verts[1] = (majorMesh.vertices[i] + majorMesh.vertices[subsequent]) / 2.0f;
-                verts[1] = majorMesh.vertices[i] + (majorMesh.vertices[subsequent] - majorMesh.vertices[i]) * (0.5f - heightVar / 2.0f + randDev[i % 3] * heightVar);
+                verts[1] = majorMesh.vertices[i] + (majorMesh.vertices[subsequent] - majorMesh.vertices[i]) * (0.5f - variation / 2.0f + randDev[i % 3] * variation);
 
                 //verts[2] = (majorMesh.vertices[i] + majorMesh.vertices[findRemainingOnSide(new int[] { i, subsequent })[0]]) / 2.0f;
-                verts[2] = majorMesh.vertices[i] + (majorMesh.vertices[remaining] - majorMesh.vertices[i]) * (0.5f + heightVar / 2.0f - randDev[remaining % 3] * heightVar);
+                verts[2] = majorMesh.vertices[i] + (majorMesh.vertices[remaining] - majorMesh.vertices[i]) * (0.5f + variation / 2.0f - randDev[remaining % 3] * variation);
 
 
                 verts[3] = getMidPoint(majorMesh, i);
                 //verts[4] = (getMidPoint(majorMesh, i) + getMidPoint(majorMesh, subsequent)) / 2.0f;
-                verts[4] = getMidPoint(majorMesh, i) + (getMidPoint(majorMesh, subsequent) - getMidPoint(majorMesh, i)) * (0.5f - heightVar / 2.0f + randDev[i % 3] * heightVar);
+                verts[4] = getMidPoint(majorMesh, i) + (getMidPoint(majorMesh, subsequent) - getMidPoint(majorMesh, i)) * (0.5f - variation / 2.0f + randDev[i % 3] * variation);
 
 
                 //verts[5] = (getMidPoint(majorMesh, i) + getMidPoint(majorMesh, remaining)) / 2.0f;
-                verts[5] = getMidPoint(majorMesh, i) + (getMidPoint(majorMesh, remaining) - getMidPoint(majorMesh, i)) * (0.5f + heightVar / 2.0f - randDev[remaining % 3] * heightVar);
+                verts[5] = getMidPoint(majorMesh, i) + (getMidPoint(majorMesh, remaining) - getMidPoint(majorMesh, i)) * (0.5f + variation / 2.0f - randDev[remaining % 3] * variation);
 
             }
             else
@@ -242,10 +248,10 @@ public class VoxelContainer : Voxel
                 for (int k = 0; k < 3; k++)
                 {
                     //verts[k] = (majorMesh.vertices[k + a] + majorMesh.vertices[(k + 1) % 3 + a]) / 2.0f;
-                    verts[k] = majorMesh.vertices[k + a] + (majorMesh.vertices[(k + 1) % 3 + a] - majorMesh.vertices[k + a]) * (0.5f - heightVar / 2.0f + randDev[k % 3] * heightVar);
+                    verts[k] = majorMesh.vertices[k + a] + (majorMesh.vertices[(k + 1) % 3 + a] - majorMesh.vertices[k + a]) * (0.5f - variation / 2.0f + randDev[k % 3] * variation);
 
                     //verts[k + 3] = (getMidPoint(majorMesh, k + a) + getMidPoint(majorMesh, (k + 1) % 3 + a)) / 2.0f;
-                    verts[k + 3] = getMidPoint(majorMesh, k + a) + (getMidPoint(majorMesh, (k + 1) % 3 + a) - getMidPoint(majorMesh, k + a)) * (0.5f - heightVar / 2.0f + randDev[k % 3] * heightVar);
+                    verts[k + 3] = getMidPoint(majorMesh, k + a) + (getMidPoint(majorMesh, (k + 1) % 3 + a) - getMidPoint(majorMesh, k + a)) * (0.5f - variation / 2.0f + randDev[k % 3] * variation);
                 }
 
             }
@@ -262,7 +268,7 @@ public class VoxelContainer : Voxel
 
     private Vector3[] getCenterPoints(Mesh mesh)
     {
-        float heightVar = 0.7f;//proportion of the height the middle cnter can move up and down along 
+        float heightVar = 0.4f;//proportion of the height the middle cnter can move up and down along 
         Vector3[] res = new Vector3[] { Vector3.zero, Vector3.zero, Vector3.zero };
         //Debug.Log("getting centers - orig mesh has " + mesh.vertices.Length + " verts");
         res[0] = (mesh.vertices[0] + mesh.vertices[1] + mesh.vertices[2]) / 3.0f;
@@ -286,7 +292,7 @@ public class VoxelContainer : Voxel
 
     GameObject genNewSubVoxel()
     {
-        GameObject subVoxelObject = (GameObject)Instantiate(Resources.Load("Prefabs/SubVoxel"));
+        GameObject subVoxelObject = (GameObject)Instantiate(Resources.Load("Prefabs/Map/SubVoxel"));
         subVoxelObject.transform.position = Vector3.zero;
 
         subVoxelObject.tag = "TriVoxel";

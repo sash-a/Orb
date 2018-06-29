@@ -11,18 +11,20 @@ public class Digger : NetworkBehaviour
     public int gradient;//number of neighbours it will bouonce to before increasing the layer
     public int neighbourCount;//the count for number of runs without rise
     public static int maxSize = 20;
+    public static int minSize = 3;
+
 
     public static Vector3 stdscale = new Vector3(5000f, 1f, 1f).normalized;//(3.5f, 0.5f, 0.5f)
 
     public Vector3 nextDest;
     public int layer;
-    int colID;
+    public int colID;
     public Vector3 travelDir;
     public Vector3 right;//right remains constant along a path - is used to rotate around as digger moves through sphere
 
     System.Random rand;
     Rigidbody body;
-    CaveComponent master;
+    public CaveComponent master;
 
 
     internal void init(CaveComponent m)
@@ -77,8 +79,13 @@ public class Digger : NetworkBehaviour
         //Debug.Log("digger hit " + other.gameObject.name);
         if (other.gameObject.name.Contains("voxel") || other.gameObject.name.Contains("Voxel"))
         {
-            var hit = other.gameObject;
-            hitObject(hit);
+            CaveEntrance test = master as CaveEntrance;
+            //if ( other.gameObject.GetComponent<Voxel>().layer>0)
+            if ((test != null) || other.gameObject.GetComponent<Voxel>().layer > 1)
+            {//only cave entrances can destroy surface level voxels
+                var hit = other.gameObject;
+                hitObject(hit);
+            }
         }
     }
 
@@ -109,7 +116,7 @@ public class Digger : NetworkBehaviour
         body.MoveRotation(Quaternion.LookRotation(travelDir.normalized, -transform.position.normalized));
         if (Vector3.Dot((nextDest - transform.position).normalized, lastDir) < 0)
         {//has passed the required dest in the last step
-            Debug.Log("digger passed dest");
+            //Debug.Log("digger passed dest");
         }
         lastDir = (nextDest - transform.position).normalized;
         //Debug.Log("made " + body.velocity);
@@ -117,38 +124,42 @@ public class Digger : NetworkBehaviour
 
     private Vector3 getNextVox()
     {
+
+        int bestID = -1;
+        double bestComp = double.MinValue;
+
+        foreach (int n in MapManager.manager.neighboursMap[colID])
+        {//finds neighbour in dir closest to desired dir
+            double comp = Vector3.Dot((MapManager.manager.getPositionOf(layer, n) - transform.position).normalized, travelDir);
+            if (comp > bestComp)
+            {
+                bestComp = comp;
+                bestID = n;
+            }
+        }
+        //Debug.Log("found next best vox : " + bestID + " with comp in travelDir = " + bestComp);
+        neighbourCount++;
         if (gradient > 0)
         {
-            int bestID = -1;
-            double bestComp = double.MinValue;
-
-            foreach (int n in MapManager.manager.neighboursMap[colID])
-            {//finds neighbour in dir closest to desired dir
-                double comp = Vector3.Dot((MapManager.manager.getPositionOf(layer, n) - transform.position).normalized, travelDir);
-                if (comp > bestComp)
-                {
-                    bestComp = comp;
-                    bestID = n;
-                }
-            }
-            //Debug.Log("found next best vox : " + bestID + " with comp in travelDir = " + bestComp);
-            neighbourCount++;
             if (neighbourCount >= gradient)
             {
                 layer++;
                 neighbourCount = 0;
             }
-            colID = bestID;
-            return MapManager.manager.getPositionOf(layer, bestID);
         }
-        else
+        else if (gradient < 0)
         {
-            neighbourCount++;
-            layer--;
-            //Debug.Log("sending digger to voxel above - layer " +( layer));
-            lastDir = (MapManager.manager.getPositionOf(layer, colID) - transform.position).normalized;
-            return MapManager.manager.getPositionOf(layer, colID);
+            if (neighbourCount >= -gradient)
+            {
+                layer--;
+                neighbourCount = 0;
+            }
         }
+
+        colID = bestID;
+        return MapManager.manager.getPositionOf(layer, bestID);
+
+
     }
 
     public void setScale(float s)

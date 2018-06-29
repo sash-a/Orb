@@ -15,7 +15,9 @@ public class Voxel : NetworkBehaviour
     public static float extrudeLength = 0.014f; //0.02
 
     // decrease constant to move blocks further away from eachother//0.0025 - overlaps slightly ; 0.00249 leaves minute gap
-    public static float scaleRatio = (0.002491f * MapManager.mapSize + extrudeLength) / (0.00249f * MapManager.mapSize);
+
+    //0.002485 overlaps
+    public static float scaleRatio = (0.00248f * MapManager.mapSize + extrudeLength) / (0.00248f * MapManager.mapSize);
     public double scale;
 
     [SyncVar] public int columnID;
@@ -36,13 +38,18 @@ public class Voxel : NetworkBehaviour
 
     public String info = "";
 
+    public MapAsset asset;
+
 
     private void Start()
     {
+
         rand = new System.Random(layer * columnID + columnID);
 
         gameObject.tag = "TriVoxel";
-        transform.parent = MapManager.manager.Map.transform.GetChild(1);
+        MapManager man = MapManager.manager;
+        GameObject map = man.Map;
+        transform.parent = map.transform.GetChild(1);
 
         origonalPoints = new Dictionary<int, Vector3>();
         deletedPoints = new HashSet<int>();
@@ -65,50 +72,67 @@ public class Voxel : NetworkBehaviour
             setColumnID(columnID);
         }
 
-        // Would like to put in if above, but this gives errors
-        if (MapManager.manager.mapDoneLocally)
-        {
-            setTexture();
-        }
+
+
 
         if (!(gameObject.name.Contains("sub") || gameObject.name.Contains("Sub")))
         {
-            //Debug.Log("renaming " + gameObject.name + " to trivoxel");
-            cloneMeshFilter();
-            restoreVoxel();
-            shatterLevel = 0;
-            isBottom = false;
-            gameObject.name = "TriVoxel";
-
-            if (isServer && rand.NextDouble() < 0.2f)
+            if (gameObject.name.Equals("Container"))
             {
-                bool farEnough = true;
-                foreach (Portal p in MapManager.manager.portals)
+
+            }
+            else
+            {
+                cloneMeshFilter();
+                restoreVoxel();
+                shatterLevel = 0;
+                isBottom = false;
+                gameObject.name = "TriVoxel";
+                setTexture();
+
+
+                MapManager.manager.voxelSpawned(columnID);
+
+                if (isServer && rand.NextDouble() < 0.2f)
                 {
-                    if (Vector3.Distance(
-                            p.gameObject.GetComponent<MeshFilter>().mesh.vertices[0] *
-                            p.gameObject.transform.localScale.x, worldCentreOfObject) < 150)
+                    bool farEnough = true;
+                    foreach (Portal p in MapManager.manager.portals)
                     {
-                        //Debug.Log("cant place portal because its too close: " + (Vector3.Distance(p.gameObject.GetComponent<MeshFilter>().mesh.vertices[0] * MapManager.mapSize, worldCentreOfObject)));
-                        farEnough = false;
+                        if (Vector3.Distance(
+                                p.gameObject.GetComponent<MeshFilter>().mesh.vertices[0] *
+                                p.gameObject.transform.localScale.x, worldCentreOfObject) < 150)
+                        {
+                            //Debug.Log("cant place portal because its too close: " + (Vector3.Distance(p.gameObject.GetComponent<MeshFilter>().mesh.vertices[0] * MapManager.mapSize, worldCentreOfObject)));
+                            farEnough = false;
+                        }
+                    }
+
+                    if (farEnough)
+                    {
+                        GameObject portal = (GameObject)Instantiate(Resources.Load<UnityEngine.Object>("Prefabs/Map/Portal"));
+                        portal.GetComponent<Portal>().createFromVoxel(this);
+                        NetworkServer.Spawn(portal);
                     }
                 }
 
-                if (farEnough)
+                if (!isServer && MapManager.manager.mapDoneLocally)
                 {
-                    GameObject portal = (GameObject)Instantiate(Resources.Load<UnityEngine.Object>("Prefabs/Portal"));
-                    portal.GetComponent<Portal>().createFromVoxel(this);
-                    NetworkServer.Spawn(portal);
+                    MapManager.manager.deviateSingleVoxel(this);
+
                 }
             }
+            //Debug.Log("renaming " + gameObject.name + " to trivoxel");
+
         }
         else
         {
             //is subvoxel
-            //Debug.Log("starting subvoxel: " + gameObject.name);
+            setTexture();
             gameObject.name = "SubVoxel";
         }
     }
+
+
 
 
     public void setColumnID(int colID)
@@ -122,30 +146,74 @@ public class Voxel : NetworkBehaviour
         }
     }
 
+    public static int earthTexNo = -1;
+    public static float texScale = 4.5f;
+
+
     public void setTexture()
     {
 
         if (layer == 0)
         {
-
-            setTexture(Resources.Load<Material>("Materials/LowPolyGrass"));
+            StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyGrass")));
         }
         else if (layer == MapManager.mapLayers - 1)
         {
-            setTexture(Resources.Load<Material>("Materials/LowPolyCrust"));
+            StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyCrust")));
         }
         else
         {
-            setTexture(Resources.Load<Material>("Materials/LowPolyGround"));
+            //StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyGround")));
+            if (earthTexNo == -1)
+            {
+                earthTexNo = rand.Next(0, 9);
+                //Debug.Log("using earth texture " + earthTexNo);
+            }
+            GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth" + earthTexNo);
+            //GetComponent<MeshRenderer>().material.SetTextureScale("Earth" + earthTexNo, new Vector2(texScale,texScale));
+
+            if (layer < 6)
+            {
+                GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth2");
+            }
+            else if (layer < 11)
+            {
+                GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth7");
+            }
+            else {
+                GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth8");
+            }
+
+            GetComponent<MeshRenderer>().material.mainTextureScale = new Vector2(texScale / (float)Math.Pow(1.7,shatterLevel), texScale / (float)Math.Pow(1.7, shatterLevel));
+
         }
     }
 
-    private void setTexture(Material material)
+    internal void addAsset()
+    {
+        asset = MapAsset.createAsset(this);
+
+    }
+
+    IEnumerator setTexture(Material material)
     {
         var matt = new Material(material);
         var colour = matt.color;
 
+        if (filter == null)
+        {
+            filter = GetComponent<MeshFilter>();
+        }
+
         // Setting the colour depending on the steepness of the angle of the voxel
+
+
+        if (filter == null || filter.mesh.vertices.Length < 6)
+        {
+            Debug.LogError("error with mesh filter on set texture");
+            yield return new WaitForSecondsRealtime(1);
+            filter = GetComponent<MeshFilter>();
+        }
         var norm = Vector3.Cross(filter.mesh.vertices[0] - filter.mesh.vertices[1],
             filter.mesh.vertices[2] - filter.mesh.vertices[1]);
         var angle = Vector3.Angle(norm, centreOfObject);
@@ -155,9 +223,9 @@ public class Voxel : NetworkBehaviour
         //Debug.Log("found vox with grad = " + angle + " taking colour from: " + colour.r + "," + colour.g + "," + colour.b);
 
 
-        colour.r += 0.8f * (angle / 90);
-        //colour.g -= 0.8f * (angle / 90);
-        //colour.b -= 0.4f * (angle / 90);
+        colour.r += 0.3f * (angle / 90);
+        colour.g -= 0.5f * (angle / 90);
+        colour.b -= 0.3f * (angle / 90);
 
         //Debug.Log("to:  " + colour.r + "," + colour.g + "," + colour.b);
 
@@ -192,6 +260,9 @@ public class Voxel : NetworkBehaviour
         {
             //Debug.Log("destroying voxel at layer: " + layer + "  no shattering");
             showNeighbours(true);
+            if (asset != null) {
+                NetworkServer.Destroy(asset.gameObject);
+            }
             NetworkServer.Destroy(gameObject);
         }
 
@@ -202,6 +273,7 @@ public class Voxel : NetworkBehaviour
     [ClientRpc]
     private void RpcShatterVoxel()
     {
+        //Debug.Log("shattering voxel: shatters="+ MapManager.shatters);
         gameObject.AddComponent<VoxelContainer>();
         VoxelContainer vc = gameObject.GetComponent<VoxelContainer>();
         vc.start(this);
@@ -409,6 +481,7 @@ public class Voxel : NetworkBehaviour
             childScript.layer = newVoxelLayer;
             childScript.origonalPoints = origonalPoints;
             childScript.cloneMeshFilter();
+            childScript.asset = null;
             MapManager.manager.voxels[newVoxelLayer][childScript.columnID] = childScript;
 
 
@@ -425,7 +498,6 @@ public class Voxel : NetworkBehaviour
         Mesh meshCopy = Mesh.Instantiate(mf.sharedMesh) as Mesh; //make a deep copy
         GetComponent<MeshFilter>().mesh = meshCopy;
     }
-
 
     internal void smoothBlockInPlace()
     {
@@ -662,11 +734,6 @@ public class Voxel : NetworkBehaviour
         }
     }
 
-    IEnumerator smoothBlockReatempt()
-    {
-        yield return new WaitForSeconds(0.3f);
-        smoothBlockInPlace();
-    }
 
     private void smoothNeighbours(int pID, int towards)
     {
@@ -1009,7 +1076,7 @@ public class Voxel : NetworkBehaviour
             }
             catch
             {
-                Debug.LogError(debug);
+                //Debug.LogError(debug);
             }
 
             count++;

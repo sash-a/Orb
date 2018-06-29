@@ -22,8 +22,10 @@ public class WeaponAttack : AAttackBehaviour
 
     List<WeaponType> weapons;
 
+    //grenade specific
     public GameObject grenadeSpawn;
     public GameObject grenadePrefab;
+    public float throwForce = 40;
 
     private ResourceManager resourceManager;
 
@@ -31,13 +33,14 @@ public class WeaponAttack : AAttackBehaviour
     {
         resourceManager = GetComponent<ResourceManager>();
         weapons = new List<WeaponType>();
-        //damage, range, rate of fire
-        WeaponType pistol = new WeaponType(5, 60, 5, PistolMuzzleFlash);
-        WeaponType assault = new WeaponType(3, 70, 8, AssaultMuzzleFlash);
-        WeaponType shotgun = new WeaponType(12, 30, 2, ShotgunMuzzleFlash);
-        WeaponType sniper = new WeaponType(12, 350, 1, SniperMuzzleFlash);
-        WeaponType grenade = new WeaponType(20, 30, 1, 3, 5);
-        //needs to be added in the exact same order as the prefabs under player camera to work
+        //damage, range, fireRate, muzzleFlashEffect, primaryAmmo, currentMagAmmo, maxAmmo, MagSize
+        WeaponType pistol = new WeaponType(5, 60, 5, PistolMuzzleFlash,100,12,300,12);
+        WeaponType assault = new WeaponType(3, 70, 8, AssaultMuzzleFlash, 30000, 30, 500, 30);//pA origonally 300
+        WeaponType shotgun = new WeaponType(12, 30, 2, ShotgunMuzzleFlash, 1000, 6, 300, 6);//pA origonally 100
+        WeaponType sniper = new WeaponType(12, 350, 1, SniperMuzzleFlash, 60, 12, 100, 12);
+        //number of grenades
+        WeaponType grenade = new WeaponType(3,5);
+        //needs to be added in the exact same order as the prefabs under player camera to work NB!!!
         weapons.Add(pistol);
         weapons.Add(assault);
         weapons.Add(shotgun);
@@ -79,16 +82,22 @@ public class WeaponAttack : AAttackBehaviour
 
             attack();
         }
+
+        if(Input.GetKey(KeyCode.R))
+        {
+            //Debug.Log("Reload!");
+            Reload(weapons[selectedWeapon].ammunition);
+        }
+
     }
 
     [Command]
     public void CmdthrowGrenade()
     {
-        float force = 40;
         GameObject grenade =
             Instantiate(grenadePrefab, grenadeSpawn.transform.position, grenadeSpawn.transform.rotation);
         Rigidbody rb = grenade.GetComponent<Rigidbody>();
-        rb.AddForce(cam.transform.forward * force, ForceMode.VelocityChange);
+        rb.AddForce(cam.transform.forward * throwForce, ForceMode.VelocityChange);
         NetworkServer.Spawn(grenade);
     }
 
@@ -107,17 +116,35 @@ public class WeaponAttack : AAttackBehaviour
         NetworkServer.Spawn(hitParticle);
     }
 
+    public void Reload(Ammo A)
+    {
+        if (A.getMagAmmo() != A.getMagSize())
+        {
+            resourceManager.reloadMagazine(A.getMagSize() - A.getMagAmmo(), A);
+        }
+        
+        //Debug.Log("Primary Ammo: " + A.getPrimaryAmmo());
+    }
+
     [Client]
     public override void attack()
     {
-        if (!weapons[selectedWeapon].isExplosive)
+        if (!MapManager.manager.mapDoneLocally)
+        {
+            Debug.LogError("attacking before map finished");
+            return;
+        }
+
+        if (!weapons[selectedWeapon].isExplosive && weapons[selectedWeapon].ammunition.getMagAmmo() > 0)
         {
             //only works when the particle effect is dragged in directly from the gun's children for some reason 
-            // its because: it can't be prefab needs to specifically be particle effect - will modify this later
+            //its because: it can't be prefab needs to specifically be particle effect - will modify this later
             weapons[selectedWeapon].muzzleFlash.Play();
 
             //Relevant to ammo
-            resourceManager.usePrimary(1);
+            resourceManager.useMagazineAmmo(1, weapons[selectedWeapon].ammunition);
+            //Debug.Log(weapons[selectedWeapon].ammunition.getMagAmmo());
+            
 
             //hit is the object that is hit (or not hit)
             RaycastHit hit;
@@ -142,7 +169,7 @@ public class WeaponAttack : AAttackBehaviour
 
                     //Debug.Log("weapon hit voxel ("+ hit.collider.gameObject .name+ ") at layer " + hit.collider.gameObject.GetComponent<Voxel>().layer);
                     CmdVoxelDamaged(hit.collider.gameObject, weapons[selectedWeapon].damage); // weapontype.envDamage?
-                                                                                              //This just isn't called
+                                                                                              
                     if (hit.collider.GetComponent<NetHealth>().getHealth() <= 0)
                     {
                         CmdVoxelDestructionEffect(hit.point, hit.normal);
@@ -157,21 +184,32 @@ public class WeaponAttack : AAttackBehaviour
 
             }
         }
+        else if(weapons[selectedWeapon].isExplosive && weapons[selectedWeapon].ammunition.getNumGrenades() > 0)
+        {
+            //Can only throw one grenade now!? <- HAVE NO IDEA WHY!?!?!? 
+            //Debug.Log("Grenade Thrown");
+            CmdthrowGrenade();
+            resourceManager.useGrenade(1, weapons[selectedWeapon].ammunition);
+        }
         else
         {
-            CmdthrowGrenade();
+            //Debug.Log("Soz, out of ammo bud!");
         }
     }
 
 
     public override void endAttack()
     {
-        //        throw new System.NotImplementedException();
+        //throw new System.NotImplementedException();
     }
 
     public override void secondaryAttack()
     {
-        throw new System.NotImplementedException();
+        if (!MapManager.manager.mapDoneLocally)
+        {
+            Debug.LogError("attacking before map finished");
+            return;
+        }
     }
 
     public override void endSecondaryAttack()

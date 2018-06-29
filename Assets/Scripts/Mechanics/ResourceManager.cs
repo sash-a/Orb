@@ -4,13 +4,11 @@ using UnityEngine.Networking;
 
 public class ResourceManager : NetworkBehaviour
 {
-    [SerializeField] private int primaryAmmo = 50;
-    [SerializeField] private int secondaryAmmo = 50;
-    [SerializeField] private int maxAmmo = 1000;
 
     [SerializeField] private float energy = 100;
     [SerializeField] private float maxEnergy = 100;
 
+ 
     /// <summary>
     /// Adds energy to the players resource manager
     /// </summary>
@@ -26,22 +24,33 @@ public class ResourceManager : NetworkBehaviour
     /// Adds primary ammo to the players resource manager
     /// </summary>
     /// <param name="amount">Amount of bullets to add to primary ammo</param>
-    public void pickupPrimary(int amount)
+    public void pickupPrimary(int amount, Ammo A) //, ammo
     {
         if (!isLocalPlayer || amount <= 0) return;
 
-        primaryAmmo = Math.Min(maxAmmo, primaryAmmo + amount);
+        //primaryAmmo = Math.Min(maxAmmo, primaryAmmo + amount);
+        A.setPrimaryAmmo(Math.Min(A.getMaxAmmo(), A.getPrimaryAmmo() + amount));
     }
 
     /// <summary>
-    /// Adds secondary ammo to the players resource manager
+    /// Adds magazine ammo to the players resource manager
     /// </summary>
-    /// <param name="amount">Amount of bullets to add to secondary ammo</param>
-    public void pickupSecondary(int amount)
+    /// <param name="amount">Amount of bullets to add to magazine ammo</param>
+    public void reloadMagazine(int amount, Ammo A)
     {
         if (!isLocalPlayer || amount <= 0) return;
 
-        secondaryAmmo = Math.Min(maxAmmo, secondaryAmmo + amount);
+        //magazineAmmo = Math.Min(magSize, magazineAmmo + amount);
+        A.setMagAmmo(Math.Min(A.getMagSize(), A.getMagAmmo() + amount));
+        //replenish mag bullets from primary
+        usePrimaryAmmo(amount, A);
+    }
+
+    public void pickupGrenade(int amount, Ammo A)
+    {
+        if (!isLocalPlayer || amount <= 0) return;
+
+        A.setNumGrenades(Math.Min(A.getMaxNumGrenades(), A.getNumGrenades() + amount));
     }
 
     /// <summary>
@@ -59,22 +68,31 @@ public class ResourceManager : NetworkBehaviour
     /// Uses players primary ammo
     /// </summary>
     /// <param name="amount">Amount of primary ammo to use</param>
-    public void usePrimary(int amount)
+    public void usePrimaryAmmo(int amount, Ammo A)
     {
         if (!isLocalPlayer || amount <= 0) return;
 
-        primaryAmmo = Math.Max(0, primaryAmmo - amount);
+        //primaryAmmo = Math.Max(0, primaryAmmo - amount);
+        A.setPrimaryAmmo(Math.Max(0, A.getPrimaryAmmo() - amount));
     }
 
     /// <summary>
-    /// Uses players secondary ammo
+    /// Uses players magazine ammo
     /// </summary>
-    /// <param name="amount">Amount of secondary ammo to use</param>
-    public void useSecondary(int amount)
+    /// <param name="amount">Amount of magazine ammo to use</param>
+    public void useMagazineAmmo(int amount, Ammo A)
     {
         if (!isLocalPlayer || amount <= 0) return;
 
-        secondaryAmmo = Math.Max(0, secondaryAmmo - amount);
+        //magazineAmmo = Math.Max(0, magazineAmmo - amount);
+        A.setMagAmmo(Math.Max(0, A.getMagAmmo() - amount));
+    }
+
+    public void useGrenade(int amount, Ammo A)
+    {
+        if (!isLocalPlayer || amount <= 0) return;
+
+        A.setNumGrenades(Math.Max(0, A.getNumGrenades() - amount));
     }
 
     public bool hasEnergy()

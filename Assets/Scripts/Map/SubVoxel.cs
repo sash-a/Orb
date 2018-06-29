@@ -15,6 +15,10 @@ public class SubVoxel : NetworkBehaviour
     }
     public override void OnStartClient()
     {
+        if (!MapManager.manager.mapDoneLocally) {
+            Debug.LogError("spawning subvoxel before map has been completed");
+        }
+
         Voxel spawnedVox = gameObject.GetComponent<Voxel>();
         //Debug.Log("a spawned voxel has a pos: " + spawnedVox.layer + " , " + spawnedVox.columnID);
         Voxel foundVox = MapManager.manager.getSubVoxelAt(spawnedVox.layer, spawnedVox.columnID, spawnedVox.subVoxelID);

@@ -5,7 +5,7 @@ public class Gravity : MonoBehaviour
 {
     private Rigidbody rb;
 
-    [SerializeField] private float acceleration;
+    private static float acceleration = 900f;
 
     // Update is called once per frame
     void Start()
@@ -17,12 +17,12 @@ public class Gravity : MonoBehaviour
     Vector3 oldPos;
     void Update()
     {
-        if (gameObject.name != "TriVoxel")
+        if (!gameObject.name.Contains("oxel"))
         {
-            rb.AddForce(transform.position.normalized * acceleration);
+            rb.AddForce(transform.position.normalized * acceleration * Time.deltaTime);
         }
         else {
-            rb.AddForce(gameObject.GetComponent<Voxel>().centreOfObject.normalized * acceleration);
+            rb.AddForce(gameObject.GetComponent<Voxel>().centreOfObject.normalized * acceleration*Time.deltaTime);
             //if (transform.position == oldPos)
             if(Vector3.Distance(transform.position, oldPos)< 0.1f)
             {
