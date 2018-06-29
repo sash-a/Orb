@@ -22,7 +22,7 @@ public class MapAsset : MonoBehaviour
         rb.MoveRotation(Quaternion.LookRotation(forward, -transform.position.normalized));
         
 
-        StartCoroutine(SetParent());
+        StartCoroutine(SetParent()); // See comment on method
     }
 
     public static MapAsset createAsset(Voxel vox)
@@ -37,6 +37,7 @@ public class MapAsset : MonoBehaviour
         return ass.GetComponent<MapAsset>();
     }
 
+    // NO! THIS IS SO PRONE TO ERRORS, JUST CALL IT IN THE CORRECT ORDER
     IEnumerator SetParent()
     {
         yield return new WaitForSeconds(0.7f);

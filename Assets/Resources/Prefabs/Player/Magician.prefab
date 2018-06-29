@@ -492,7 +492,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_TransformSyncMode: 3
   m_SendInterval: 0.1
-  m_SyncRotationAxis: 2
+  m_SyncRotationAxis: 7
   m_RotationSyncCompression: 0
   m_SyncSpin: 0
   m_MovementTheshold: 0.001
@@ -536,7 +536,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df28b18296aef934c84f9d1441d6093c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  acceleration: 8
 --- !u!114 &114563962947438146
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1465,9 +1464,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79f4476d0f95929448c51882e186e2a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  primaryAmmo: 50
-  secondaryAmmo: 50
-  maxAmmo: 1000
   energy: 100
   maxEnergy: 100
 --- !u!114 &114969685266583862

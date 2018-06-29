@@ -16,7 +16,7 @@ public class MapManager : NetworkBehaviour
 
     public static int shatters = 2;//make zero to turn off shattering
     public static bool useHills = true;
-    public static bool digCaves = true;
+    public static bool digCaves = false;
 
     public static int mapLayers = 15;
     public static int mapSize = 200;

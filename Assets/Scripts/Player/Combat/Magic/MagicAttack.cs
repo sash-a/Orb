@@ -34,6 +34,7 @@ public class MagicAttack : AAttackBehaviour
 
         shieldUp = false;
         isAttacking = false;
+        force = 100;
     }
 
     void Update()
@@ -77,10 +78,12 @@ public class MagicAttack : AAttackBehaviour
     [Client]
     public override void attack()
     {
-        if (!MapManager.manager.mapDoneLocally) {
+        if (!MapManager.manager.mapDoneLocally)
+        {
             Debug.LogError("attacking before map finished");
             return;
         }
+
         isAttacking = true;
         if (type.isDamage)
         {
@@ -114,7 +117,7 @@ public class MagicAttack : AAttackBehaviour
                 }
             }
         }
-        else if (type.isForcePush)  // This is not yet working
+        else if (type.isForcePush) // This is not yet working
         {
             Debug.Log("Pushing");
 //            force.setUp(transform.position, 50);
@@ -135,15 +138,25 @@ public class MagicAttack : AAttackBehaviour
                         Debug.LogError("Null");
                     }
 
-                    coll.gameObject.GetComponent<Rigidbody>()
-                        .AddForce(direction.normalized * force /* * (1 / direction.sqrMagnitude)*/,
-                            ForceMode.Impulse);
-//                    CmdPush(coll.gameObject.GetComponent<Identifier>().id);
+//                    coll.gameObject.GetComponent<Rigidbody>()
+//                        .AddForce(direction.normalized * force /* * (1 / direction.sqrMagnitude)*/,
+//                            ForceMode.Impulse);
+                    CmdPush(coll.gameObject.GetComponent<Identifier>().id, direction);
                 }
             }
 
             canCastPush = false;
         }
+    }
+
+    [Command]
+    void CmdPush(String id, Vector3 direction)
+    {
+        Debug.Log("CMD: " + id);
+        GameManager.getObject(id).GetComponent<Rigidbody>()
+            .AddForce(direction.normalized * force /* * (1 / direction.sqrMagnitude)*/,
+                ForceMode.Impulse);
+        RpcPush(id);
     }
 
     /// <summary>
@@ -297,21 +310,21 @@ public class MagicAttack : AAttackBehaviour
         }
     }
 
-    [Command]
-    void CmdPush(string id)
-    {
-        RpcPush(id);
-    }
+//    [Command]
+//    void CmdPush(string id)
+//    {
+//        RpcPush(id);
+//    }
 
     [ClientRpc]
     void RpcPush(string id)
     {
-        Debug.LogWarning("in rpc");
+        Debug.LogWarning("in rpc");    
         var direction = GameManager.getObject(id).transform.position - transform.position;
         Debug.LogError(direction);
 
         GameManager.getObject(id).gameObject.GetComponent<Rigidbody>()
-            .AddForce(direction.normalized * force * 1000000 /* * (1 / direction.sqrMagnitude)*/, ForceMode.Impulse);
+            .AddForce(direction.normalized * force /* * (1 / direction.sqrMagnitude)*/);
     }
 
     /// <summary>
