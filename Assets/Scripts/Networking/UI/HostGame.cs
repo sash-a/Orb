@@ -25,6 +25,7 @@ public class HostGame : MonoBehaviour
 
     public void createRoom()
     {
+        Debug.Log("Creating");
         if (string.IsNullOrEmpty(roomName)) return;
 
         Debug.Log("Creating room: " + roomName + " num players: " + roomSize);

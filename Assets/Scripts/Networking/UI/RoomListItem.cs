@@ -1,30 +1,17 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.Match;
 using UnityEngine.UI;
 
 public class RoomListItem : MonoBehaviour
-{
-//    public delegate void JoinRoomDelegate(MatchInfoSnapshot matchInfo);
-//
-//    private JoinRoomDelegate joinRoomCallback;
-    
+{   
     private MatchInfoSnapshot matchInfo;
     [SerializeField] private Text roomInfo;
-    [SerializeField] private Canvas menu;
 
-    private NetworkManager netMan = NetworkManager.singleton;
+    private NetworkManager netMan;
 
     private void Start()
     {
-        menu = GameObject.Find("HomeMenu").GetComponent<Canvas>();
-    }
-
-    private void OnEnable()
-    {
-        menu = GameObject.Find("HomeMenu").GetComponent<Canvas>();
         netMan = NetworkManager.singleton;
     }
 
@@ -38,6 +25,5 @@ public class RoomListItem : MonoBehaviour
     public void joinMatch()
     {
         netMan.matchMaker.JoinMatch(matchInfo.networkId, "", "", "", 0, 0, netMan.OnMatchJoined);
-        menu.enabled = false;
     }
 }

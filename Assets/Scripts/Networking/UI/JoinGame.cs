@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
@@ -23,16 +22,14 @@ public class JoinGame : MonoBehaviour
         refreshRoomList();
     }
 
-    private void OnEnable()
-    {
-        netMan = NetworkManager.singleton;
-        netMan.StopMatchMaker();
-        netMan.StartMatchMaker();
-        
-        if (netMan.matchMaker == null) netMan.StartMatchMaker();
-
-        refreshRoomList();
-    }
+//    private void OnEnable()
+//    {
+//        netMan = NetworkManager.singleton;
+//        
+//        if (!netMan.matchMaker.isActiveAndEnabled) netMan.StartMatchMaker();
+//
+//        refreshRoomList();
+//    }
 
     public void refreshRoomList()
     {
@@ -40,8 +37,10 @@ public class JoinGame : MonoBehaviour
         
         // This needs to happen after client has exited game and tries to rejoin
         // This is buggy af and will hopefully not end up being a permanent fix
-        netMan.StopMatchMaker();
-        netMan.StartMatchMaker();
+        
+        // This should be eliminated when a separate scene is created for the homeMenu
+//        netMan.StopMatchMaker();
+//        netMan.StartMatchMaker();
         
         netMan.matchMaker.ListMatches(0, 20, "", true, 0, 0, updateRoomList);
         status.text = "Loading...";

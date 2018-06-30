@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.Networking;
 
 // TODO this will need to be specialized for each type of player
 // Currently only for testing the magician
@@ -22,6 +21,8 @@ public class PlayerUI : MonoBehaviour
 
         setHealth(1);
         setEnergy(1);
+
+        PauseMenu.isPaused = false;
     }
 
     void Update()
@@ -37,10 +38,10 @@ public class PlayerUI : MonoBehaviour
 
     void togglePauseMenu()
     {
-        Debug.Log("Toggle pause currently: " + pauseMenu.activeSelf);
         pauseMenu.SetActive(!pauseMenu.activeSelf);
         PauseMenu.isPaused = pauseMenu.activeSelf;
-        Debug.Log(PauseMenu.isPaused);
+        
+        Debug.Log("Toggle pause currently: " + pauseMenu.activeSelf);
     }
 
 

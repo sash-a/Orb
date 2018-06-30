@@ -1,20 +1,15 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Networking.Match;
 
 public class PauseMenu : MonoBehaviour
 {
-    public static bool isPaused = false;
+    public static bool isPaused;
     private NetworkManager netMan;
-
-    [SerializeField] private Canvas HomeMenu;
 
     void Start()
     {
         netMan = NetworkManager.singleton;
-        HomeMenu = GameObject.Find("HomeMenu").GetComponent<Canvas>();
     }
 
     public void leaveRoom()
@@ -24,6 +19,5 @@ public class PauseMenu : MonoBehaviour
         netMan.StopHost(); // If host quits room will die
 
         isPaused = false;
-        HomeMenu.enabled = true;
     }
 }
