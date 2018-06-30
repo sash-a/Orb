@@ -14,8 +14,8 @@ public class MapManager : NetworkBehaviour
     public static bool use2factorSmoothing = true;
     public static bool use3factorSmoothing = true;
 
-    public static int shatters = 2;//make zero to turn off shattering
-    public static bool useHills = true;
+    public static int shatters = 0;//make zero to turn off shattering
+    public static bool useHills = false;
     public static bool digCaves = false;
 
     public static int mapLayers = 15;
@@ -58,6 +58,12 @@ public class MapManager : NetworkBehaviour
         mapDoneLocally = false;
         manager = this;
         Map = GameObject.Find("Map");
+
+        if (Map == null)
+        {
+            Debug.LogError("You fucked up shane");
+            return;
+        }
         Debug.Log("starting map manager");
         //RegisterPrefabs.registerVoxelPrefabs(MapManager.splits);
 

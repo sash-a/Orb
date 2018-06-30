@@ -153,9 +153,9 @@ public class MagicAttack : AAttackBehaviour
     void CmdPush(String id, Vector3 direction)
     {
         Debug.Log("CMD: " + id);
-        GameManager.getObject(id).GetComponent<Rigidbody>()
-            .AddForce(direction.normalized * force /* * (1 / direction.sqrMagnitude)*/,
-                ForceMode.Impulse);
+//        GameManager.getObject(id).GetComponent<Rigidbody>()
+//            .AddForce(transform.forward.normalized * force /* * (1 / direction.sqrMagnitude)*/,
+//                ForceMode.Impulse);
         RpcPush(id);
     }
 
@@ -324,7 +324,7 @@ public class MagicAttack : AAttackBehaviour
         Debug.LogError(direction);
 
         GameManager.getObject(id).gameObject.GetComponent<Rigidbody>()
-            .AddForce(direction.normalized * force /* * (1 / direction.sqrMagnitude)*/);
+            .AddForce(transform.forward.normalized * force /* * (1 / direction.sqrMagnitude)*/);
     }
 
     /// <summary>
