@@ -13,10 +13,10 @@ public class PlayerUI : MonoBehaviour
     [SerializeField] private NetHealth health;
     [SerializeField] private ResourceManager resourceManager;
 
+    [SerializeField] private GameObject pauseMenu;
+
     void Start()
     {
-        //Debug.Log("Local");
-
         health = player.GetComponent<NetHealth>();
         resourceManager = player.GetComponent<ResourceManager>();
 
@@ -28,7 +28,21 @@ public class PlayerUI : MonoBehaviour
     {
         setHealth(health.getHealthPercent());
         setEnergy(resourceManager.getEnergy() / resourceManager.getMaxEnergy());
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            togglePauseMenu();
+        }
     }
+
+    void togglePauseMenu()
+    {
+        Debug.Log("Toggle pause currently: " + pauseMenu.activeSelf);
+        pauseMenu.SetActive(!pauseMenu.activeSelf);
+        PauseMenu.isPaused = pauseMenu.activeSelf;
+        Debug.Log(PauseMenu.isPaused);
+    }
+
 
     public void setPlayer(GameObject player)
     {

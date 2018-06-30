@@ -23,6 +23,8 @@ public abstract class AAttackBehaviour : NetworkBehaviour
 
     protected void Update()
     {
+        if (PauseMenu.isPaused) return;
+        
         if (Input.GetButtonDown("Fire1")) attack();
         if (Input.GetButtonUp("Fire1")) endAttack();
 

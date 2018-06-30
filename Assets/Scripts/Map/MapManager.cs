@@ -61,7 +61,6 @@ public class MapManager : NetworkBehaviour
 
         if (Map == null)
         {
-            Debug.LogError("You fucked up shane");
             return;
         }
         Debug.Log("starting map manager");

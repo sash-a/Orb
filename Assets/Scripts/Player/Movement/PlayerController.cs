@@ -11,12 +11,13 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         actions = GetComponent<PlayerActions>();
-        //StartCoroutine(hackPos());
         MapManager.manager.localPlayer = gameObject;
     }
 
     void Update()
     {
+        if (PauseMenu.isPaused) return;
+
         // movement
         var xMov = Input.GetAxis("Horizontal") * transform.right;
         var yMov = Input.GetAxis("Vertical") * transform.forward;

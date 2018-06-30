@@ -22,6 +22,12 @@ public class RoomListItem : MonoBehaviour
         menu = GameObject.Find("HomeMenu").GetComponent<Canvas>();
     }
 
+    private void OnEnable()
+    {
+        menu = GameObject.Find("HomeMenu").GetComponent<Canvas>();
+        netMan = NetworkManager.singleton;
+    }
+
     public void setUp(MatchInfoSnapshot _matchInfo)
     {
         matchInfo = _matchInfo;
@@ -34,6 +40,4 @@ public class RoomListItem : MonoBehaviour
         netMan.matchMaker.JoinMatch(matchInfo.networkId, "", "", "", 0, 0, netMan.OnMatchJoined);
         menu.enabled = false;
     }
-
-   
 }
