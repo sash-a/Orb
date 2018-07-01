@@ -43,6 +43,9 @@ public class Voxel : NetworkBehaviour
 
     private void Start()
     {
+        if (centreOfObject.Equals(Vector3.zero)) {
+            recalcCenters();
+        }
 
         rand = new System.Random(layer * columnID + columnID);
 
@@ -66,20 +69,14 @@ public class Voxel : NetworkBehaviour
             MapManager.manager.voxels[layer][columnID] = this;
         }
 
-        if (layer > 0)
-        {
-            transform.localScale = Vector3.one * (float)scale;
-            setColumnID(columnID);
-        }
-
-
+        transform.localScale = Vector3.one * (float)scale * MapManager.mapSize;
+        setColumnID(columnID);
 
 
         if (!(gameObject.name.Contains("sub") || gameObject.name.Contains("Sub")))
         {
             if (gameObject.name.Equals("Container"))
             {
-
             }
             else
             {
@@ -109,7 +106,8 @@ public class Voxel : NetworkBehaviour
 
                     if (farEnough)
                     {
-                        GameObject portal = (GameObject)Instantiate(Resources.Load<UnityEngine.Object>("Prefabs/Map/Portal"));
+                        GameObject portal =
+                            (GameObject)Instantiate(Resources.Load<UnityEngine.Object>("Prefabs/Map/Portal"));
                         portal.GetComponent<Portal>().createFromVoxel(this);
                         NetworkServer.Spawn(portal);
                     }
@@ -118,11 +116,10 @@ public class Voxel : NetworkBehaviour
                 if (!isServer && MapManager.manager.mapDoneLocally)
                 {
                     MapManager.manager.deviateSingleVoxel(this);
-
                 }
             }
-            //Debug.Log("renaming " + gameObject.name + " to trivoxel");
 
+            //Debug.Log("renaming " + gameObject.name + " to trivoxel");
         }
         else
         {
@@ -132,14 +129,10 @@ public class Voxel : NetworkBehaviour
         }
     }
 
-
-
-
     public void setColumnID(int colID)
     {
         columnID = colID;
-        //Debug.Log(MapManager.manager);
-        //Debug.Log(MapManager.manager.voxels);
+
         if (!MapManager.manager.voxels[layer].ContainsKey(columnID))
         {
             MapManager.manager.voxels[layer][colID] = this;
@@ -152,7 +145,6 @@ public class Voxel : NetworkBehaviour
 
     public void setTexture()
     {
-
         if (layer == 0)
         {
             StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyGrass")));
@@ -169,6 +161,7 @@ public class Voxel : NetworkBehaviour
                 earthTexNo = rand.Next(0, 9);
                 //Debug.Log("using earth texture " + earthTexNo);
             }
+
             GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth" + earthTexNo);
             //GetComponent<MeshRenderer>().material.SetTextureScale("Earth" + earthTexNo, new Vector2(texScale,texScale));
 
@@ -180,19 +173,23 @@ public class Voxel : NetworkBehaviour
             {
                 GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth7");
             }
-            else {
+            else
+            {
                 GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth8");
             }
 
-            GetComponent<MeshRenderer>().material.mainTextureScale = new Vector2(texScale / (float)Math.Pow(1.7,shatterLevel), texScale / (float)Math.Pow(1.7, shatterLevel));
-
+            GetComponent<MeshRenderer>().material.mainTextureScale = new Vector2(
+                texScale / (float)Math.Pow(1.7, shatterLevel), texScale / (float)Math.Pow(1.7, shatterLevel));
         }
     }
 
     internal void addAsset()
     {
-        asset = MapAsset.createAsset(this);
+        scale = Math.Pow(scaleRatio, Math.Abs(layer));
+        worldCentreOfObject = centreOfObject * (float)scale * MapManager.mapSize;
+        //Debug.Log("voxel creating asset ; center = " + centreOfObject + " world center = " + worldCentreOfObject);
 
+        asset = MapAsset.createAsset(this);
     }
 
     IEnumerator setTexture(Material material)
@@ -214,6 +211,7 @@ public class Voxel : NetworkBehaviour
             yield return new WaitForSecondsRealtime(1);
             filter = GetComponent<MeshFilter>();
         }
+
         var norm = Vector3.Cross(filter.mesh.vertices[0] - filter.mesh.vertices[1],
             filter.mesh.vertices[2] - filter.mesh.vertices[1]);
         var angle = Vector3.Angle(norm, centreOfObject);
@@ -229,7 +227,7 @@ public class Voxel : NetworkBehaviour
 
         //Debug.Log("to:  " + colour.r + "," + colour.g + "," + colour.b);
 
-        matt.SetColor("_Color", colour);//this feild HAS to be "_Color" otherwise call is ignored
+        matt.SetColor("_Color", colour); //this feild HAS to be "_Color" otherwise call is ignored
         gameObject.GetComponent<MeshRenderer>().material = matt;
     }
 
@@ -241,11 +239,11 @@ public class Voxel : NetworkBehaviour
             Debug.LogError("destroy vox called from in vox");
         }
 
-        if (MapManager.shatters > 0) //using shattering
+        if (MapManager.manager.shatters > 0) //using shattering
         {
             if (gameObject.name != "SubVoxel") //not subvoxel - regular voxel
             {
-                //Debug.Log("shattering a TriVoxel");
+                Debug.Log("shattering a TriVoxel");
                 showNeighbours(false);
                 RpcShatterVoxel();
             }
@@ -260,9 +258,13 @@ public class Voxel : NetworkBehaviour
         {
             //Debug.Log("destroying voxel at layer: " + layer + "  no shattering");
             showNeighbours(true);
-            if (asset != null) {
+            if (asset != null)
+            {
+                //Debug.Log("destroying voxels asset");
                 NetworkServer.Destroy(asset.gameObject);
+                Destroy(asset.gameObject);
             }
+
             NetworkServer.Destroy(gameObject);
         }
 
@@ -403,9 +405,9 @@ public class Voxel : NetworkBehaviour
         {
             if (deleted)
             {
-                MapManager.manager.informDeleted(layer, columnID);
+                MapManager.manager.CmdInformDeleted(layer, columnID);
             }
-
+            //Debug.Log("show neighbours called on client");
             return;
         }
 
@@ -453,7 +455,7 @@ public class Voxel : NetworkBehaviour
 
         if (deleted)
         {
-            MapManager.manager.informDeleted(layer, columnID);
+            MapManager.manager.CmdInformDeleted(layer, columnID);
         }
     }
 
@@ -468,7 +470,7 @@ public class Voxel : NetworkBehaviour
             Debug.LogWarning("Calling new vox on client");
             return false;
         }
-
+        //Debug.Log("creeating new voxel");
         int newVoxelLayer = layer + dir;
         // Don't create this block if it has existed before and has been deleted or if it exists right now
         if (newVoxelLayer > 0 && newVoxelLayer < MapManager.mapLayers &&
@@ -1187,6 +1189,7 @@ public class Voxel : NetworkBehaviour
         }
 
         centreOfObject = av / vertices.Length;
+        scale = Math.Pow(scaleRatio, Math.Abs(layer));
         worldCentreOfObject = centreOfObject * (float)scale * MapManager.mapSize;
     }
 }

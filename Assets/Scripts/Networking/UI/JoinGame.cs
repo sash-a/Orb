@@ -22,25 +22,10 @@ public class JoinGame : MonoBehaviour
         refreshRoomList();
     }
 
-//    private void OnEnable()
-//    {
-//        netMan = NetworkManager.singleton;
-//        
-//        if (!netMan.matchMaker.isActiveAndEnabled) netMan.StartMatchMaker();
-//
-//        refreshRoomList();
-//    }
 
     public void refreshRoomList()
     {
         clearRoomList();
-        
-        // This needs to happen after client has exited game and tries to rejoin
-        // This is buggy af and will hopefully not end up being a permanent fix
-        
-        // This should be eliminated when a separate scene is created for the homeMenu
-//        netMan.StopMatchMaker();
-//        netMan.StartMatchMaker();
         
         netMan.matchMaker.ListMatches(0, 20, "", true, 0, 0, updateRoomList);
         status.text = "Loading...";

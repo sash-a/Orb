@@ -11,7 +11,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         actions = GetComponent<PlayerActions>();
-        MapManager.manager.localPlayer = gameObject;
+        StartCoroutine(hackPos());
     }
 
     void Update()
@@ -37,7 +37,8 @@ public class PlayerController : MonoBehaviour
 
     IEnumerator hackPos()
     {
-        yield return new WaitForSeconds(5);
-        transform.position = new Vector3(1, 0, 0);
+        yield return new WaitForSeconds(2);
+        transform.position = new Vector3(0, 0, 0);
+        GetComponent<Rigidbody>().velocity = Vector3.zero;
     }
 }

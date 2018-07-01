@@ -16,10 +16,7 @@ public class RegisterPrefabs : MonoBehaviour
 
         int count = 0;
         foreach (var voxel in voxels)
-        {
-            //Debug.Log(voxel.name);
-            //int colID = Int32.Parse(voxel.name.Substring(5));
-            
+        {   
             var voxelGameObj = (GameObject)voxel;
             voxelGameObj.GetComponent<Voxel>().columnID = count;
             ClientScene.RegisterPrefab(voxelGameObj);

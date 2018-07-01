@@ -1021,7 +1021,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1307754806501666}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.049, z: 0}
+  m_LocalPosition: {x: 0, y: -30, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4837315296727580}
@@ -2362,6 +2362,7 @@ MonoBehaviour:
   grenadeSpawn: {fileID: 1211541915279614}
   grenadePrefab: {fileID: 1498871943907182, guid: e322cc84d99dfdb47bb90bf39aedb094,
     type: 2}
+  throwForce: 40
 --- !u!114 &114688087492086176
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2426,9 +2427,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79f4476d0f95929448c51882e186e2a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  primaryAmmo: 50
-  secondaryAmmo: 50
-  maxAmmo: 1000
   energy: 100
   maxEnergy: 100
 --- !u!114 &114926551303711396

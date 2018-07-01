@@ -22,10 +22,12 @@ public class CaveManager : NetworkBehaviour
     // Use this for initialization
     void Start()
     {
+        //Debug.Log("trying to start cave manager");
         if (!isServer) { return; }
+
+        //Debug.Log("starting cave manager");
         caves = new HashSet<CaveBody>();
         entrances = new HashSet<CaveEntrance>();
-        rand = new System.Random();
         diggers = new HashSet<Digger>();
         diggerPrefab = Resources.Load("Prefabs/Map/Digger");
         manager = this;
@@ -39,8 +41,10 @@ public class CaveManager : NetworkBehaviour
 
     public static void digCaves()
     {
-        shatters = MapManager.shatters;
-        MapManager.shatters = 0;
+        rand = new System.Random();
+        Debug.Log("cave manager digging caves");
+        shatters = MapManager.manager.shatters;
+        MapManager.manager.shatters = 0;
         for (int i = 0; i < caveNo; i++)
         {
             CaveEntrance entrance = new CaveEntrance();
@@ -82,6 +86,7 @@ public class CaveManager : NetworkBehaviour
             }
             else
             {
+                Debug.Log("finisheing map - dug caves - not making hills");
                 MapManager.manager.finishMap();
             }
             manager.StartCoroutine(manager.RestoreShatters());
@@ -91,7 +96,7 @@ public class CaveManager : NetworkBehaviour
     IEnumerator RestoreShatters()
     {
         yield return new WaitForSecondsRealtime(1);
-        MapManager.shatters = shatters;
+        MapManager.manager.shatters = shatters;
 
     }
 

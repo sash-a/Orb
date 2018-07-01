@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 4755994919393654}
   - component: {fileID: 114348281623088336}
   - component: {fileID: 114847612144476430}
+  - component: {fileID: 114744109722512412}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -75,7 +76,7 @@ MonoBehaviour:
   - {fileID: 1642744248461048, guid: 9367bcf7b4699b541b9a4316055d1581, type: 2}
   - {fileID: 1666006330323904, guid: 76e59d8bd5998494f852fa19b16c6f7b, type: 2}
   - {fileID: 1404482007908908, guid: beb6e44ae8b90074cbc88fa9111cadc0, type: 2}
-  - {fileID: 1744485104198092, guid: 415c14cc2f214a842a3a59ce7098d87d, type: 2}
+  - {fileID: 0}
   - {fileID: 1989940702272966, guid: 7fbcfc6d61908424d9de4502175ad820, type: 2}
   - {fileID: 1024043239652966, guid: a6977d1620182d34ba0a3834a30482d4, type: 2}
   m_CustomConfig: 0
@@ -132,7 +133,18 @@ MonoBehaviour:
   matchName: default
   matchSize: 4
   isNetworkActive: 0
-  matchMaker: {fileID: 0}
+  matchMaker: {fileID: 114744109722512412}
+--- !u!114 &114744109722512412
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1098740403321060}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114847612144476430
 MonoBehaviour:
   m_ObjectHideFlags: 1

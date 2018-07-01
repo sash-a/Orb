@@ -12,35 +12,41 @@ public class NetworkMapGen : NetworkBehaviour
     Dictionary<int, Voxel> voxelDict = new Dictionary<int, Voxel>();
 
     public GameObject parent;
-    public GameObject treePrefab;
-
-    //higher density = less trees (yes i know its weird)
     public int density;
 
     public static NetworkMapGen mapGen;
 
-    void Start()
-    {
-        parent = GameObject.Find("Map");
-        mapGen = this;
-    }
+//    void Start()
+//    {
+//        mapGen = this;
+//    }
 
+    public void start()
+    {
+        mapGen = this;
+
+        spawnVoxelsOnServer(MapManager.splits);
+        GenerateTrees(density);
+    }
+    
     private void spawnVoxelsOnServer(int splits)
     {
+        if (!isServer) return;
+        
+        Debug.Log("Spawning voxels on server");
+
         Object[] voxels = Resources.LoadAll("Voxels/Prefabs/Split" + splits, typeof(GameObject));
 
         if (voxels.Length == 0)
         {
-            Debug.LogWarning("failed to load voxels");
+            Debug.LogError("Failed to load voxels");
         }
 
         int count = 0;
         foreach (var voxel in voxels)
         {
-            //int colID = Int32.Parse(voxel.name.Substring(5));
-            var voxelGameObj = (GameObject)voxel;
+            var voxelGameObj = (GameObject) voxel;
             voxelGameObj.GetComponent<Voxel>().columnID = count;
-            //voxelGameObj.name = "Voxel" + colID;
             voxelDict.Add(count, voxelGameObj.GetComponent<Voxel>());
             count++;
         }
@@ -50,31 +56,22 @@ public class NetworkMapGen : NetworkBehaviour
             GameObject inst = Instantiate(voxelDict[colID].gameObject);
             inst.GetComponent<Voxel>().setColumnID(colID);
             inst.name = "Voxel" + colID;
+            //inst.transform.localScale = 
 
-            //            Debug.Log("World center according to server: " + inst.GetComponent<Voxel>().worldCentreOfObject);
             NetworkServer.Spawn(inst);
         }
-
     }
 
-    public override void OnStartServer()
-    {
-        base.OnStartServer();
-        mapGen = this;
-
-        GameObject mapSync = Instantiate(Resources.Load<GameObject>("Prefabs/Map/MapSync"), Vector3.zero, Quaternion.identity);
-        mapSync.GetComponent<MapManager>().start();
-
-        NetworkServer.Spawn(mapSync);
-
-        //Debug.Log("Spawning");
-        spawnVoxelsOnServer(MapManager.splits);
-        StartCoroutine(InitTrees());
-
-
-    }
-
-
+    //    public override void OnStartServer()
+    //    {
+    //        base.OnStartServer();
+    //        mapGen = this;
+    //
+    //        spawnVoxelsOnServer(MapManager.splits);
+    //        GenerateTrees(density);
+    //    }
+    //
+    //
     public override void OnStartClient()
     {
         base.OnStartClient();
@@ -92,34 +89,34 @@ public class NetworkMapGen : NetworkBehaviour
 
     IEnumerator CountSpawnedVoxels()
     {
-        yield return new WaitForSeconds(5);
-        if (MapManager.manager.spawnedVoxels.Count < 768 * Math.Pow(2, MapManager.splits))
-        {
-            Debug.LogError("waited 5 seconds and not all voxels have been spawned - only found " + MapManager.manager.spawnedVoxels.Count + " unique column id's; should be: " + 768 * Math.Pow(2, MapManager.splits));
+        bool loaded = false;
+        int maxTries = 6;
+        
+
+        while (!loaded && maxTries>0) {
+            yield return new WaitForSeconds(1);
+            loaded = MapManager.manager.spawnedVoxels.Count == 768 * Math.Pow(2, MapManager.splits);
+            maxTries--;
         }
-        else {
+
+        if (loaded)
+        {
+            Debug.Log("client voxels spawned correctly");
+            MapManager.manager.voxelsLoaded();
             MapManager.SmoothVoxels();
         }
-    }
-    public IEnumerator InitVoxels()
-    {
-        yield return new WaitForSecondsRealtime(1.3f);
-     
-        GameObject[] objs = FindObjectsOfType<GameObject>();
-        for (int i = 0; i < objs.Length; i++)
-        {
-            if (objs[i].name.Contains("voxel") || objs[i].name.Equals("TriVoxel"))
-            {
-                objs[i].transform.parent = parent.transform.GetChild(1);
-            }
+        else {
+            Debug.LogError("waited 5 seconds and not all voxels have been spawned - only found " +
+                       MapManager.manager.spawnedVoxels.Count + " unique column id's; should be: " +
+                       768 * Math.Pow(2, MapManager.splits));
         }
 
-
-        MapManager.manager.voxelsLoaded();
     }
+
 
     public void GenerateTrees(int density)
     {
+        if (!isServer) { return; }
         //Debug.Log("generating trees - " + MapManager.manager.voxels[0].Count + " voxels");
         //random group of trees between 10 and 20
         int numTrees = UnityEngine.Random.Range(10, 20);
@@ -152,7 +149,8 @@ public class NetworkMapGen : NetworkBehaviour
                     vox.addAsset();
                 }
             }
-            else {
+            else
+            {
                 //Debug.Log("skipping vox for tree; nt=" + numTrees + " d=" + d);
             }
 
@@ -166,7 +164,6 @@ public class NetworkMapGen : NetworkBehaviour
             if (numTrees <= 0)
             {
                 d--;
-                continue;
             }
         }
     }

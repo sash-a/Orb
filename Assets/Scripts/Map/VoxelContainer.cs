@@ -35,7 +35,7 @@ public class VoxelContainer : Voxel
 
         lastHitRay = majorVoxel.lastHitRay;
         lastHitPosition = majorVoxel.lastHitPosition;
-        if (shatterLevel < MapManager.shatters)
+        if (shatterLevel < MapManager.manager.shatters)
         {
             //damageContainer();
         }
@@ -64,7 +64,7 @@ public class VoxelContainer : Voxel
                 lastHitPosition = hit.point;
                 hitVox.lastHitPosition = hit.point;
                 //Debug.Log("rehit subvoxel in same voxel");
-                if (shatterLevel < MapManager.shatters - 1)
+                if (shatterLevel < MapManager.manager.shatters - 1)
                 {
                     //VoxelContainer vc = new VoxelContainer(hitVox);
                 }
@@ -88,7 +88,7 @@ public class VoxelContainer : Voxel
             if (closest != null)
             {
                 //Debug.Log("settling for a closest solution");
-                if (shatterLevel < MapManager.shatters - 1)
+                if (shatterLevel < MapManager.manager.shatters - 1)
                 {
                     //VoxelContainer vc = new VoxelContainer(closest);
                 }

@@ -23,16 +23,13 @@ public class Portal : NetworkBehaviour
     // Use this for initialization
     void Start()
     {
-        if (!created)
-        {
-            createFromVoxel(MapManager.manager.voxels[layer][columnID]);
-        }
-        transform.parent = MapManager.manager.Map.transform.GetChild(3);
+        StartCoroutine(waitNCreate());
     }
 
 
     public void createFromVoxel(Voxel seed)
     {
+        if (created) { return; }
         created = true;
         portalDims = new Vector3(0.03f, 0.05f, 0.002f);
         columnID = seed.columnID;
@@ -80,6 +77,16 @@ public class Portal : NetworkBehaviour
 
         MapManager.manager.portals.Add(this);
 
+    }
+
+    IEnumerator waitNCreate() {
+        yield return new WaitForSecondsRealtime(1.5f);
+
+        if (!created)
+        {
+            createFromVoxel(MapManager.manager.voxels[layer][columnID]);
+        }
+        transform.parent = MapManager.manager.Map.transform.GetChild(3);
     }
 
     // Update is called once per frame
