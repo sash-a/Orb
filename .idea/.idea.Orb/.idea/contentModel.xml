@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ContentModelStore">
-    <e p="C:\Users\Sasha\.Rider2018.1\system\resharper-host\Local\Transient\ReSharperHost\v12\SolutionCaches\_Orb.1270752529.00" t="ExcludeRecursive" />
-    <e p="F:\Documents\Unity projects\Orb\Orb\Orb" t="IncludeRecursive">
+    <e p="C:\Users\Sasha\.Rider2018.1\system\resharper-host\Local\Transient\ReSharperHost\v12\SolutionCaches\_Orb.-972207839.00" t="ExcludeRecursive" />
+    <e p="C:\Users\Sasha\Documents\Orb" t="IncludeRecursive">
       <e p="Assembly-CSharp-Editor-firstpass.csproj" t="IncludeRecursive" />
       <e p="Assembly-CSharp-Editor.csproj" t="IncludeRecursive" />
       <e p="Assembly-CSharp-firstpass.csproj" t="IncludeRecursive" />
@@ -13,8 +13,31 @@
           <e p="MapGen.cs" t="Include" />
           <e p="VoxelGen.cs" t="Include" />
         </e>
-        <e p="ForcePush.cs" t="Include" />
-        <e p="MapSync.cs" t="Include" />
+        <e p="Fonts" t="Include">
+          <e p="OpenSans" t="Include">
+            <e p="License!.txt" t="Include" />
+          </e>
+        </e>
+        <e p="Lobby" t="Include">
+          <e p="Documentation.txt" t="Include" />
+          <e p="Instruction.txt" t="Include" />
+          <e p="Scripts" t="Include">
+            <e p="DraggablePanel.cs" t="Include" />
+            <e p="Lobby" t="Include">
+              <e p="LobbyCountdownPanel.cs" t="Include" />
+              <e p="LobbyHook.cs" t="Include" />
+              <e p="LobbyInfoPanel.cs" t="Include" />
+              <e p="LobbyMainMenu.cs" t="Include" />
+              <e p="LobbyManager.cs" t="Include" />
+              <e p="LobbyPlayer.cs" t="Include" />
+              <e p="LobbyPlayerList.cs" t="Include" />
+              <e p="LobbyServerEntry.cs" t="Include" />
+              <e p="LobbyServerList.cs" t="Include" />
+              <e p="LobbyTopPanel.cs" t="Include" />
+            </e>
+          </e>
+        </e>
+        <e p="Overlord.cs" t="Include" />
         <e p="Plugins" t="Include">
           <e p="GitHub" t="Include">
             <e p="Editor" t="Include">
@@ -28,6 +51,15 @@
             <e p="ShieldFX.shader" t="Include" />
           </e>
         </e>
+        <e p="SampleScenes" t="Include">
+          <e p="Scripts" t="Include">
+            <e p="NetworkAsteroid.cs" t="Include" />
+            <e p="NetworkGameManager.cs" t="Include" />
+            <e p="NetworkLobbyHook.cs" t="Include" />
+            <e p="NetworkSpaceship.cs" t="Include" />
+            <e p="NetworkSpaceshipBullet.cs" t="Include" />
+          </e>
+        </e>
         <e p="Scripts" t="Include">
           <e p="Map" t="Include">
             <e p="Caves" t="Include">
@@ -38,6 +70,7 @@
               <e p="Digger.cs" t="Include" />
               <e p="Tunnel.cs" t="Include" />
             </e>
+            <e p="MapAsset.cs" t="Include" />
             <e p="MapManager.cs" t="Include" />
             <e p="Portal.cs" t="Include" />
             <e p="SubVoxel.cs" t="Include" />
@@ -45,7 +78,6 @@
             <e p="VoxelContainer.cs" t="Include" />
           </e>
           <e p="Mechanics" t="Include">
-            <e p="AssetOrientation.cs" t="Include" />
             <e p="CursorLock.cs" t="Include" />
             <e p="FPSShower.cs" t="Include" />
             <e p="Gravity.cs" t="Include" />
@@ -58,6 +90,12 @@
             <e p="Identifier.cs" t="Include" />
             <e p="NetworkMapGen.cs" t="Include" />
             <e p="RegisterPrefabs.cs" t="Include" />
+            <e p="UI" t="Include">
+              <e p="HostGame.cs" t="Include" />
+              <e p="JoinGame.cs" t="Include" />
+              <e p="PauseMenu.cs" t="Include" />
+              <e p="RoomListItem.cs" t="Include" />
+            </e>
           </e>
           <e p="Player" t="Include">
             <e p="Combat" t="Include">
@@ -65,6 +103,7 @@
               <e p="Crosshair.cs" t="Include" />
               <e p="Item.cs" t="Include" />
               <e p="Magic" t="Include">
+                <e p="ForcePush.cs" t="Include" />
                 <e p="MagicAttack.cs" t="Include" />
                 <e p="MagicType.cs" t="Include" />
                 <e p="Shield.cs" t="Include" />
@@ -72,6 +111,7 @@
               </e>
               <e p="Weapons" t="Include">
                 <e p="aim.cs" t="Include" />
+                <e p="Ammo.cs" t="Include" />
                 <e p="grenade.cs" t="Include" />
                 <e p="Scope.cs" t="Include" />
                 <e p="WeaponAttack.cs" t="Include" />
@@ -81,7 +121,7 @@
             </e>
             <e p="Movement" t="Include">
               <e p="PlayerActions.cs" t="Include" />
-              <e p="PlayerController.cs" t="Include" />
+              <e p="PlayerControls.cs" t="Include" />
             </e>
             <e p="PlayerSetup.cs" t="Include" />
             <e p="PlayerType.cs" t="Include" />

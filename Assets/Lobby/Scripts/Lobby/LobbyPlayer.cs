@@ -249,6 +249,7 @@ namespace Prototype.NetworkLobby
         [Command]
         public void CmdColorChange()
         {
+            // TODO setup player
             int idx = System.Array.IndexOf(Colors, playerColor);
 
             int inUseIdx = _colorInUse.IndexOf(idx);
@@ -305,7 +306,7 @@ namespace Prototype.NetworkLobby
             for (int i = 0; i < _colorInUse.Count; ++i)
             {
                 if (_colorInUse[i] == idx)
-                {//that color is already in use
+                {    // that color is already in use
                     _colorInUse.RemoveAt(i);
                     break;
                 }
