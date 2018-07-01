@@ -26,21 +26,19 @@ public class NetworkMapGen : NetworkBehaviour
         mapGen = this;
 
         spawnVoxelsOnServer(MapManager.splits);
-        GenerateTrees(density);
+        genTrees(density);
     }
-    
+
+
     private void spawnVoxelsOnServer(int splits)
     {
         if (!isServer) return;
-        
-        Debug.Log("Spawning voxels on server");
 
         Object[] voxels = Resources.LoadAll("Voxels/Prefabs/Split" + splits, typeof(GameObject));
 
-        if (voxels.Length == 0)
-        {
-            Debug.LogError("Failed to load voxels");
-        }
+        Debug.Log("Spawning voxels on server");
+        if (voxels.Length == 0) Debug.LogError("Failed to load voxels");
+
 
         int count = 0;
         foreach (var voxel in voxels)
@@ -56,22 +54,17 @@ public class NetworkMapGen : NetworkBehaviour
             GameObject inst = Instantiate(voxelDict[colID].gameObject);
             inst.GetComponent<Voxel>().setColumnID(colID);
             inst.name = "Voxel" + colID;
-            //inst.transform.localScale = 
 
             NetworkServer.Spawn(inst);
         }
+
+        // Calling server side only
+//        MapManager.manager.voxelsLoaded();
     }
 
-    //    public override void OnStartServer()
-    //    {
-    //        base.OnStartServer();
-    //        mapGen = this;
-    //
-    //        spawnVoxelsOnServer(MapManager.splits);
-    //        GenerateTrees(density);
-    //    }
-    //
-    //
+    /// <summary>
+    /// Checks if all voxels have spawned client side
+    /// </summary>
     public override void OnStartClient()
     {
         base.OnStartClient();
@@ -80,20 +73,17 @@ public class NetworkMapGen : NetworkBehaviour
         StartCoroutine(CountSpawnedVoxels());
     }
 
-    IEnumerator InitTrees()
-    {
-        yield return new WaitForSeconds(1);
-        GenerateTrees(density);
-        //Debug.Log("Generated trees");
-    }
-
+    /// <summary>
+    /// Repeatedly counts the number of voxels currently spawned and once all voxels are spawned calls voxelsLoaded
+    /// </summary>
+    /// <returns></returns>
     IEnumerator CountSpawnedVoxels()
     {
         bool loaded = false;
-        int maxTries = 6;
-        
+        int maxTries = 10;
 
-        while (!loaded && maxTries>0) {
+        while (!loaded && maxTries > 0)
+        {
             yield return new WaitForSeconds(1);
             loaded = MapManager.manager.spawnedVoxels.Count == 768 * Math.Pow(2, MapManager.splits);
             maxTries--;
@@ -101,36 +91,32 @@ public class NetworkMapGen : NetworkBehaviour
 
         if (loaded)
         {
-            Debug.Log("client voxels spawned correctly");
-            MapManager.manager.voxelsLoaded();
+            Debug.Log("Client voxels spawned correctly");
+            MapManager.manager.voxelsLoaded(); // Calling client side only
             MapManager.SmoothVoxels();
         }
-        else {
+        else
+        {
             Debug.LogError("waited 5 seconds and not all voxels have been spawned - only found " +
-                       MapManager.manager.spawnedVoxels.Count + " unique column id's; should be: " +
-                       768 * Math.Pow(2, MapManager.splits));
+                           MapManager.manager.spawnedVoxels.Count + " unique column id's; should be: " +
+                           768 * Math.Pow(2, MapManager.splits));
         }
-
     }
 
 
-    public void GenerateTrees(int density)
+    private void genTrees(int density)
     {
-        if (!isServer) { return; }
-        //Debug.Log("generating trees - " + MapManager.manager.voxels[0].Count + " voxels");
+        if (!isServer) return;
         //random group of trees between 10 and 20
         int numTrees = UnityEngine.Random.Range(10, 20);
         // d is related to density
         int d = density;
         //loop through every surface voxel
-        //Debug.LogWarning(MapManager.voxels[0].Count);
         foreach (Voxel vox in MapManager.manager.voxels[0].Values)
         {
-            //Debug.Log("considering vox " + vox + " " + vox.gameObject.name + " for a tree");
             //when the appropriate number of voxels have been skipped
             if (d == 0)
             {
-                //Debug.Log("pumping tree count back up");
                 //a new tree group size is selected
                 numTrees = UnityEngine.Random.Range(10, 20);
                 //and d is reset to chosen density value
@@ -139,32 +125,16 @@ public class NetworkMapGen : NetworkBehaviour
             }
 
             //spawn trees on voxels when conditions met
-            if (numTrees > 0 && density > 0)
+            if (numTrees > 0 && density > 0 && isServer)
             {
-                //Debug.Log("trying to gen tree; isserver:" + isServer);
-                if (isServer)
-                {
-                    //Debug.Log("putting tree at Center: " + vox.worldCentreOfObject);
-                    //GameObject tree = Instantiate(treePrefab, vox.worldCentreOfObject, Quaternion.identity);
-                    vox.addAsset();
-                }
-            }
-            else
-            {
-                //Debug.Log("skipping vox for tree; nt=" + numTrees + " d=" + d);
+                vox.addAsset();
             }
 
             //if trees are still spawning, decrement numTree counter
-            if (numTrees > 0)
-            {
-                numTrees--;
-            }
+            if (numTrees > 0) numTrees--;
 
             //once a group of trees has been instantiated, skip a number of voxels related to density
-            if (numTrees <= 0)
-            {
-                d--;
-            }
+            if (numTrees <= 0) d--;
         }
     }
 }

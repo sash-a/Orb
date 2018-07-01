@@ -183,11 +183,13 @@ public class Voxel : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Adds an asset to this voxel so that when the voxel is destroyed so is the asset
+    /// </summary>
     internal void addAsset()
     {
         scale = Math.Pow(scaleRatio, Math.Abs(layer));
         worldCentreOfObject = centreOfObject * (float)scale * MapManager.mapSize;
-        //Debug.Log("voxel creating asset ; center = " + centreOfObject + " world center = " + worldCentreOfObject);
 
         asset = MapAsset.createAsset(this);
     }
@@ -212,6 +214,7 @@ public class Voxel : NetworkBehaviour
             filter = GetComponent<MeshFilter>();
         }
 
+        // TODO sometimes array out of range?
         var norm = Vector3.Cross(filter.mesh.vertices[0] - filter.mesh.vertices[1],
             filter.mesh.vertices[2] - filter.mesh.vertices[1]);
         var angle = Vector3.Angle(norm, centreOfObject);
@@ -467,7 +470,6 @@ public class Voxel : NetworkBehaviour
     {
         if (!isServer)
         {
-            Debug.LogWarning("Calling new vox on client");
             return false;
         }
         //Debug.Log("creeating new voxel");

@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 
-
 public class Overlord : MonoBehaviour
 {
     public MapManager mapManager;
@@ -11,6 +10,5 @@ public class Overlord : MonoBehaviour
         Debug.Log("Starting overlord");
         mapManager.start();
         networkMapGen.start();
-//        NetworkServer.Spawn(NetworkManager.singleton.playerPrefab);
     }
 }

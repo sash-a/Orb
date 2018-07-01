@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEngine.Networking;
 using UnityEditor;
 using System.IO;
+using Prototype.NetworkLobby;
 
 public class MapManager : NetworkBehaviour
 {
@@ -42,10 +43,11 @@ public class MapManager : NetworkBehaviour
     public static MapManager manager;
 
 
+    /// <summary>
+    /// Sets up mapmanager datastructures
+    /// </summary>
     public void start()
     {
-        //Debug.Log("Starting map manager");
-
         mapDoneLocally = false;
         manager = this;
 
@@ -62,8 +64,6 @@ public class MapManager : NetworkBehaviour
         voxelPositions = new Dictionary<int, Vector3>();
         neighboursMap = new Dictionary<int, HashSet<int>>();
         portals = new HashSet<Portal>();
-
-        //Map.transform.localScale *= mapSize;
     }
 
     /*private void Update()
@@ -179,7 +179,9 @@ public class MapManager : NetworkBehaviour
             vox.checkNeighbourCount();
             //Debug.Log("adding position for voxel 0, " + vox.columnID);
             voxelPositions.Add(vox.columnID, vox.centreOfObject);
-            vox.gameObject.name = "TriVoxel";
+            
+            // This was uneccasarry and was causing errors with new lobby system (names are still trivoxel
+            // vox.gameObject.name = "TriVoxel";
         }
 
         
@@ -205,11 +207,12 @@ public class MapManager : NetworkBehaviour
 
     public void finishMap()
     {
-        Debug.Log("map finished");
+        Debug.Log("Map finished");
         mapDoneLocally = true;
         SmoothVoxels();
         finishAssets();
-        NetworkManager.singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
+        LobbyManager.s_Singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
+//        NetworkManager.singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
 
     }
 
@@ -515,7 +518,7 @@ public class MapManager : NetworkBehaviour
         {
             VoxelContainer vc = v.gameObject.GetComponent<VoxelContainer>();
             //Debug.Log("opening container " + vc + " - " + vc.subVoxelID);
-            v = (Voxel) vc.subVoxels[int.Parse(subID.Split(',')[i])];
+            v = (Voxel) vc.subVoxels[int.Parse(subID.Split(',')[i])]; // TODO try catch, this isn't working every time
             //Debug.Log("opening contained subVoxel " + v + " - " + v.subVoxelID);
         }
 

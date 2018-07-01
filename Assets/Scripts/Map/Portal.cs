@@ -5,24 +5,23 @@ using UnityEngine.Networking;
 
 public class Portal : NetworkBehaviour
 {
-
     System.Random rand;
 
     Vector3 portalDims;
 
     GameObject supplyRoom;
-    GameObject player;
+    private GameObject player;
 
-    int supplyTime = 10;
+    [SerializeField] private const int supplyTime = 10;
 
     [SyncVar] int columnID;
     [SyncVar] int layer;
 
     bool created = false;
 
-    // Use this for initialization
     void Start()
     {
+        supplyRoom = GameObject.Find("SupplyRoom");  
         StartCoroutine(waitNCreate());
     }
 
@@ -79,6 +78,10 @@ public class Portal : NetworkBehaviour
 
     }
 
+    /// <summary>
+    /// Waiting for generation to be finished client side before creating portals
+    /// </summary>
+    /// <returns></returns>
     IEnumerator waitNCreate() {
         yield return new WaitForSecondsRealtime(1.5f);
 
@@ -89,16 +92,9 @@ public class Portal : NetworkBehaviour
         transform.parent = MapManager.manager.Map.transform.GetChild(3);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
     private void OnCollisionEnter(Collision collision)
     {
-        //Debug.Log("hit portal");
-        supplyRoom = GameObject.Find("SupplyRoom");
+        // Moved suply room to be found on start
         player = collision.gameObject;
         player.transform.position = supplyRoom.transform.position;
         StartCoroutine(ReturnPlayer());
@@ -111,6 +107,6 @@ public class Portal : NetworkBehaviour
         {
             player.transform.position = new Vector3(0, 40, 0);
         }
-        catch { }
+        catch { /* ignored */ }
     }
 }

@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerActions))]
-public class PlayerController : MonoBehaviour
+public class PlayerControls : MonoBehaviour
 {
     [SerializeField] private float speed = 18f;
     [SerializeField] private float lookSens = 8f;
