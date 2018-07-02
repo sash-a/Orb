@@ -40,7 +40,7 @@ public class PlayerUI : MonoBehaviour
     {
         pauseMenu.SetActive(!pauseMenu.activeSelf);
         PauseMenu.isPaused = pauseMenu.activeSelf;
-        
+
         Debug.Log("Toggle pause currently: " + pauseMenu.activeSelf);
     }
 

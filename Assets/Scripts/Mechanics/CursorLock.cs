@@ -3,11 +3,6 @@ using UnityEngine.Networking;
 
 public class CursorLock : MonoBehaviour
 {
-    void Start()
-    {
-        
-    }
-    
     void Update()
     {
         // Unlock on escape

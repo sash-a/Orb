@@ -129,9 +129,8 @@ public class MapManager : NetworkBehaviour
 
     internal void replaceSubVoxel(Voxel spawnedVox)
     {
-        Voxel
-            v = voxels[spawnedVox.layer][
-                spawnedVox.columnID]; //v should be a voxel container for this to be a valid call to destroy subvoxel
+        //v should be a voxel container for this to be a valid call to destroy subvoxel
+        Voxel v = voxels[spawnedVox.layer][spawnedVox.columnID]; 
         //Debug.Log("found top level container: " + v + " of type: " + v.GetType());
         int shatterLevel = spawnedVox.subVoxelID.Split(',').Length - 1;
 

@@ -21,6 +21,20 @@ public class PlayerSetup : NetworkBehaviour
         {
             foreach (Behaviour comp in componentsToDisable)
                 comp.enabled = false;
+
+            // These are dynamically added and thus must can't be added into comps to disable
+            var magic = gameObject.GetComponent<MagicAttack>();
+            var weapon = gameObject.GetComponent<WeaponAttack>();
+
+            if (magic != null)
+            {
+                magic.enabled = false;
+            }
+
+            if (weapon != null)
+            {
+                weapon.enabled = false;
+            }
             assignRemotePlayer();
         }
         else

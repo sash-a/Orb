@@ -28,14 +28,39 @@ public class MagicAttack : AAttackBehaviour
 
     private bool isAttacking;
 
-    void Start()
+    public void setAttributes(Camera cam, LayerMask mask, GameObject shield, GameObject telekenPosition)
+    {
+        this.cam = cam;
+        this.mask = mask;
+        this.shield = shield;
+        this.telekenObjectPos = telekenPosition;
+
+        setUp();
+    }
+
+    private void setUp()
+    {
+        resourceManager = GetComponent<ResourceManager>();
+
+        type = new MagicType
+        {
+            isDamage = true,
+            isShield = true
+        };
+
+        shieldUp = false;
+        isAttacking = false;
+        force = 100;
+    }
+
+    /*void Start()
     {
         resourceManager = GetComponent<ResourceManager>();
 
         shieldUp = false;
         isAttacking = false;
         force = 100;
-    }
+    }*/
 
     void Update()
     {
@@ -117,45 +142,42 @@ public class MagicAttack : AAttackBehaviour
                 }
             }
         }
-        else if (type.isForcePush) // This is not yet working
-        {
-            Debug.Log("Pushing");
-//            force.setUp(transform.position, 50);
-            if (!canCastPush) return;
-
-            var myColl = GetComponent<Collider>();
-            foreach (var coll in Physics.OverlapSphere(transform.position, 15))
-            {
-                Debug.Log(coll.name);
-                if (coll.CompareTag(PLAYER_TAG) && coll != myColl)
-                {
-                    Debug.LogWarning(coll.gameObject.GetComponent<Identifier>().id);
-
-                    var direction = coll.transform.position - transform.position;
-
-                    if (coll.gameObject.GetComponent<Rigidbody>() == null)
-                    {
-                        Debug.LogError("Null");
-                    }
-
-//                    coll.gameObject.GetComponent<Rigidbody>()
-//                        .AddForce(direction.normalized * force /* * (1 / direction.sqrMagnitude)*/,
-//                            ForceMode.Impulse);
-                    CmdPush(coll.gameObject.GetComponent<Identifier>().id, direction);
-                }
-            }
-
-            canCastPush = false;
-        }
+        // Below is currently broken
+//        else if (type.isForcePush) // This is not yet working
+//        {
+//            Debug.Log("Pushing");
+////            force.setUp(transform.position, 50);
+//            if (!canCastPush) return;
+//
+//            var myColl = GetComponent<Collider>();
+//            foreach (var coll in Physics.OverlapSphere(transform.position, 15))
+//            {
+//                Debug.Log(coll.name);
+//                if (coll.CompareTag(PLAYER_TAG) && coll != myColl)
+//                {
+//                    Debug.LogWarning(coll.gameObject.GetComponent<Identifier>().id);
+//
+//                    var direction = coll.transform.position - transform.position;
+//
+//                    if (coll.gameObject.GetComponent<Rigidbody>() == null)
+//                    {
+//                        Debug.LogError("Null");
+//                    }
+//
+////                    coll.gameObject.GetComponent<Rigidbody>()
+////                        .AddForce(direction.normalized * force /* * (1 / direction.sqrMagnitude)*/,
+////                            ForceMode.Impulse);
+//                    CmdPush(coll.gameObject.GetComponent<Identifier>().id, direction);
+//                }
+//            }
+//
+//            canCastPush = false;
+//        }
     }
 
     [Command]
     void CmdPush(String id, Vector3 direction)
     {
-        Debug.Log("CMD: " + id);
-//        GameManager.getObject(id).GetComponent<Rigidbody>()
-//            .AddForce(transform.forward.normalized * force /* * (1 / direction.sqrMagnitude)*/,
-//                ForceMode.Impulse);
         RpcPush(id);
     }
 
@@ -319,7 +341,7 @@ public class MagicAttack : AAttackBehaviour
     [ClientRpc]
     void RpcPush(string id)
     {
-        Debug.LogWarning("in rpc");    
+        Debug.LogWarning("in rpc");
         var direction = GameManager.getObject(id).transform.position - transform.position;
         Debug.LogError(direction);
 
