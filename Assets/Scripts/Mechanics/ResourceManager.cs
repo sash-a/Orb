@@ -4,6 +4,7 @@ using UnityEngine.Networking;
 
 public class ResourceManager : NetworkBehaviour
 {
+
     [SerializeField] private float energy = 100;
     [SerializeField] private float maxEnergy = 100;
 
