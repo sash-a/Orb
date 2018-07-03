@@ -16,7 +16,12 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if (PauseMenu.isPaused) return;
+        if (PlayerUI.isPaused)
+        {
+            // Stop rotation
+            actions.rotate(Vector3.zero, 0);
+            return;
+        }
 
         // movement
         var xMov = Input.GetAxis("Horizontal") * transform.right;

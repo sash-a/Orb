@@ -32,11 +32,11 @@ public class NetHealth : NetworkBehaviour
         if (isServer)
         {
             if (health <= 0) die();
+            else if (health > maxHealth) health = maxHealth;
         }
     }
 
     // This completely removes the object from the game
-    // TODO specilize for player (disable and set cam)
     private void die()
     {
         isDead = true;

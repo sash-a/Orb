@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class Overlord : MonoBehaviour
+public class Orderer : MonoBehaviour
 {
     public MapManager mapManager;
     public NetworkMapGen networkMapGen;

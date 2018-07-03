@@ -91,9 +91,20 @@ public class MagicAttack : AAttackBehaviour
             if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask))
             {
                 if (hit.collider.CompareTag(PLAYER_TAG))
-                    CmdPlayerAttacked(hit.collider.name, 50);
+                {
+                    if (hit.collider.gameObject.GetComponent<Identifier>().typePrefix == "Magician")
+                    {
+                        // Healing
+                        CmdPlayerAttacked(hit.collider.name, -50);
+                    }
+                    else
+                    {
+                        // Damaging
+                        CmdPlayerAttacked(hit.collider.name, 50);
+                    }
+                }
                 else if (hit.collider.CompareTag(VOXEL_TAG))
-                    CmdVoxelDamaged(hit.collider.gameObject, 50); // weapontype.envDamage?
+                    CmdVoxelDamaged(hit.collider.gameObject, 50); // Env damage?
                 else if (hit.collider.CompareTag("Shield"))
                     CmdShieldHit(hit.collider.gameObject, 50);
             }
