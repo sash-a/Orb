@@ -18,8 +18,9 @@ public class PlayerController : MonoBehaviour
     {
         if (PlayerUI.isPaused)
         {
-            // Stop rotation
+            // Stop all movement
             actions.rotate(Vector3.zero, 0);
+            actions.move(Vector3.zero);
             return;
         }
 

@@ -16,6 +16,9 @@ public class MagicAttack : AAttackBehaviour
     [SerializeField] private bool canCastPush; // True once player can recast forcePush
     [SerializeField] private float force;
 
+    [SerializeField] private ParticleSystem damageEffect;
+    
+
     private ResourceManager resourceManager;
     private Shield currentShield; // The current instance of shield
 
@@ -90,6 +93,8 @@ public class MagicAttack : AAttackBehaviour
             RaycastHit hit;
             if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask))
             {
+                var beam = Instantiate(damageEffect, transform.position, Quaternion.identity);
+                beam.transform.Rotate(beam.transform.rotation.eulerAngles-transform.forward);
                 if (hit.collider.CompareTag(PLAYER_TAG))
                 {
                     if (hit.collider.gameObject.GetComponent<Identifier>().typePrefix == "Magician")

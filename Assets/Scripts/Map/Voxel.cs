@@ -147,11 +147,11 @@ public class Voxel : NetworkBehaviour
     {
         if (layer == 0)
         {
-            StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyGrass")));
+            StartCoroutine(setTexture(Resources.Load<Material>("Materials/Lowpoly ground/LowPolyGrass")));
         }
         else if (layer == MapManager.mapLayers - 1)
         {
-            StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyCrust")));
+            StartCoroutine(setTexture(Resources.Load<Material>("Materials/Lowpoly ground/LowPolyCrust")));
         }
         else
         {
