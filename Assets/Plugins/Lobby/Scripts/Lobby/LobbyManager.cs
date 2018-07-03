@@ -414,7 +414,7 @@ namespace Prototype.NetworkLobby
 
             if (_lobbyHooks)
                 _lobbyHooks.OnLobbyServerSceneLoadedForPlayer(this, lobbyPlayer, gamePlayer);
-            
+
             return true;
         }
 
