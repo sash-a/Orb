@@ -17,7 +17,7 @@ public class MagicAttack : AAttackBehaviour
     [SerializeField] private float force;
 
     [SerializeField] private ParticleSystem damageEffect;
-    
+
 
     private ResourceManager resourceManager;
     private Shield currentShield; // The current instance of shield
@@ -30,6 +30,7 @@ public class MagicAttack : AAttackBehaviour
     private int currentWeapon;
 
     private bool isAttacking;
+    private bool isDamage;
 
     void Start()
     {
@@ -37,6 +38,7 @@ public class MagicAttack : AAttackBehaviour
 
         shieldUp = false;
         isAttacking = false;
+        isDamage = false;
         force = 100;
     }
 
@@ -60,13 +62,13 @@ public class MagicAttack : AAttackBehaviour
 
         if (Input.GetAxis("Mouse ScrollWheel") > 0f)
         {
-            currentWeapon = (++currentWeapon) % 3;
+            currentWeapon = (currentWeapon + 1) % 3;
             changeWeapon();
         }
 
         if (Input.GetAxis("Mouse ScrollWheel") < 0f)
         {
-            currentWeapon = (--currentWeapon) % 3;
+            currentWeapon = (currentWeapon - 1) % 3;
             changeWeapon();
         }
     }
@@ -93,8 +95,8 @@ public class MagicAttack : AAttackBehaviour
             RaycastHit hit;
             if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask))
             {
-                var beam = Instantiate(damageEffect, transform.position, Quaternion.identity);
-                beam.transform.Rotate(beam.transform.rotation.eulerAngles-transform.forward);
+                isDamage = true;
+                damageEffect.Play();            
                 if (hit.collider.CompareTag(PLAYER_TAG))
                 {
                     if (hit.collider.gameObject.GetComponent<Identifier>().typePrefix == "Magician")
@@ -188,6 +190,11 @@ public class MagicAttack : AAttackBehaviour
         else if (type.isForcePush)
         {
             canCastPush = true;
+        }
+        else if (type.isDamage)
+        {
+            isDamage = false;
+            damageEffect.Stop();
         }
 
         isAttacking = false;
@@ -335,7 +342,7 @@ public class MagicAttack : AAttackBehaviour
     [ClientRpc]
     void RpcPush(string id)
     {
-        Debug.LogWarning("in rpc");    
+        Debug.LogWarning("in rpc");
         var direction = GameManager.getObject(id).transform.position - transform.position;
         Debug.LogError(direction);
 
