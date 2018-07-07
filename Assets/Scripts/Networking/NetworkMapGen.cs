@@ -23,6 +23,8 @@ public class NetworkMapGen : NetworkBehaviour
 
     public void start()
     {
+        BuildLog.flushLogFile();
+
         mapGen = this;
 
         spawnVoxelsOnServer(MapManager.splits);
@@ -36,7 +38,7 @@ public class NetworkMapGen : NetworkBehaviour
 
         Object[] voxels = Resources.LoadAll("Voxels/Prefabs/Split" + splits, typeof(GameObject));
 
-        Debug.Log("Spawning voxels on server");
+        //Debug.Log("Spawning voxels on server");
         if (voxels.Length == 0) Debug.LogError("Failed to load voxels");
 
 
@@ -91,7 +93,7 @@ public class NetworkMapGen : NetworkBehaviour
 
         if (loaded)
         {
-            Debug.Log("Client voxels spawned correctly");
+            //Debug.Log("Client voxels spawned correctly");
             MapManager.manager.voxelsLoaded(); // Calling client side only
             MapManager.SmoothVoxels();
         }

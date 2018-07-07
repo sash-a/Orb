@@ -43,7 +43,8 @@ public class Voxel : NetworkBehaviour
 
     private void Start()
     {
-        if (centreOfObject.Equals(Vector3.zero)) {
+        if (centreOfObject.Equals(Vector3.zero))
+        {
             recalcCenters();
         }
 
@@ -52,7 +53,10 @@ public class Voxel : NetworkBehaviour
         gameObject.tag = "TriVoxel";
         MapManager man = MapManager.manager;
         GameObject map = man.Map;
-        transform.parent = map.transform.GetChild(1);
+        if (transform.parent == null || !transform.parent.gameObject.name.Contains("MapChunk"))
+        {
+            transform.parent = map.transform.GetChild(1);
+        }
 
         origonalPoints = new Dictionary<int, Vector3>();
         deletedPoints = new HashSet<int>();
@@ -113,7 +117,7 @@ public class Voxel : NetworkBehaviour
                     }
                 }
 
-                if (!isServer && MapManager.manager.mapDoneLocally)
+                if (!isServer && MapManager.manager.mapDoneLocally && MapManager.useHills)
                 {
                     MapManager.manager.deviateSingleVoxel(this);
                 }
@@ -141,17 +145,18 @@ public class Voxel : NetworkBehaviour
 
     public static int earthTexNo = -1;
     public static float texScale = 4.5f;
+    //public bool inChunk
 
 
     public void setTexture()
     {
         if (layer == 0)
         {
-            StartCoroutine(setTexture(Resources.Load<Material>("Materials/Lowpoly ground/LowPolyGrass")));
+            StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyGrass")));
         }
         else if (layer == MapManager.mapLayers - 1)
         {
-            StartCoroutine(setTexture(Resources.Load<Material>("Materials/Lowpoly ground/LowPolyCrust")));
+            StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyCrust")));
         }
         else
         {
@@ -190,8 +195,10 @@ public class Voxel : NetworkBehaviour
     {
         scale = Math.Pow(scaleRatio, Math.Abs(layer));
         worldCentreOfObject = centreOfObject * (float)scale * MapManager.mapSize;
-
-        asset = MapAsset.createAsset(this);
+        if (asset == null)
+        {
+            asset = MapAsset.createAsset(this);
+        }
     }
 
     IEnumerator setTexture(Material material)
@@ -234,19 +241,25 @@ public class Voxel : NetworkBehaviour
         gameObject.GetComponent<MeshRenderer>().material = matt;
     }
 
-    internal void destroyVoxel()
+    [Command]
+    internal void CmdDestroyVoxel()
     {
         //Debug.Log("destroy voxel called");  
+        if (asset != null)
+        {
+            asset.changeParent(null);
+        }
         if (!isServer)
         {
             Debug.LogError("destroy vox called from in vox");
         }
 
+
         if (MapManager.manager.shatters > 0) //using shattering
         {
             if (gameObject.name != "SubVoxel") //not subvoxel - regular voxel
             {
-                Debug.Log("shattering a TriVoxel");
+                //Debug.Log("shattering a TriVoxel");
                 showNeighbours(false);
                 RpcShatterVoxel();
             }
@@ -271,6 +284,11 @@ public class Voxel : NetworkBehaviour
             NetworkServer.Destroy(gameObject);
         }
 
+        if (asset != null)
+        {
+            asset.voxel = null;
+            asset = null;
+        }
 
         //Destroy(gameObject);
     }
@@ -290,10 +308,20 @@ public class Voxel : NetworkBehaviour
 
     public IEnumerator Melt()
     {
+        if (transform.childCount > 0) {
+            int count = transform.childCount;
+            for (int i = 0; i < count; i++)
+            {
+                Transform trans = transform.GetChild(0);
+                Vector3 absPos = trans.position;
+                trans.parent = null;
+                trans.position = absPos;
+            }
+        }
         transform.position = Vector3.one * 1000f; //moves far away
+        Destroy(gameObject.GetComponent<MeshCollider>()); //deconstruct this voxel locally
         yield return new WaitForSeconds(1f); //waits for subvoxels to generate on all systems
 
-        Destroy(gameObject.GetComponent<MeshCollider>()); //deconstruct this voxel locally
         Destroy(gameObject.GetComponent<MeshRenderer>());
         Destroy(gameObject.GetComponent<MeshFilter>());
 
@@ -396,8 +424,15 @@ public class Voxel : NetworkBehaviour
 
     internal void releaseVoxel()
     {
+        if (asset != null)
+        {
+            NetworkServer.Destroy(asset.gameObject);
+        }
         gameObject.GetComponent<MeshCollider>().convex = true;
-        gameObject.AddComponent<Rigidbody>();
+        if (gameObject.GetComponent<Rigidbody>() == null)
+        {
+            gameObject.AddComponent<Rigidbody>();
+        }
         gameObject.AddComponent<Gravity>();
         showNeighbours(true); //will be destroyed shortly
     }
@@ -478,6 +513,14 @@ public class Voxel : NetworkBehaviour
         if (newVoxelLayer > 0 && newVoxelLayer < MapManager.mapLayers &&
             !MapManager.manager.voxels[newVoxelLayer].ContainsKey(columnID))
         {
+
+            MapAsset ass = null;
+            if (asset != null)
+            {
+                ass = asset;
+                asset = null;
+                ass.changeParent(null);
+            }
             GameObject childObject = Instantiate(gameObject, gameObject.transform.position,
                 gameObject.transform.localRotation);
 
@@ -490,6 +533,13 @@ public class Voxel : NetworkBehaviour
 
 
             NetworkServer.Spawn(childObject);
+
+            if (ass != null)
+            {
+                asset = ass;
+                //asset.gameObject.transform.parent = gameObject.transform;
+                asset.changeParent(gameObject.transform);
+            }
             return true;
         }
 
@@ -790,7 +840,7 @@ public class Voxel : NetworkBehaviour
                             if (neighbour.getDeletedAdjacentCount() == 2)
                             {
                                 //Debug.Log("vox had 2 deleted adj - deleting it");
-                                neighbour.destroyVoxel();
+                                neighbour.CmdDestroyVoxel();
                             }
                         }
                     }
@@ -927,7 +977,7 @@ public class Voxel : NetworkBehaviour
             else if (deletedPoints.Count == 2)
             {
                 //Debug.Log("deleting 3rd point- deleting voxel");
-                destroyVoxel();
+                CmdDestroyVoxel();
             }
         }
 
@@ -1167,7 +1217,7 @@ public class Voxel : NetworkBehaviour
         return triangles;
     }
 
-    private int getDeletedAdjacentCount()
+    public int getDeletedAdjacentCount()
     {
         int deletedAdjacents = 0;
         foreach (int nei in MapManager.manager.neighboursMap[columnID])
@@ -1193,5 +1243,20 @@ public class Voxel : NetworkBehaviour
         centreOfObject = av / vertices.Length;
         scale = Math.Pow(scaleRatio, Math.Abs(layer));
         worldCentreOfObject = centreOfObject * (float)scale * MapManager.mapSize;
+    }
+
+    [Command]
+    public void CmdAddNetworkTransform()
+    {
+        RpcAddNetworkTransform();
+    }
+
+    [ClientRpc]
+    private void RpcAddNetworkTransform()
+    {
+        if (gameObject.GetComponent<NetworkTransform>() == null)
+        {
+            gameObject.AddComponent<NetworkTransform>();
+        }
     }
 }

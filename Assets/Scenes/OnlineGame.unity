@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 0.246
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18366459, g: 0.18791288, b: 0.17564139, a: 0.246}
+  m_IndirectSpecularColor: {r: 0.18366486, g: 0.18791297, b: 0.17564136, a: 0.246}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -122,10 +122,10 @@ GameObject:
   m_Component:
   - component: {fileID: 1953521}
   - component: {fileID: 1953523}
-  - component: {fileID: 1953526}
   - component: {fileID: 1953522}
   - component: {fileID: 1953525}
   - component: {fileID: 1953524}
+  - component: {fileID: 1953526}
   m_Layer: 0
   m_Name: Map Utilities
   m_TagString: Untagged
@@ -144,7 +144,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 811708538}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1953522
 MonoBehaviour:
@@ -346,7 +346,7 @@ Transform:
   - {fileID: 1911199122}
   - {fileID: 3341839}
   m_Father: {fileID: 811708538}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &57779923
 GameObject:
@@ -763,7 +763,6 @@ Transform:
   m_Children:
   - {fileID: 1092701674}
   - {fileID: 1144031946}
-  - {fileID: 1763135508}
   - {fileID: 1606031901}
   - {fileID: 38960440}
   - {fileID: 1953521}
@@ -1193,34 +1192,6 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1606031900}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 811708538}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1763135507
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 5
-  m_Component:
-  - component: {fileID: 1763135508}
-  m_Layer: 0
-  m_Name: MapAssets
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1763135508
-Transform:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1763135507}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}

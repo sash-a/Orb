@@ -25,7 +25,7 @@ public class VoxelGen
 
     public Voxel voxelBehaviour;
 
-    //constructor takes in 3 triangle points which define 
+    // Constructor takes in 3 triangle points which define 
     public VoxelGen(Vector3 v1, Vector3 v2, Vector3 v3, int layer, int colID)
     {
         String voxelPath = "Assets/Resources/Voxels/Prefabs/Split" + MapGen.splits + "/voxel" + colID + ".prefab";
@@ -34,18 +34,37 @@ public class VoxelGen
         this.v1 = v1;
         this.v2 = v2;
         this.v3 = v3;
-        if (!getPrefab(colID))
+        if (!getPrefab(colID)) // prefab was not loaded - create one
         {
-            // prefab was not loaded - create one
-            Debug.Log("did not find voxel saved - generating it");
+            Debug.Log("Did not find voxel saved - generating it");
 
             voxel = new GameObject();
-            voxel.AddComponent<MeshFilter>();
             voxel.AddComponent<Voxel>();
+            // Mesh stuff
+            voxel.AddComponent<MeshFilter>();
             voxel.AddComponent<MeshCollider>();
             voxel.AddComponent<MeshRenderer>();
+
+            // Network stuff
             voxel.AddComponent<NetworkIdentity>();
             voxel.AddComponent<NetHealth>().maxHealth = 10;
+            voxel.AddComponent<Telekenisis>().enabled = false; // Enabled if telekenisis is used on voxel
+            
+            // ----------------- Network transform ------------------------
+            var netTrans = voxel.gameObject.AddComponent<NetworkTransform>();
+            // netTrans.sendInterval = 16; // this its buggy and sets the threshhold to 0.
+            netTrans.transformSyncMode = NetworkTransform.TransformSyncMode.SyncTransform;
+            netTrans.movementTheshold = 0.001f;
+            netTrans.velocityThreshold = 0.0001f;
+            netTrans.snapThreshold = 5f;
+            netTrans.interpolateMovement = 1;
+            netTrans.syncRotationAxis = NetworkTransform.AxisSyncMode.AxisXYZ;
+            netTrans.interpolateRotation = 10;
+            netTrans.rotationSyncCompression = NetworkTransform.CompressionSyncMode.None;
+            netTrans.syncSpin = true;
+
+            netTrans.enabled = false; // Only enable when needed
+            // ------------------------------------------------------------
 
             voxel.tag = "TriVoxel";
             voxel.name = "TriVoxel";
@@ -75,7 +94,7 @@ public class VoxelGen
             voxelBehaviour.obtusePoint = getObtusePoint();
 
             // Saving mesh
-            //MeshUtility.Optimize(filter.mesh);//will break smoothing
+            //MeshUtility.Optimize(filter.mesh); // will break smoothing
             Mesh tempMesh = UnityEngine.Object.Instantiate(filter.mesh);
             AssetDatabase.CreateAsset(tempMesh, meshPath);
             AssetDatabase.Refresh();
@@ -91,9 +110,9 @@ public class VoxelGen
     {
         String meshPath = "Assets/Resources/Voxels/Prefabs/Split" + MapGen.splits + "/voxel" + colID + ".prefab";
         GameObject vox = AssetDatabase.LoadAssetAtPath<GameObject>(meshPath);
-        
+
         if (vox == null) return false;
-        
+
         vox.GetComponent<Voxel>().layer = 0;
         vox.GetComponent<Voxel>().columnID = colID;
 

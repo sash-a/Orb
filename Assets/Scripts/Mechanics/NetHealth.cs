@@ -32,11 +32,11 @@ public class NetHealth : NetworkBehaviour
         if (isServer)
         {
             if (health <= 0) die();
-            else if (health > maxHealth) health = maxHealth;
         }
     }
 
     // This completely removes the object from the game
+    // TODO specilize for player (disable and set cam)
     private void die()
     {
         isDead = true;
@@ -44,7 +44,7 @@ public class NetHealth : NetworkBehaviour
         if (gameObject.name.Contains("voxel")|| gameObject.name.Contains("Voxel") || gameObject.name.Equals("TriVoxel"))
         {
             var voxel = gameObject.GetComponent<Voxel>();
-            if (voxel.layer < MapManager.mapLayers - 1) voxel.destroyVoxel();
+            if (voxel.layer < MapManager.mapLayers - 1) voxel.CmdDestroyVoxel();
         }
         else
         {

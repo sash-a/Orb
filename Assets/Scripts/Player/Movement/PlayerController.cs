@@ -11,18 +11,12 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         actions = GetComponent<PlayerActions>();
-        StartCoroutine(hackPos());
+        //StartCoroutine(hackPos());
     }
 
     void Update()
     {
-        if (PlayerUI.isPaused)
-        {
-            // Stop all movement
-            actions.rotate(Vector3.zero, 0);
-            actions.move(Vector3.zero);
-            return;
-        }
+        if (PauseMenu.isPaused) return;
 
         // movement
         var xMov = Input.GetAxis("Horizontal") * transform.right;

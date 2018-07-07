@@ -13,35 +13,36 @@
           <e p="MapGen.cs" t="Include" />
           <e p="VoxelGen.cs" t="Include" />
         </e>
-        <e p="Plugins" t="Include">
-          <e p="Fonts" t="Include">
-            <e p="OpenSans" t="Include">
-              <e p="License!.txt" t="Include" />
+        <e p="Fonts" t="Include">
+          <e p="OpenSans" t="Include">
+            <e p="License!.txt" t="Include" />
+          </e>
+        </e>
+        <e p="Lobby" t="Include">
+          <e p="Documentation.txt" t="Include" />
+          <e p="Instruction.txt" t="Include" />
+          <e p="Scripts" t="Include">
+            <e p="DraggablePanel.cs" t="Include" />
+            <e p="Lobby" t="Include">
+              <e p="LobbyCountdownPanel.cs" t="Include" />
+              <e p="LobbyHook.cs" t="Include" />
+              <e p="LobbyInfoPanel.cs" t="Include" />
+              <e p="LobbyMainMenu.cs" t="Include" />
+              <e p="LobbyManager.cs" t="Include" />
+              <e p="LobbyPlayer.cs" t="Include" />
+              <e p="LobbyPlayerList.cs" t="Include" />
+              <e p="LobbyServerEntry.cs" t="Include" />
+              <e p="LobbyServerList.cs" t="Include" />
+              <e p="LobbyTopPanel.cs" t="Include" />
             </e>
           </e>
+        </e>
+        <e p="Overlord.cs" t="Include" />
+        <e p="Plugins" t="Include">
           <e p="GitHub" t="Include">
             <e p="Editor" t="Include">
               <e p="credits.txt" t="Include" />
               <e p="eula.txt" t="Include" />
-            </e>
-          </e>
-          <e p="Lobby" t="Include">
-            <e p="Documentation.txt" t="Include" />
-            <e p="Instruction.txt" t="Include" />
-            <e p="Scripts" t="Include">
-              <e p="DraggablePanel.cs" t="Include" />
-              <e p="Lobby" t="Include">
-                <e p="LobbyCountdownPanel.cs" t="Include" />
-                <e p="LobbyHook.cs" t="Include" />
-                <e p="LobbyInfoPanel.cs" t="Include" />
-                <e p="LobbyMainMenu.cs" t="Include" />
-                <e p="LobbyManager.cs" t="Include" />
-                <e p="LobbyPlayer.cs" t="Include" />
-                <e p="LobbyPlayerList.cs" t="Include" />
-                <e p="LobbyServerEntry.cs" t="Include" />
-                <e p="LobbyServerList.cs" t="Include" />
-                <e p="LobbyTopPanel.cs" t="Include" />
-              </e>
             </e>
           </e>
         </e>
@@ -50,7 +51,19 @@
             <e p="ShieldFX.shader" t="Include" />
           </e>
         </e>
+        <e p="SampleScenes" t="Include">
+          <e p="Scripts" t="Include">
+            <e p="NetworkAsteroid.cs" t="Include" />
+            <e p="NetworkGameManager.cs" t="Include" />
+            <e p="NetworkLobbyHook.cs" t="Include" />
+            <e p="NetworkSpaceship.cs" t="Include" />
+            <e p="NetworkSpaceshipBullet.cs" t="Include" />
+          </e>
+        </e>
         <e p="Scripts" t="Include">
+          <e p="Debug" t="Include">
+            <e p="BuildLog.cs" t="Include" />
+          </e>
           <e p="Map" t="Include">
             <e p="Caves" t="Include">
               <e p="CaveBody.cs" t="Include" />
@@ -61,6 +74,7 @@
               <e p="Tunnel.cs" t="Include" />
             </e>
             <e p="MapAsset.cs" t="Include" />
+            <e p="MapChunk.cs" t="Include" />
             <e p="MapManager.cs" t="Include" />
             <e p="Portal.cs" t="Include" />
             <e p="SubVoxel.cs" t="Include" />
@@ -87,7 +101,6 @@
               <e p="RoomListItem.cs" t="Include" />
             </e>
           </e>
-          <e p="Orderer.cs" t="Include" />
           <e p="Player" t="Include">
             <e p="Combat" t="Include">
               <e p="AAttackBehaviour.cs" t="Include" />
@@ -98,7 +111,7 @@
                 <e p="MagicAttack.cs" t="Include" />
                 <e p="MagicType.cs" t="Include" />
                 <e p="Shield.cs" t="Include" />
-                <e p="Telekinesis.cs" t="Include" />
+                <e p="Telekenisis.cs" t="Include" />
               </e>
               <e p="Weapons" t="Include">
                 <e p="aim.cs" t="Include" />

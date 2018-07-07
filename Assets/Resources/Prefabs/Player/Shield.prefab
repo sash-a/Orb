@@ -100,7 +100,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c59f2182146b9a1429f85a8a793f9ef5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 0
   maxHealth: 250
 --- !u!114 &114357655464427654
 MonoBehaviour:
@@ -146,7 +145,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_TransformSyncMode: 1
-  m_SendInterval: 0.033333335
+  m_SendInterval: 0.1
   m_SyncRotationAxis: 0
   m_RotationSyncCompression: 0
   m_SyncSpin: 0
@@ -181,6 +180,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   caster: {fileID: 0}
   shieldHealth: 0
+  energyDrainRate: 0
 --- !u!135 &135676511526226338
 SphereCollider:
   m_ObjectHideFlags: 1

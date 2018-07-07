@@ -9,22 +9,24 @@ Prefab:
     m_Modifications: []
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 0}
-  m_RootGameObject: {fileID: 1620376163698926}
+  m_RootGameObject: {fileID: 1482306210875958}
   m_IsPrefabParent: 1
---- !u!1 &1620376163698926
+--- !u!1 &1482306210875958
 GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 5
   m_Component:
-  - component: {fileID: 4825009009888010}
-  - component: {fileID: 33912701179212486}
-  - component: {fileID: 114974920348081978}
-  - component: {fileID: 114446505986565924}
-  - component: {fileID: 64156680266430260}
-  - component: {fileID: 23716890402901898}
-  - component: {fileID: 114039419695125936}
+  - component: {fileID: 4425707080459512}
+  - component: {fileID: 114296486057141490}
+  - component: {fileID: 114354578700402496}
+  - component: {fileID: 33290843004484540}
+  - component: {fileID: 64818179940227934}
+  - component: {fileID: 23969741359348892}
+  - component: {fileID: 114026079731767180}
+  - component: {fileID: 114757853028651496}
+  - component: {fileID: 114180590440440184}
   m_Layer: 0
   m_Name: voxel269
   m_TagString: TriVoxel
@@ -32,12 +34,12 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4825009009888010
+--- !u!4 &4425707080459512
 Transform:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1620376163698926}
+  m_GameObject: {fileID: 1482306210875958}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -45,12 +47,12 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!23 &23716890402901898
+--- !u!23 &23969741359348892
 MeshRenderer:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1620376163698926}
+  m_GameObject: {fileID: 1482306210875958}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -80,19 +82,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!33 &33912701179212486
+--- !u!33 &33290843004484540
 MeshFilter:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1620376163698926}
-  m_Mesh: {fileID: 4300000, guid: 8d6892abf37e18a4ca49ee7da732d4b0, type: 2}
---- !u!64 &64156680266430260
+  m_GameObject: {fileID: 1482306210875958}
+  m_Mesh: {fileID: 4300000, guid: f7dc44198f078e7409c112de47c15aeb, type: 2}
+--- !u!64 &64818179940227934
 MeshCollider:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1620376163698926}
+  m_GameObject: {fileID: 1482306210875958}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
@@ -100,13 +102,13 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 14
   m_SkinWidth: 0.01
-  m_Mesh: {fileID: 4300000, guid: 8d6892abf37e18a4ca49ee7da732d4b0, type: 2}
---- !u!114 &114039419695125936
+  m_Mesh: {fileID: 4300000, guid: f7dc44198f078e7409c112de47c15aeb, type: 2}
+--- !u!114 &114026079731767180
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1620376163698926}
+  m_GameObject: {fileID: 1482306210875958}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c59f2182146b9a1429f85a8a793f9ef5, type: 3}
@@ -114,12 +116,65 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   health: 0
   maxHealth: 10
---- !u!114 &114446505986565924
+--- !u!114 &114180590440440184
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1620376163698926}
+  m_GameObject: {fileID: 1482306210875958}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1768714887, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TransformSyncMode: 1
+  m_SendInterval: 0.1
+  m_SyncRotationAxis: 7
+  m_RotationSyncCompression: 0
+  m_SyncSpin: 1
+  m_MovementTheshold: 0.001
+  m_VelocityThreshold: 0.0001
+  m_SnapThreshold: 5
+  m_InterpolateRotation: 10
+  m_InterpolateMovement: 1
+--- !u!114 &114296486057141490
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1482306210875958}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SceneId:
+    m_Value: 0
+  m_AssetId:
+    i0: 172
+    i1: 80
+    i2: 155
+    i3: 238
+    i4: 190
+    i5: 160
+    i6: 193
+    i7: 36
+    i8: 42
+    i9: 31
+    i10: 3
+    i11: 235
+    i12: 141
+    i13: 73
+    i14: 184
+    i15: 211
+  m_ServerOnly: 0
+  m_LocalPlayerAuthority: 0
+--- !u!114 &114354578700402496
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1482306210875958}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fdd6446cce34b294d8d4b57223fb7c14, type: 3}
@@ -129,42 +184,27 @@ MonoBehaviour:
   subVoxelID: 
   shatterLevel: 0
   lastHitPosition: {x: 0, y: 0, z: 0}
-  columnID: 189
+  scale: 0
+  columnID: 269
   layer: 0
   obtusePoint: 2
   centreOfObject: {x: 0.41950262, y: -0.24715687, z: -0.121549}
   worldCentreOfObject: {x: 0, y: 0, z: 0}
   filter: {fileID: 0}
   info: 
---- !u!114 &114974920348081978
+  asset: {fileID: 0}
+--- !u!114 &114757853028651496
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1620376163698926}
-  m_Enabled: 1
+  m_GameObject: {fileID: 1482306210875958}
+  m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Script: {fileID: 11500000, guid: 2df36497b24d6d94d88a60a224929e07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_SceneId:
-    m_Value: 0
-  m_AssetId:
-    i0: 197
-    i1: 58
-    i2: 1
-    i3: 87
-    i4: 203
-    i5: 179
-    i6: 153
-    i7: 4
-    i8: 59
-    i9: 232
-    i10: 54
-    i11: 240
-    i12: 96
-    i13: 84
-    i14: 129
-    i15: 56
-  m_ServerOnly: 0
-  m_LocalPlayerAuthority: 0
+  casterID: 
+  requiredPos: {fileID: 0}
+  rb: {fileID: 0}
+  vox: {fileID: 0}

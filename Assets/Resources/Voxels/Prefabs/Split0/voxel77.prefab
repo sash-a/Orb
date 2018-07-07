@@ -9,22 +9,24 @@ Prefab:
     m_Modifications: []
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 0}
-  m_RootGameObject: {fileID: 1250256010182884}
+  m_RootGameObject: {fileID: 1900093948579764}
   m_IsPrefabParent: 1
---- !u!1 &1250256010182884
+--- !u!1 &1900093948579764
 GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 5
   m_Component:
-  - component: {fileID: 4789038179816162}
-  - component: {fileID: 33820836927557530}
-  - component: {fileID: 114306138701408932}
-  - component: {fileID: 114632549857578002}
-  - component: {fileID: 64609016580576892}
-  - component: {fileID: 23673680865762610}
-  - component: {fileID: 114204302120731276}
+  - component: {fileID: 4364843838589928}
+  - component: {fileID: 114856695644277236}
+  - component: {fileID: 114315148367625972}
+  - component: {fileID: 33076589763712380}
+  - component: {fileID: 64206732690909724}
+  - component: {fileID: 23236050035732552}
+  - component: {fileID: 114179044818594018}
+  - component: {fileID: 114043508029693124}
+  - component: {fileID: 114370407256309740}
   m_Layer: 0
   m_Name: voxel77
   m_TagString: TriVoxel
@@ -32,12 +34,12 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4789038179816162
+--- !u!4 &4364843838589928
 Transform:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1250256010182884}
+  m_GameObject: {fileID: 1900093948579764}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -45,12 +47,12 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!23 &23673680865762610
+--- !u!23 &23236050035732552
 MeshRenderer:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1250256010182884}
+  m_GameObject: {fileID: 1900093948579764}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -80,19 +82,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!33 &33820836927557530
+--- !u!33 &33076589763712380
 MeshFilter:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1250256010182884}
+  m_GameObject: {fileID: 1900093948579764}
   m_Mesh: {fileID: 4300000, guid: b949af74ceca2a74e8541613cb99363d, type: 2}
---- !u!64 &64609016580576892
+--- !u!64 &64206732690909724
 MeshCollider:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1250256010182884}
+  m_GameObject: {fileID: 1900093948579764}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
@@ -101,12 +103,27 @@ MeshCollider:
   m_CookingOptions: 14
   m_SkinWidth: 0.01
   m_Mesh: {fileID: 4300000, guid: b949af74ceca2a74e8541613cb99363d, type: 2}
---- !u!114 &114204302120731276
+--- !u!114 &114043508029693124
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1250256010182884}
+  m_GameObject: {fileID: 1900093948579764}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2df36497b24d6d94d88a60a224929e07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  casterID: 
+  requiredPos: {fileID: 0}
+  rb: {fileID: 0}
+  vox: {fileID: 0}
+--- !u!114 &114179044818594018
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1900093948579764}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c59f2182146b9a1429f85a8a793f9ef5, type: 3}
@@ -114,12 +131,57 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   health: 0
   maxHealth: 10
---- !u!114 &114306138701408932
+--- !u!114 &114315148367625972
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1250256010182884}
+  m_GameObject: {fileID: 1900093948579764}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdd6446cce34b294d8d4b57223fb7c14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isBottom: 0
+  subVoxelID: 
+  shatterLevel: 0
+  lastHitPosition: {x: 0, y: 0, z: 0}
+  scale: 0
+  columnID: 77
+  layer: 0
+  obtusePoint: 2
+  centreOfObject: {x: -0.121549, y: -0.41950262, z: 0.24715687}
+  worldCentreOfObject: {x: 0, y: 0, z: 0}
+  filter: {fileID: 0}
+  info: 
+  asset: {fileID: 0}
+--- !u!114 &114370407256309740
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1900093948579764}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1768714887, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TransformSyncMode: 1
+  m_SendInterval: 0.1
+  m_SyncRotationAxis: 7
+  m_RotationSyncCompression: 0
+  m_SyncSpin: 1
+  m_MovementTheshold: 0.001
+  m_VelocityThreshold: 0.0001
+  m_SnapThreshold: 5
+  m_InterpolateRotation: 10
+  m_InterpolateMovement: 1
+--- !u!114 &114856695644277236
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1900093948579764}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
@@ -146,25 +208,3 @@ MonoBehaviour:
     i15: 136
   m_ServerOnly: 0
   m_LocalPlayerAuthority: 0
---- !u!114 &114632549857578002
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1250256010182884}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fdd6446cce34b294d8d4b57223fb7c14, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  isBottom: 0
-  subVoxelID: 
-  shatterLevel: 0
-  lastHitPosition: {x: 0, y: 0, z: 0}
-  columnID: 743
-  layer: 0
-  obtusePoint: 2
-  centreOfObject: {x: -0.121549, y: -0.41950262, z: 0.24715687}
-  worldCentreOfObject: {x: 0, y: 0, z: 0}
-  filter: {fileID: 0}
-  info: 

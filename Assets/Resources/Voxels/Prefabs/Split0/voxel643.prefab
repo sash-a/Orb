@@ -9,22 +9,24 @@ Prefab:
     m_Modifications: []
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 0}
-  m_RootGameObject: {fileID: 1464980775135188}
+  m_RootGameObject: {fileID: 1901837848598158}
   m_IsPrefabParent: 1
---- !u!1 &1464980775135188
+--- !u!1 &1901837848598158
 GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 5
   m_Component:
-  - component: {fileID: 4069798725116400}
-  - component: {fileID: 33688685309692906}
-  - component: {fileID: 114664618213816454}
-  - component: {fileID: 114495488820681700}
-  - component: {fileID: 64049358676746762}
-  - component: {fileID: 23948811941674046}
-  - component: {fileID: 114131163765822558}
+  - component: {fileID: 4974163978627910}
+  - component: {fileID: 114216204027100932}
+  - component: {fileID: 114296970185889628}
+  - component: {fileID: 33779149395202418}
+  - component: {fileID: 64812898982306748}
+  - component: {fileID: 23974929629715096}
+  - component: {fileID: 114246953944412584}
+  - component: {fileID: 114153062772490118}
+  - component: {fileID: 114392596656398598}
   m_Layer: 0
   m_Name: voxel643
   m_TagString: TriVoxel
@@ -32,12 +34,12 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4069798725116400
+--- !u!4 &4974163978627910
 Transform:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1464980775135188}
+  m_GameObject: {fileID: 1901837848598158}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -45,12 +47,12 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!23 &23948811941674046
+--- !u!23 &23974929629715096
 MeshRenderer:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1464980775135188}
+  m_GameObject: {fileID: 1901837848598158}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -80,19 +82,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!33 &33688685309692906
+--- !u!33 &33779149395202418
 MeshFilter:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1464980775135188}
-  m_Mesh: {fileID: 4300000, guid: b5910f0da49ba3f46aa04a679232ab7c, type: 2}
---- !u!64 &64049358676746762
+  m_GameObject: {fileID: 1901837848598158}
+  m_Mesh: {fileID: 4300000, guid: b9bee548c95828b46ac953e3da223ca1, type: 2}
+--- !u!64 &64812898982306748
 MeshCollider:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1464980775135188}
+  m_GameObject: {fileID: 1901837848598158}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
@@ -100,13 +102,60 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 14
   m_SkinWidth: 0.01
-  m_Mesh: {fileID: 4300000, guid: b5910f0da49ba3f46aa04a679232ab7c, type: 2}
---- !u!114 &114131163765822558
+  m_Mesh: {fileID: 4300000, guid: b9bee548c95828b46ac953e3da223ca1, type: 2}
+--- !u!114 &114153062772490118
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1464980775135188}
+  m_GameObject: {fileID: 1901837848598158}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2df36497b24d6d94d88a60a224929e07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  casterID: 
+  requiredPos: {fileID: 0}
+  rb: {fileID: 0}
+  vox: {fileID: 0}
+--- !u!114 &114216204027100932
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1901837848598158}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SceneId:
+    m_Value: 0
+  m_AssetId:
+    i0: 203
+    i1: 236
+    i2: 77
+    i3: 78
+    i4: 24
+    i5: 13
+    i6: 44
+    i7: 100
+    i8: 168
+    i9: 232
+    i10: 30
+    i11: 204
+    i12: 40
+    i13: 1
+    i14: 127
+    i15: 165
+  m_ServerOnly: 0
+  m_LocalPlayerAuthority: 0
+--- !u!114 &114246953944412584
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1901837848598158}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c59f2182146b9a1429f85a8a793f9ef5, type: 3}
@@ -114,12 +163,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   health: 0
   maxHealth: 10
---- !u!114 &114495488820681700
+--- !u!114 &114296970185889628
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1464980775135188}
+  m_GameObject: {fileID: 1901837848598158}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fdd6446cce34b294d8d4b57223fb7c14, type: 3}
@@ -129,42 +178,33 @@ MonoBehaviour:
   subVoxelID: 
   shatterLevel: 0
   lastHitPosition: {x: 0, y: 0, z: 0}
-  columnID: 605
+  scale: 0
+  columnID: 643
   layer: 0
   obtusePoint: 2
   centreOfObject: {x: -0.19781025, y: -0.3055501, z: -0.3466283}
   worldCentreOfObject: {x: 0, y: 0, z: 0}
   filter: {fileID: 0}
   info: 
---- !u!114 &114664618213816454
+  asset: {fileID: 0}
+--- !u!114 &114392596656398598
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1464980775135188}
-  m_Enabled: 1
+  m_GameObject: {fileID: 1901837848598158}
+  m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Script: {fileID: -1768714887, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_SceneId:
-    m_Value: 0
-  m_AssetId:
-    i0: 254
-    i1: 29
-    i2: 156
-    i3: 134
-    i4: 149
-    i5: 228
-    i6: 185
-    i7: 20
-    i8: 154
-    i9: 118
-    i10: 60
-    i11: 80
-    i12: 112
-    i13: 204
-    i14: 154
-    i15: 1
-  m_ServerOnly: 0
-  m_LocalPlayerAuthority: 0
+  m_TransformSyncMode: 1
+  m_SendInterval: 0.1
+  m_SyncRotationAxis: 7
+  m_RotationSyncCompression: 0
+  m_SyncSpin: 1
+  m_MovementTheshold: 0.001
+  m_VelocityThreshold: 0.0001
+  m_SnapThreshold: 5
+  m_InterpolateRotation: 10
+  m_InterpolateMovement: 1

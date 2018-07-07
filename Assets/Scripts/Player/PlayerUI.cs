@@ -13,8 +13,6 @@ public class PlayerUI : MonoBehaviour
     [SerializeField] private ResourceManager resourceManager;
 
     [SerializeField] private GameObject pauseMenu;
-    
-    public static bool isPaused;
 
     void Start()
     {
@@ -24,7 +22,7 @@ public class PlayerUI : MonoBehaviour
         setHealth(1);
         setEnergy(1);
 
-        isPaused = false;
+        PauseMenu.isPaused = false;
     }
 
     void Update()
@@ -40,7 +38,10 @@ public class PlayerUI : MonoBehaviour
 
     void togglePauseMenu()
     {
-        isPaused = !isPaused;
+        pauseMenu.SetActive(!pauseMenu.activeSelf);
+        PauseMenu.isPaused = pauseMenu.activeSelf;
+        
+        Debug.Log("Toggle pause currently: " + pauseMenu.activeSelf);
     }
 
 

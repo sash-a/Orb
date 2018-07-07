@@ -23,6 +23,6 @@ public class RegisterPrefabs : MonoBehaviour
             count++;
 
         }
-        if (voxels.Length > 0) Debug.Log("registering prefabs");
+        //if (voxels.Length > 0) Debug.Log("registering prefabs");
     }
 }

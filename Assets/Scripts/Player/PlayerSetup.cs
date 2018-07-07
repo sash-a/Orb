@@ -27,6 +27,7 @@ public class PlayerSetup : NetworkBehaviour
         else
         {
             // TODO move somewhere else
+            MapManager.localPlayer = gameObject;
             mainCam = Camera.main;
             if (mainCam != null)
                 mainCam.gameObject.SetActive(false);

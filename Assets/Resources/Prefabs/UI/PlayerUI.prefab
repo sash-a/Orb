@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 224194597871727944}
   - component: {fileID: 222885996517328052}
   - component: {fileID: 114157167409594374}
+  - component: {fileID: 114056625605721196}
   m_Layer: 5
   m_Name: PauseMenu
   m_TagString: Untagged
@@ -150,6 +151,17 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &114056625605721196
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1041057907192564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3b356b25ce3d8149bbb059789814b98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114157167409594374
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -243,7 +255,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 114056625605721196}
         m_MethodName: leaveRoom
         m_Mode: 1
         m_Arguments:

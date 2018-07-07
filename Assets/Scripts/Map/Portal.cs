@@ -89,7 +89,7 @@ public class Portal : NetworkBehaviour
         {
             createFromVoxel(MapManager.manager.voxels[layer][columnID]);
         }
-        transform.parent = MapManager.manager.Map.transform.GetChild(3);
+        transform.parent = MapManager.manager.Map.transform.GetChild(2);
     }
 
     private void OnCollisionEnter(Collision collision)

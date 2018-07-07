@@ -4,7 +4,7 @@ using UnityEngine.Networking.Match;
 
 public class PauseMenu : MonoBehaviour
 {
-//    public static bool isPaused;
+    public static bool isPaused;
     private NetworkManager netMan;
 
     void Start()
@@ -18,6 +18,6 @@ public class PauseMenu : MonoBehaviour
         netMan.matchMaker.DropConnection(matchInfo.networkId, matchInfo.nodeId, 0, netMan.OnDropConnection);
         netMan.StopHost(); // If host quits room will die
 
-//        isPaused = false;
+        isPaused = false;
     }
 }

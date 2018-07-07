@@ -26,6 +26,8 @@ GameObject:
   - component: {fileID: 114073400437008510}
   - component: {fileID: 114657186835119904}
   - component: {fileID: 114240635960361912}
+  - component: {fileID: 114610406940862662}
+  - component: {fileID: 114521561779804708}
   m_Layer: 0
   m_Name: SubVoxel
   m_TagString: Untagged
@@ -157,6 +159,7 @@ MonoBehaviour:
   worldCentreOfObject: {x: 0, y: 0, z: 0}
   filter: {fileID: 0}
   info: 
+  asset: {fileID: 0}
 --- !u!114 &114240635960361912
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -168,6 +171,42 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95356a2e476d3c340a87690ed13ef011, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &114521561779804708
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1024043239652966}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2df36497b24d6d94d88a60a224929e07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  casterID: 
+  requiredPos: {fileID: 0}
+  rb: {fileID: 0}
+  vox: {fileID: 0}
+--- !u!114 &114610406940862662
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1024043239652966}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1768714887, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TransformSyncMode: 1
+  m_SendInterval: 0.0625
+  m_SyncRotationAxis: 7
+  m_RotationSyncCompression: 0
+  m_SyncSpin: 1
+  m_MovementTheshold: 0.001
+  m_VelocityThreshold: 0.0001
+  m_SnapThreshold: 0.0001
+  m_InterpolateRotation: 10
+  m_InterpolateMovement: 5
 --- !u!114 &114657186835119904
 MonoBehaviour:
   m_ObjectHideFlags: 1

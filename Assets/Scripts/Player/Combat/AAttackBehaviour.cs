@@ -23,7 +23,7 @@ public abstract class AAttackBehaviour : NetworkBehaviour
 
     protected void Update()
     {
-        if (PlayerUI.isPaused) return;
+        if (PauseMenu.isPaused) return;
         
         if (Input.GetButtonDown("Fire1")) attack();
         if (Input.GetButtonUp("Fire1")) endAttack();
@@ -97,4 +97,5 @@ public abstract class AAttackBehaviour : NetworkBehaviour
 
         shield.RpcDamage(damage);
     }
+
 }

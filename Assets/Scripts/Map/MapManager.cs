@@ -18,7 +18,7 @@ public class MapManager : NetworkBehaviour
     [SyncVar] public int shatters = 2; //make zero to turn off shattering
     public static bool useHills = true;
     public static bool digCaves = true;
-    
+
     bool loaded = false;
 
     public static int mapLayers = 15;
@@ -41,6 +41,7 @@ public class MapManager : NetworkBehaviour
 
     public GameObject Map;
     public static MapManager manager;
+    public static GameObject localPlayer;
 
 
     /// <summary>
@@ -58,7 +59,7 @@ public class MapManager : NetworkBehaviour
         {
             voxels[i] = new Dictionary<int, Voxel>();
         }
-        
+
         DeletedVoxel = new Voxel(); // TODO why?
         spawnedVoxels = new HashSet<int>();
         voxelPositions = new Dictionary<int, Vector3>();
@@ -66,7 +67,7 @@ public class MapManager : NetworkBehaviour
         portals = new HashSet<Portal>();
     }
 
-    /*private void Update()
+    private void Update()
     {
         if (Input.GetKeyDown(KeyCode.M))
         {
@@ -125,12 +126,16 @@ public class MapManager : NetworkBehaviour
 
             Debug.Log("texture scale " + Voxel.texScale);
         }
-    }*/
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            CmdShredMap();
+        }
+    }
 
     internal void replaceSubVoxel(Voxel spawnedVox)
     {
-        Voxel
-            v = voxels[spawnedVox.layer][
+        Voxel v = voxels[spawnedVox.layer][
                 spawnedVox.columnID]; //v should be a voxel container for this to be a valid call to destroy subvoxel
         //Debug.Log("found top level container: " + v + " of type: " + v.GetType());
         int shatterLevel = spawnedVox.subVoxelID.Split(',').Length - 1;
@@ -140,7 +145,7 @@ public class MapManager : NetworkBehaviour
         {
             vc = v.gameObject.GetComponent<VoxelContainer>();
             //Debug.Log("opening container " + vc + " - " + vc.subVoxelID);
-            v = (Voxel) vc.subVoxels[int.Parse(spawnedVox.subVoxelID.Split(',')[i])];
+            v = (Voxel)vc.subVoxels[int.Parse(spawnedVox.subVoxelID.Split(',')[i])];
             //Debug.Log("opening contained subVoxel " + v + " - " + v.subVoxelID);
         }
 
@@ -152,7 +157,7 @@ public class MapManager : NetworkBehaviour
         spawnedVoxels.Add(columnID);
         if (!loaded && spawnedVoxels.Count == 768 * Math.Pow(2, splits))
         {
-            Debug.Log("all voxels spawned and stored in mapManager");
+            //Debug.Log("all voxels spawned and stored in mapManager");
             loaded = true;
             if (NetworkMapGen.mapGen == null)
             {
@@ -163,7 +168,7 @@ public class MapManager : NetworkBehaviour
             // In the event that a voxel from each column has been spawned - but there are extra voxels undrground
             // which have not yet been spawned - the system waits an additional realtime second for the remaining
             // voxels to arrive
-//            StartCoroutine(NetworkMapGen.mapGen.InitVoxels());
+            //            StartCoroutine(NetworkMapGen.mapGen.InitVoxels());
         }
     }
 
@@ -179,12 +184,12 @@ public class MapManager : NetworkBehaviour
             vox.checkNeighbourCount();
             //Debug.Log("adding position for voxel 0, " + vox.columnID);
             voxelPositions.Add(vox.columnID, vox.centreOfObject);
-            
+
             // This was uneccasarry and was causing errors with new lobby system (names are still trivoxel
             // vox.gameObject.name = "TriVoxel";
         }
 
-        
+
         if (digCaves && isServer)
         {
             //Debug.Log("digging caves");
@@ -194,12 +199,12 @@ public class MapManager : NetworkBehaviour
         {
             if (useHills)
             {
-                Debug.Log("creating hills");
+                //Debug.Log("creating hills");
                 deviateHeights();
             }
             else
             {
-                Debug.Log("finishing map - no caves no hills");
+                //Debug.Log("finishing map - no caves no hills");
                 finishMap();
             }
         }
@@ -207,12 +212,14 @@ public class MapManager : NetworkBehaviour
 
     public void finishMap()
     {
+        BuildLog.writeLog("Map finished");
         Debug.Log("Map finished");
         mapDoneLocally = true;
         SmoothVoxels();
         finishAssets();
-        LobbyManager.s_Singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
-//        NetworkManager.singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
+        //LobbyManager.s_Singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
+        //        NetworkManager.singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
+        localPlayer.transform.position = new Vector3(0, -30, 0);
 
     }
 
@@ -220,8 +227,10 @@ public class MapManager : NetworkBehaviour
     {
         for (int i = 0; i < mapLayers; i++)
         {
-            foreach (Voxel vox in voxels[i].Values) {
-                if (vox.asset != null) {
+            foreach (Voxel vox in voxels[i].Values)
+            {
+                if (vox.asset != null)
+                {
                     vox.asset.setParent();
                 }
             }
@@ -243,6 +252,21 @@ public class MapManager : NetworkBehaviour
         catch
         {
         }
+        if (!found) {
+            BuildLog.writeLog("trying to move back in directory");
+            try
+            {
+                readText = File.ReadAllText("../Assets/Resources/Voxels/split" + splits + ".neiMap");
+                if (readText != null && readText.Length > 0)
+                {
+                    found = true;
+                }
+            }
+            catch
+            {
+            }
+        }
+
 
         if (found)
         {
@@ -257,6 +281,7 @@ public class MapManager : NetworkBehaviour
                     neighboursMap[i].Add(int.Parse(n));
                 }
             }
+            BuildLog.writeLog("loaded neighbours map");
         }
         else
         {
@@ -279,6 +304,8 @@ public class MapManager : NetworkBehaviour
             }
 
             map = map.Substring(0, map.Length - 1);
+
+            BuildLog.writeLog("generating neighbours map");
 
             File.WriteAllText("Assets/Resources/Voxels/split" + splits + ".neiMap", map);
             Debug.Log("generated and saved neighbours map to file");
@@ -307,9 +334,9 @@ public class MapManager : NetworkBehaviour
             float ampTot = 0;
             for (int i = 0; i < waveNo; i++)
             {
-                frequencies[i] = (float) (r.NextDouble() * avWaveLength + avWaveLength);
-                offsets[i] = (float) (r.NextDouble() * avWaveLength + avWaveLength);
-                amplitudes[i] = (float) r.NextDouble();
+                frequencies[i] = (float)(r.NextDouble() * avWaveLength + avWaveLength);
+                offsets[i] = (float)(r.NextDouble() * avWaveLength + avWaveLength);
+                amplitudes[i] = (float)r.NextDouble();
                 ampTot += amplitudes[i];
             }
 
@@ -336,7 +363,7 @@ public class MapManager : NetworkBehaviour
                 }
             }
         }
-        Debug.Log("finisheing map - dug caves - deviated height");
+        //Debug.Log("finisheing map - dug caves - deviated height");
         finishMap();
     }
 
@@ -353,7 +380,7 @@ public class MapManager : NetworkBehaviour
             for (int i = 0; i < waveNo; i++)
             {
                 //a sinusoidal func of x,y,z
-                height += (float) (amplitudes[i] * Math.Sin(frequencies[i] * (func.x - offsets[i])) +
+                height += (float)(amplitudes[i] * Math.Sin(frequencies[i] * (func.x - offsets[i])) +
                                    amplitudes[i] *
                                    Math.Sin(frequencies[(i + 1) % waveNo] * (func.y - offsets[(i + 1) % waveNo])) +
                                    amplitudes[i] *
@@ -371,7 +398,8 @@ public class MapManager : NetworkBehaviour
         filter.mesh.RecalculateBounds();
         filter.mesh.RecalculateTangents();
         vox.setTexture();
-        if (vox.asset != null) {
+        if (vox.asset != null)
+        {
             vox.asset.gameObject.transform.position = vox.worldCentreOfObject;
         }
 
@@ -393,7 +421,7 @@ public class MapManager : NetworkBehaviour
 
                 for (int j = 0; j < keys.Count; j++)
                 {
-                    manager.voxels[i][(int) keys[j]].smoothBlockInPlace();
+                    manager.voxels[i][(int)keys[j]].smoothBlockInPlace();
                 }
             }
         }
@@ -421,14 +449,14 @@ public class MapManager : NetworkBehaviour
     [Command]
     internal void CmdInformDeleted(int layer, int columnID) //block at layer columnID
     {
-        
 
+        RpcInformDeleted(layer, columnID);
         //manager.StartCoroutine(informNeighbours(layer, columnID));
     }
 
     [ClientRpc]
-    private void RpcInformDeleted(int layer, int columnID) {
-        Vector3 centre = voxels[layer][columnID].centreOfObject;
+    private void RpcInformDeleted(int layer, int columnID)
+    {
         voxels[layer][columnID] = MapManager.DeletedVoxel;
 
         foreach (int n in neighboursMap[columnID])
@@ -507,6 +535,59 @@ public class MapManager : NetworkBehaviour
         }
     }
 
+
+    Vector3 shredOrigin;
+    int shredNo = 0;
+    float radius ;
+
+    [Command]
+    public void CmdShredMap() {
+        //StartCoroutine(ShredMap());
+        ShredMap();
+    }
+
+    void ShredMap() {
+        //yield return new WaitForSecondsRealtime(0.1f);
+
+        if (radius > mapSize * 2.5) {
+            return;
+        }
+        if (shredNo == 0)
+        {
+            shredOrigin = new Vector3(0, mapSize * 2, 0);
+            radius = mapSize * 1.8f;
+        }
+        GameObject mapChunk = Instantiate(Resources.Load<GameObject>("Prefabs/Map/MapChunk"));
+        MapChunk chunk = mapChunk.GetComponent<MapChunk>();
+        Vector3 center = Vector3.zero;
+        int count = 0;
+
+        for (int i = 0; i < mapLayers; i++)
+        {
+            foreach (Voxel vox in voxels[i].Values)
+            {
+                if (!isDeleted(i, vox.columnID))
+                {
+                    try
+                    {
+                        if (Vector3.Distance(vox.worldCentreOfObject, shredOrigin) < radius)
+                        {
+                            chunk.addVoxel(vox);
+                            count++;
+                            center += vox.worldCentreOfObject;
+                        }
+                    }
+                    catch { }
+                }
+            }
+        }
+
+        mapChunk.transform.position = center / count;
+        chunk.finishChunk(shredOrigin, radius);
+        shredNo++;
+        radius += mapSize * 0.2f;
+    }
+
     public Voxel getSubVoxelAt(int layer, int columnID, String subID)
     {
         Voxel
@@ -518,7 +599,7 @@ public class MapManager : NetworkBehaviour
         {
             VoxelContainer vc = v.gameObject.GetComponent<VoxelContainer>();
             //Debug.Log("opening container " + vc + " - " + vc.subVoxelID);
-            v = (Voxel) vc.subVoxels[int.Parse(subID.Split(',')[i])]; // TODO try catch, this isn't working every time
+            v = (Voxel)vc.subVoxels[int.Parse(subID.Split(',')[i])]; // TODO try catch, this isn't working every time
             //Debug.Log("opening contained subVoxel " + v + " - " + v.subVoxelID);
         }
 
@@ -531,10 +612,16 @@ public class MapManager : NetworkBehaviour
     {
         if (l <= -1) return true;
 
+
+
         if (voxels.ContainsKey(l))
         {
             if (voxels[l].ContainsKey(columnID))
             {
+                if (voxels[l][columnID] == null) {
+                    return true;
+                }
+
                 return voxels[l][columnID].Equals(DeletedVoxel);
             }
             else
@@ -552,7 +639,7 @@ public class MapManager : NetworkBehaviour
     //returns the position of a voxel whether it exists or not
     public Vector3 getPositionOf(int layer, int columnID)
     {
-        float scale = (float) Math.Pow(Voxel.scaleRatio, layer);
+        float scale = (float)Math.Pow(Voxel.scaleRatio, layer);
         //Debug.Log("rec cen: " + voxelPositions[columnID] + " act cen " + voxels[0][columnID].centreOfObject);
         return voxelPositions[columnID] * scale * mapSize;
     }

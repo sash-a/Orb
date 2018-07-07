@@ -32,7 +32,7 @@ public class Health : MonoBehaviour
                 {
                     if (gameObject.name.Equals("SubVoxel"))
                     {
-                        gameObject.GetComponent<Voxel>().destroyVoxel();
+                        gameObject.GetComponent<Voxel>().CmdDestroyVoxel();
                     }
                     else
                     {
@@ -59,7 +59,7 @@ public class Health : MonoBehaviour
         {
             if (gameObject.GetComponent<Voxel>().layer < MapManager.mapLayers - 1)
             {
-                gameObject.GetComponent<Voxel>().destroyVoxel();
+                gameObject.GetComponent<Voxel>().CmdDestroyVoxel();
             }
 
         }

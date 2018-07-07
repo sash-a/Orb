@@ -42,7 +42,7 @@ public class CaveManager : NetworkBehaviour
     public static void digCaves()
     {
         rand = new System.Random();
-        Debug.Log("cave manager digging caves");
+        //Debug.Log("cave manager digging caves");
         shatters = MapManager.manager.shatters;
         MapManager.manager.shatters = 0;
         for (int i = 0; i < caveNo; i++)

@@ -16,9 +16,6 @@ public class MagicAttack : AAttackBehaviour
     [SerializeField] private bool canCastPush; // True once player can recast forcePush
     [SerializeField] private float force;
 
-    [SerializeField] private ParticleSystem damageEffect;
-
-
     private ResourceManager resourceManager;
     private Shield currentShield; // The current instance of shield
 
@@ -30,7 +27,6 @@ public class MagicAttack : AAttackBehaviour
     private int currentWeapon;
 
     private bool isAttacking;
-    private bool isDamage;
 
     void Start()
     {
@@ -38,7 +34,6 @@ public class MagicAttack : AAttackBehaviour
 
         shieldUp = false;
         isAttacking = false;
-        isDamage = false;
         force = 100;
     }
 
@@ -62,13 +57,13 @@ public class MagicAttack : AAttackBehaviour
 
         if (Input.GetAxis("Mouse ScrollWheel") > 0f)
         {
-            currentWeapon = (currentWeapon + 1) % 3;
+            currentWeapon = (++currentWeapon) % 3;
             changeWeapon();
         }
 
         if (Input.GetAxis("Mouse ScrollWheel") < 0f)
         {
-            currentWeapon = (currentWeapon - 1) % 3;
+            currentWeapon = (--currentWeapon) % 3;
             changeWeapon();
         }
     }
@@ -95,23 +90,10 @@ public class MagicAttack : AAttackBehaviour
             RaycastHit hit;
             if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask))
             {
-                isDamage = true;
-                damageEffect.Play();            
                 if (hit.collider.CompareTag(PLAYER_TAG))
-                {
-                    if (hit.collider.gameObject.GetComponent<Identifier>().typePrefix == "Magician")
-                    {
-                        // Healing
-                        CmdPlayerAttacked(hit.collider.name, -50);
-                    }
-                    else
-                    {
-                        // Damaging
-                        CmdPlayerAttacked(hit.collider.name, 50);
-                    }
-                }
+                    CmdPlayerAttacked(hit.collider.name, 50);
                 else if (hit.collider.CompareTag(VOXEL_TAG))
-                    CmdVoxelDamaged(hit.collider.gameObject, 50); // Env damage?
+                    CmdVoxelDamaged(hit.collider.gameObject, 50); // weapontype.envDamage?
                 else if (hit.collider.CompareTag("Shield"))
                     CmdShieldHit(hit.collider.gameObject, 50);
             }
@@ -127,6 +109,10 @@ public class MagicAttack : AAttackBehaviour
                     if (voxel.shatterLevel >= 1) // need to change this to accomodate the teleken artifact
                     {
                         CmdVoxelTeleken(voxel.columnID, voxel.layer, voxel.subVoxelID);
+                        // Just run telekenisis locally network transform will sync movements
+                        var tele = currentTelekeneticVoxel.GetComponent<Telekenisis>();
+                        tele.enabled = true;
+                        tele.setUp(telekenObjectPos.transform, Telekenisis.VOXEL, GetComponent<Identifier>().id);
                     }
                     else
                     {
@@ -157,7 +143,7 @@ public class MagicAttack : AAttackBehaviour
                     }
 
 //                    coll.gameObject.GetComponent<Rigidbody>()
-//                        .AddForce(direction.normalized * force /* * (1 / direction.sqrMagnitude)*/,
+//                         .AddForce(direction.normalized * force /* * (1 / direction.sqrMagnitude)*/,
 //                            ForceMode.Impulse);
                     CmdPush(coll.gameObject.GetComponent<Identifier>().id, direction);
                 }
@@ -190,11 +176,6 @@ public class MagicAttack : AAttackBehaviour
         else if (type.isForcePush)
         {
             canCastPush = true;
-        }
-        else if (type.isDamage)
-        {
-            isDamage = false;
-            damageEffect.Stop();
         }
 
         isAttacking = false;
@@ -291,34 +272,31 @@ public class MagicAttack : AAttackBehaviour
     [ClientRpc]
     private void RpcPrepVoxel(int col, int layer, string subID, string playerID)
     {
-        // Setting for all clients?
-        currentTelekeneticVoxel = MapManager.manager.getSubVoxelAt(layer, col, subID).gameObject;
+        prepVoxel(col, layer, subID, playerID);
+    }
 
-        // Add networktransform and rigidbody so that it can be moved on network
+    private void prepVoxel(int col, int layer, string subID, string playerID)
+    {
+        currentTelekeneticVoxel = MapManager.manager.getSubVoxelAt(layer, col, subID).gameObject;
         var voxel = MapManager.manager.getSubVoxelAt(layer, col, subID);
 
+        // Setting up rigidbody
         // Needs to be true to work with a rigid body
-        voxel.gameObject.GetComponent<MeshCollider>().convex = true; // Still throws error
-        var rb = voxel.gameObject.AddComponent<Rigidbody>();
-        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-        rb.useGravity = false;
+        voxel.gameObject.GetComponent<MeshCollider>().convex = true; // Still throws error sometimes
 
-        var netTrans = voxel.gameObject.AddComponent<NetworkTransform>();
-//        netTrans.sendInterval = 14; // this its buggy and sets the threshhold to 0.
-        netTrans.movementTheshold = 0.001f;
-        netTrans.velocityThreshold = 0.0001f;
-        netTrans.snapThreshold = 5f;
-        netTrans.interpolateMovement = 1;
-        netTrans.syncRotationAxis = NetworkTransform.AxisSyncMode.AxisXYZ;
-        netTrans.interpolateRotation = 10;
-        netTrans.rotationSyncCompression = NetworkTransform.CompressionSyncMode.None;
-        netTrans.syncSpin = false;
+
+        if (voxel.gameObject.GetComponent<Rigidbody>() == null)
+        {
+            var rb = voxel.gameObject.AddComponent<Rigidbody>();
+            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            rb.useGravity = false;
+        }
+
+        // Enabling network transform
+        currentTelekeneticVoxel.GetComponent<NetworkTransform>().enabled = true;
 
         voxel.transform.parent = MapManager.manager.Map.transform;
         voxel.gameObject.name = playerID + "_teleken_voxel";
-
-        // I think best solution is to find a way to add collider to player that stops 
-        voxel.gameObject.AddComponent<Telekenises>().setUp(telekenObjectPos.transform, Telekenises.VOXEL, playerID);
 
         // Creating the voxels below
         voxel.showNeighbours(false);
@@ -329,7 +307,7 @@ public class MagicAttack : AAttackBehaviour
     {
         if (currentTelekeneticVoxel != null)
         {
-            currentTelekeneticVoxel.GetComponent<Telekenises>().throwObject(cam.transform.forward);
+//            currentTelekeneticVoxel.GetComponent<Telekenises>().throwObject(cam.transform.forward);
         }
     }
 
