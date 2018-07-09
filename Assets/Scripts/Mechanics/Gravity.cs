@@ -5,7 +5,7 @@ public class Gravity : MonoBehaviour
 {
     private Rigidbody rb;
 
-    private static float acceleration = 900f;
+    private static float acceleration = 2000f;
 
     // Update is called once per frame
     void Start()

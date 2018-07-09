@@ -31,7 +31,10 @@ public class NetHealth : NetworkBehaviour
         health -= amount;
         if (isServer)
         {
-            if (health <= 0) die();
+            if (health <= 0) 
+                die();
+            else if (health >= maxHealth)
+                health = maxHealth;
         }
     }
 
@@ -41,7 +44,8 @@ public class NetHealth : NetworkBehaviour
     {
         isDead = true;
 
-        if (gameObject.name.Contains("voxel")|| gameObject.name.Contains("Voxel") || gameObject.name.Equals("TriVoxel"))
+        if (gameObject.name.Contains("voxel") || gameObject.name.Contains("Voxel") ||
+            gameObject.name.Equals("TriVoxel"))
         {
             var voxel = gameObject.GetComponent<Voxel>();
             if (voxel.layer < MapManager.mapLayers - 1) voxel.CmdDestroyVoxel();

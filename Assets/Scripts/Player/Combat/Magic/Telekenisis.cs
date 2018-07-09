@@ -22,30 +22,38 @@ public class Telekenisis : MonoBehaviour
     private bool hasReleased;
     private float throwForce;
 
+    [SerializeField] public ParticleSystem teleEffect;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         vox = GetComponent<Voxel>();
 
-        if (rb == null)
-        {
-            Debug.LogError("Rigidbody null on voxel for telekenisis");
-            StartCoroutine(getRB());
-        }
-
+        var shape = teleEffect.GetComponent<ParticleSystem>().shape;
+        shape.mesh = vox.filter.mesh;        
+        
         hasReleased = false;
         throwForce = 150;
     }
 
     public void setUp(Transform stuckTo, int typeHit, string casterID)
-    {
+    {        
         requiredPos = stuckTo;
         this.casterID = casterID;
 
         if (typeHit == VOXEL) speed = voxelSpeed;
         else if (typeHit == GUNNER) speed = gunnerSpeed;
         else speed = beastSpeed;
+        
+        rb = GetComponent<Rigidbody>();
+        if (rb == null)
+        {
+            Debug.LogWarning("Waiting for rigidbody to spawn");
+            StartCoroutine(getRB());
+        }
+        
+        teleEffect.gameObject.SetActive(true);
+        teleEffect.Play();
     }
 
     void Update()
@@ -54,15 +62,12 @@ public class Telekenisis : MonoBehaviour
 
         var oldPos = new Vector3(rb.position.x, rb.position.y, rb.position.z);
         rb.MovePosition(rb.position +
-                        (requiredPos.position - vox.worldCentreOfObject).normalized * Time.deltaTime * voxelSpeed);
-
+                        (requiredPos.position - vox.worldCentreOfObject).normalized * Time.deltaTime * speed);
+        
         var diff = rb.position - oldPos;
         vox.worldCentreOfObject += diff; // Updating the voxels position in world co-ords
-
-
-//        test.GetComponent<Rigidbody>().MovePosition(test.transform.position +
-//        (requiredPos.position - test.transform.position) *
-//            Time.deltaTime * speed);
+        
+        teleEffect.transform.position = vox.worldCentreOfObject;
     }
 
     public void throwObject(Vector3 direction)
@@ -87,15 +92,17 @@ public class Telekenisis : MonoBehaviour
         else if (hit.collider.CompareTag("Shield")) // TODO constant
             casterAttack.CmdShieldHit(hit.collider.gameObject, 75);
 
-//        vox.GetComponent<NetHealth>().RpcDamage(10); // kill the voxel
         // TODO FX
         NetworkServer.Destroy(gameObject);
     }
 
     IEnumerator getRB()
     {
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(0.5f);
         rb = GetComponent<Rigidbody>();
-        Debug.LogError("Voxel has rb; " + (rb != null));
+        if (rb == null)
+        {
+            Debug.LogError("Could not find rigidbody on client");
+        }
     }
 }

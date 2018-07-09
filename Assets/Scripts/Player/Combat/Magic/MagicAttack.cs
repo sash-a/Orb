@@ -19,6 +19,8 @@ public class MagicAttack : AAttackBehaviour
     private ResourceManager resourceManager;
     private Shield currentShield; // The current instance of shield
 
+    [SerializeField] private ParticleSystem attackEffect;
+
     /// <summary>
     /// 0 = Damage/Heal
     /// 1 = Push
@@ -35,6 +37,8 @@ public class MagicAttack : AAttackBehaviour
         shieldUp = false;
         isAttacking = false;
         force = 100;
+
+        attackEffect.Stop();
     }
 
     void Update()
@@ -88,10 +92,22 @@ public class MagicAttack : AAttackBehaviour
         if (type.isDamage)
         {
             RaycastHit hit;
+            attackEffect.Play();
+
             if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask))
             {
                 if (hit.collider.CompareTag(PLAYER_TAG))
-                    CmdPlayerAttacked(hit.collider.name, 50);
+                {
+                    var character = hit.collider.gameObject.GetComponent<Identifier>().typePrefix;
+                    if(character == "Magician")  // Heal
+                    {
+                        CmdPlayerAttacked(hit.collider.name, -20);
+                    }
+                    else  // Damage
+                    {
+                        CmdPlayerAttacked(hit.collider.name, 50);
+                    }
+                }
                 else if (hit.collider.CompareTag(VOXEL_TAG))
                     CmdVoxelDamaged(hit.collider.gameObject, 50); // weapontype.envDamage?
                 else if (hit.collider.CompareTag("Shield"))
@@ -177,6 +193,10 @@ public class MagicAttack : AAttackBehaviour
         {
             canCastPush = true;
         }
+        else if (type.isDamage)
+        {
+            attackEffect.Stop();
+        }
 
         isAttacking = false;
     }
@@ -195,7 +215,6 @@ public class MagicAttack : AAttackBehaviour
             resourceManager.useEnergy(Shield.initialEnergyUsage);
 
             CmdSpawnShield();
-//            shieldEnergyDrain = resourceManager.beginEnergyDrain(currentShield.energyDrainRate);
             shieldUp = true;
         }
     }
@@ -264,17 +283,33 @@ public class MagicAttack : AAttackBehaviour
     private void CmdVoxelTeleken(int col, int layer, string subID)
     {
         currentTelekeneticVoxel = MapManager.manager.getSubVoxelAt(layer, col, subID).gameObject;
+        
         // Prepare the voxel for telekenisis
         RpcPrepVoxel(col, layer, subID, GetComponent<Identifier>().id);
     }
 
 
+    /// <summary>
+    /// Adds and enables the necessarry components to the voxels on every client
+    /// </summary>
+    /// <param name="col"></param>
+    /// <param name="layer"></param>
+    /// <param name="subID"></param>
+    /// <param name="playerID"></param>
     [ClientRpc]
     private void RpcPrepVoxel(int col, int layer, string subID, string playerID)
     {
         prepVoxel(col, layer, subID, playerID);
     }
 
+    /// <summary>
+    /// Adds a rigidbody and enables the network transform of a given voxel.
+    /// Creates the necessary voxels below the current telekenetic one.
+    /// </summary>
+    /// <param name="col"></param>
+    /// <param name="layer"></param>
+    /// <param name="subID"></param>
+    /// <param name="playerID"></param>
     private void prepVoxel(int col, int layer, string subID, string playerID)
     {
         currentTelekeneticVoxel = MapManager.manager.getSubVoxelAt(layer, col, subID).gameObject;
@@ -283,7 +318,6 @@ public class MagicAttack : AAttackBehaviour
         // Setting up rigidbody
         // Needs to be true to work with a rigid body
         voxel.gameObject.GetComponent<MeshCollider>().convex = true; // Still throws error sometimes
-
 
         if (voxel.gameObject.GetComponent<Rigidbody>() == null)
         {
@@ -307,7 +341,7 @@ public class MagicAttack : AAttackBehaviour
     {
         if (currentTelekeneticVoxel != null)
         {
-//            currentTelekeneticVoxel.GetComponent<Telekenises>().throwObject(cam.transform.forward);
+            currentTelekeneticVoxel.GetComponent<Telekenisis>().throwObject(cam.transform.forward);
         }
     }
 

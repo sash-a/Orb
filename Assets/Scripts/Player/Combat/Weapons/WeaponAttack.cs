@@ -50,7 +50,7 @@ public class WeaponAttack : AAttackBehaviour
 
     private void Update()
     {
-        if (PauseMenu.isPaused) return;
+        if (PlayerUI.isPaused) return;
 
         //scroll up changes weapons
         if (Input.GetAxis("Mouse ScrollWheel") > 0f && isLocalPlayer) //need to prevent weapon switching when aiming!

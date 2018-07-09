@@ -6,16 +6,15 @@ using UnityEngine.Networking;
 
 public class SubVoxel : NetworkBehaviour
 {
-
-
     private void Start()
     {
         //Debug.Log("a found voxel has a pos: " + gameObject.GetComponent<Voxel>().layer + " , " + gameObject.GetComponent<Voxel>().columnID);
-
     }
+
     public override void OnStartClient()
     {
-        if (!MapManager.manager.mapDoneLocally) {
+        if (!MapManager.manager.mapDoneLocally)
+        {
             Debug.LogError("spawning subvoxel before map has been completed");
         }
 
@@ -24,7 +23,6 @@ public class SubVoxel : NetworkBehaviour
         Voxel foundVox = MapManager.manager.getSubVoxelAt(spawnedVox.layer, spawnedVox.columnID, spawnedVox.subVoxelID);
         if (foundVox != spawnedVox)
         {
-
             GetComponent<MeshFilter>().mesh.vertices = foundVox.GetComponent<MeshFilter>().mesh.vertices;
             GetComponent<MeshFilter>().mesh.triangles = foundVox.GetComponent<MeshFilter>().mesh.triangles;
             GetComponent<MeshFilter>().mesh.uv = foundVox.GetComponent<MeshFilter>().mesh.uv;
@@ -39,14 +37,15 @@ public class SubVoxel : NetworkBehaviour
 
 
             double scale = Math.Pow(Voxel.scaleRatio, Math.Abs(spawnedVox.layer)) * MapManager.mapSize;
-            transform.localScale = Vector3.one * (float)scale ;
+            transform.localScale = Vector3.one * (float) scale;
             //Debug.Log("absorbing found vox into spawned vox ; making scale: " + scale);
-
+            
             if (spawnedVox.shatterLevel == 0)
             {
                 MapManager.manager.voxels[spawnedVox.layer][spawnedVox.columnID] = spawnedVox;
             }
-            else {
+            else
+            {
                 MapManager.manager.replaceSubVoxel(spawnedVox);
             }
 
@@ -57,6 +56,5 @@ public class SubVoxel : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-
     }
 }
