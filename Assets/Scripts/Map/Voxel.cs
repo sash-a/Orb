@@ -48,7 +48,9 @@ public class Voxel : NetworkBehaviour
             recalcCenters();
         }
 
-        rand = new System.Random(layer * columnID + columnID);
+        if (rand == null) {
+            rand = new System.Random(layer * columnID + columnID);
+        }
 
         gameObject.tag = "TriVoxel";
         MapManager man = MapManager.manager;
@@ -247,7 +249,7 @@ public class Voxel : NetworkBehaviour
         //Debug.Log("destroy voxel called");  
         if (asset != null)
         {
-            asset.changeParent(null);
+            //asset.changeParent(null);
         }
         if (!isServer)
         {
@@ -308,6 +310,7 @@ public class Voxel : NetworkBehaviour
 
     public IEnumerator Melt()
     {
+        /*
         if (transform.childCount > 0) {
             int count = transform.childCount;
             for (int i = 0; i < count; i++)
@@ -318,6 +321,7 @@ public class Voxel : NetworkBehaviour
                 trans.position = absPos;
             }
         }
+        */
         transform.position = Vector3.one * 1000f; //moves far away
         Destroy(gameObject.GetComponent<MeshCollider>()); //deconstruct this voxel locally
         yield return new WaitForSeconds(1f); //waits for subvoxels to generate on all systems
@@ -519,7 +523,7 @@ public class Voxel : NetworkBehaviour
             {
                 ass = asset;
                 asset = null;
-                ass.changeParent(null);
+                //ass.changeParent(null);
             }
             GameObject childObject = Instantiate(gameObject, gameObject.transform.position,
                 gameObject.transform.localRotation);
@@ -538,7 +542,7 @@ public class Voxel : NetworkBehaviour
             {
                 asset = ass;
                 //asset.gameObject.transform.parent = gameObject.transform;
-                asset.changeParent(gameObject.transform);
+                //asset.changeParent(gameObject.transform);
             }
             return true;
         }

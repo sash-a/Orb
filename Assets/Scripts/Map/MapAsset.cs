@@ -50,6 +50,7 @@ public class MapAsset : NetworkBehaviour
         ass.GetComponent<MapAsset>().voxel = vox;
         ass.GetComponent<MapAsset>().colID = vox.columnID;
         ass.GetComponent<MapAsset>().layer = vox.layer;
+        
         NetworkServer.Spawn(ass);
         return ass.GetComponent<MapAsset>();
     }
@@ -77,14 +78,13 @@ public class MapAsset : NetworkBehaviour
             voxel = man.voxels[layer][colID];
         }
 
-        if (voxel.rand == null)
-        {
-            voxel.rand = new System.Random(layer * voxel.columnID + voxel.columnID);
-        }
-        transform.position += forward * (float)(voxel.rand.NextDouble() - 0.5f) + right * (float)(voxel.rand.NextDouble() - 0.5f);
-        float width = (float)(voxel.rand.NextDouble() * widthVariation + widthVariation * 0.5f);
-        transform.localScale = new Vector3(transform.localScale.x * width, transform.localScale.y * (float)(voxel.rand.NextDouble() * heightVariation + widthVariation * 0.5f), transform.localScale.z * width);
-        transform.Rotate(new Vector3((float)(voxel.rand.NextDouble() * rotateVariation + rotateVariation * 0.5f), (float)(voxel.rand.NextDouble() * rotateVariation + rotateVariation * 0.5f), (float)(voxel.rand.NextDouble() * rotateVariation + rotateVariation * 0.5f)));
+
+
+        System.Random rand = new System.Random(voxel.layer * voxel.columnID + voxel.columnID);
+        transform.position += forward * (float)(rand.NextDouble() - 0.5f) + right * (float)(rand.NextDouble() - 0.5f);
+        float width = (float)(rand.NextDouble() * widthVariation + widthVariation * 0.5f);
+        transform.localScale = new Vector3(transform.localScale.x * width, transform.localScale.y * (float)(rand.NextDouble() * heightVariation + widthVariation * 0.5f), transform.localScale.z * width);
+        transform.Rotate(new Vector3((float)(rand.NextDouble() * rotateVariation + rotateVariation * 0.5f), (float)(rand.NextDouble() * rotateVariation + rotateVariation * 0.5f), (float)(rand.NextDouble() * rotateVariation + rotateVariation * 0.5f)));
 
         if (voxel.asset != null && voxel.asset != this)
         {
@@ -93,8 +93,8 @@ public class MapAsset : NetworkBehaviour
             return;
         }
         voxel.asset = this;
-        changeParent(voxel.gameObject.transform);
-
+        //changeParent(voxel.gameObject.transform);
+        changeParent(MapManager.manager.Map.transform.GetChild(3));
 
         if (voxel.Equals(MapManager.DeletedVoxel))
         {
@@ -134,7 +134,7 @@ public class MapAsset : NetworkBehaviour
                 voxel.asset = this;
                 //Debug.Log("reassigning  map asset to new voxel: " + voxel + " ");
                 rb.isKinematic = true;
-                transform.parent = collision.gameObject.transform;
+                //transform.parent = collision.gameObject.transform;
             }
         }
     }
@@ -150,15 +150,32 @@ public class MapAsset : NetworkBehaviour
             }
             else {
                 //Debug.Log("assets has no voxel");
-                changeParent(MapManager.manager.Map.transform);
+                //changeParent(MapManager.manager.Map.transform);
                 falling = true;
                 //rb.isKinematic = true;
-                gameObject.AddComponent<Gravity>();
+                CmdAddGravity();
                 rb.AddForce(transform.forward,ForceMode.Acceleration);
             }
         }
-
-        
     }
 
+    [Command]
+    public void CmdAddGravity()
+    {
+        RpcAddGravity();
+        gameObject.AddComponent<Gravity>();
+        gameObject.GetComponent<NetworkTransform>().enabled = true;
+        rb.AddForce(transform.forward, ForceMode.Acceleration);
+    }
+
+    [ClientRpc]
+    private void RpcAddGravity()
+    {
+        if (gameObject.GetComponent<Gravity>() == null) {
+            gameObject.AddComponent<Gravity>();
+            gameObject.GetComponent<NetworkTransform>().enabled = true;
+            rb.AddForce(transform.forward, ForceMode.Acceleration);
+        }
+  
+    }
 }
