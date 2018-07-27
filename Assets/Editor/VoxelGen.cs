@@ -48,7 +48,7 @@ public class VoxelGen
             // Network stuff
             voxel.AddComponent<NetworkIdentity>();
             voxel.AddComponent<NetHealth>().maxHealth = 10;
-            voxel.AddComponent<Telekenisis>().enabled = false; // Enabled if telekenisis is used on voxel
+            voxel.AddComponent<Telekinesis>().enabled = false; // Enabled if telekenisis is used on voxel
             
             // ----------------- Network transform ------------------------
             var netTrans = voxel.gameObject.AddComponent<NetworkTransform>();

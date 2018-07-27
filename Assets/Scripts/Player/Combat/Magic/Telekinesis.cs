@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 [RequireComponent(typeof(Voxel))]
-public class Telekenisis : MonoBehaviour
+public class Telekinesis : MonoBehaviour
 {
     [SerializeField] private string casterID;
     [SerializeField] private Transform requiredPos;

@@ -24,7 +24,7 @@ public class MagicAttack : AAttackBehaviour
     /// <summary>
     /// 0 = Damage/Heal
     /// 1 = Push
-    /// 2 = Telekenisis
+    /// 2 = Telekinesis
     /// </summary>
     private int currentWeapon;
 
@@ -126,9 +126,9 @@ public class MagicAttack : AAttackBehaviour
                     {
                         CmdVoxelTeleken(voxel.columnID, voxel.layer, voxel.subVoxelID);
                         // Just run telekenisis locally network transform will sync movements
-                        var tele = currentTelekeneticVoxel.GetComponent<Telekenisis>();
+                        var tele = currentTelekeneticVoxel.GetComponent<Telekinesis>();
                         tele.enabled = true;
-                        tele.setUp(telekenObjectPos.transform, Telekenisis.VOXEL, GetComponent<Identifier>().id);
+                        tele.setUp(telekenObjectPos.transform, Telekinesis.VOXEL, GetComponent<Identifier>().id);
                     }
                     else
                     {
@@ -341,7 +341,7 @@ public class MagicAttack : AAttackBehaviour
     {
         if (currentTelekeneticVoxel != null)
         {
-            currentTelekeneticVoxel.GetComponent<Telekenisis>().throwObject(cam.transform.forward);
+            currentTelekeneticVoxel.GetComponent<Telekinesis>().throwObject(cam.transform.forward);
         }
     }
 

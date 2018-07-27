@@ -53,9 +53,6 @@ public class grenade : AAttackBehaviour
     public override void attack()
     {
 
-
-        
-
         //Explosion effect
         CmdExplosionFX();
 

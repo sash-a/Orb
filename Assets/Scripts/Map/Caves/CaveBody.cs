@@ -7,12 +7,13 @@ public class CaveBody : CaveComponent
 
     int caveSize;
     bool hasWeepHole;//a weephole is a drop style entrance - a hole in the ceiling
-    Vector3 center;
+    public Vector3 center;
 
     int length = 10;
 
     public CaveBody(Digger d) : base(d)
     {
+        //Debug.Log("creating cave body - adding to caves list");
         digger.neighbourCount = 0;
         digger.gradient = 0;
         //Debug.Log("before: " + digger.master is CaveEntrance);

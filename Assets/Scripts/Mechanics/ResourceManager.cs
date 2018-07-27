@@ -40,10 +40,23 @@ public class ResourceManager : NetworkBehaviour
     {
         if (!isLocalPlayer || amount <= 0) return;
 
-        //magazineAmmo = Math.Min(magSize, magazineAmmo + amount);
-        A.setMagAmmo(Math.Min(A.getMagSize(), A.getMagAmmo() + amount));
-        //replenish mag bullets from primary
-        usePrimaryAmmo(amount, A);
+        if (A.getPrimaryAmmo() > A.getMagSize())
+        {
+            //magazineAmmo = Math.Min(magSize, magazineAmmo + amount);
+            A.setMagAmmo(Math.Min(A.getMagSize(), A.getMagAmmo() + amount));
+
+            //replenish mag bullets from primary
+            usePrimaryAmmo(amount, A);
+        }
+        else
+        {
+            A.setMagAmmo(A.getPrimaryAmmo());
+            A.setPrimaryAmmo(0);
+        }
+
+
+        
+        
     }
 
     public void pickupGrenade(int amount, Ammo A)

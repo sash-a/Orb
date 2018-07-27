@@ -14,7 +14,6 @@ public class WeaponType : Item
     public ParticleSystem muzzleFlash;
 
     //grenade specific
-    public bool hasExploded;
     public bool isExplosive;
     int numGrenades;
 
@@ -39,8 +38,8 @@ public class WeaponType : Item
     public WeaponType(int numGr, int maxNum)
     {
         isExplosive = true;
-        hasExploded = false;
         ammunition = new Ammo(numGr, maxNum);
+        fireRate = 1;
     }
 
     // These will likely be stored as a list in player

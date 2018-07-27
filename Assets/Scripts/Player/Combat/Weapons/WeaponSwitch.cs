@@ -16,8 +16,33 @@ public class WeaponSwitch : MonoBehaviour {
     {
         int previousSelectedWeapon = selectedWeapon;
 
+        if (Input.GetKey(KeyCode.Alpha1))
+        {
+            selectedWeapon = 0;
+        }
+
+        if (Input.GetKey(KeyCode.Alpha2))
+        {
+            selectedWeapon = 1;
+        }
+
+        if (Input.GetKey(KeyCode.Alpha3))
+        {
+            selectedWeapon = 2;
+        }
+
+        if (Input.GetKey(KeyCode.Alpha4))
+        {
+            selectedWeapon = 3;
+        }
+
+        if (Input.GetKey(KeyCode.Alpha5))
+        {
+            selectedWeapon = 4;
+        }
+
         //scroll up
-		if(Input.GetAxis("Mouse ScrollWheel") > 0f) //shouldnt be able to switch when aiming!
+        if (Input.GetAxis("Mouse ScrollWheel") > 0f) //shouldnt be able to switch when aiming!
         {
             if (selectedWeapon >= transform.childCount -1)
             {

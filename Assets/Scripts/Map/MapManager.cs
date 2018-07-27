@@ -17,7 +17,7 @@ public class MapManager : NetworkBehaviour
 
     [SyncVar] public int shatters = 2; //make zero to turn off shattering
     public static bool useHills = true;
-    public static bool digCaves = true;
+    public static int noCaves = 5;
 
     bool loaded = false;
 
@@ -190,7 +190,7 @@ public class MapManager : NetworkBehaviour
         }
 
 
-        if (digCaves && isServer)
+        if (noCaves>0 && isServer)
         {
             //Debug.Log("digging caves");
             CaveManager.digCaves();

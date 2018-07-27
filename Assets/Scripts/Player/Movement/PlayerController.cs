@@ -28,7 +28,7 @@ public class PlayerController : MonoBehaviour
         var yMov = Input.GetAxis("Vertical") * transform.forward;
         var velocity = (xMov + yMov).normalized * speed;
 
-        actions.move(Input.GetKey(KeyCode.LeftShift) ? velocity * 3f : velocity);
+        actions.move(Input.GetKey(KeyCode.LeftShift) ? velocity * 1.5f : velocity);
 
         // Rotation
         var yRot = new Vector3(0, Input.GetAxis("Mouse X"), 0) * lookSens;
