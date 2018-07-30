@@ -109,6 +109,7 @@ public class NetworkMapGen : NetworkBehaviour
     private void genTrees(int density)
     {
         if (!isServer) return;
+        if (!MapManager.useMapAssets) return;
         //random group of trees between 10 and 20
         int numTrees = UnityEngine.Random.Range(10, 20);
         // d is related to density

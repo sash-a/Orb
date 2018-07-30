@@ -46,7 +46,7 @@ public class Gravity : MonoBehaviour
 
         }
 
-        if (gameObject.name.Contains("oxel") || gameObject.tag == "MapAsset")
+        if (!gameObject.tag.Equals("Player"))
         {
             if (Vector3.Distance(transform.position, oldPos) < 0.1f && age > 20 && rb.velocity.magnitude < 0.1f)
             {

@@ -187,7 +187,7 @@ public class MagicAttack : AAttackBehaviour
     {
         if (type.isTelekenetic)
         {
-            CmdEndTeleken();
+//            CmdEndTeleken();
         }
         else if (type.isForcePush)
         {

@@ -43,23 +43,34 @@ public class CaveEntrance : CaveComponent
        
     }
 
+    int travelCounter = 2;
+
+
     public override void informArrived()
     {
         digger.gameObject.transform.localScale *= 0.999f;
 
         //Debug.Log("digger arrived at: " + digger.colID);
 
+
         if (digger.layer >= destDepth)//done digging entrance
         {
             digger.neighbourCount = 0;
-            digger.travelDir = (digger.travelDir.normalized + digger.right * (float)(rand.NextDouble() * 0.7f - 0.35f)).normalized;
-            digger.right = Vector3.Cross(digger.travelDir, -digger.gameObject.transform.position);
-            digger.layer -= 2;
+            //digger.travelDir = (digger.travelDir.normalized + digger.right * (float)(rand.NextDouble() * 0.7f - 0.35f)).normalized;
+            //digger.right = Vector3.Cross(digger.travelDir, -digger.gameObject.transform.position);
             //digger.gameObject.active = false;
             //CaveManager.removeDigger(digger);
-            //Debug.Log("digger finished digging entrance - entrance length: " + Vector3.Distance(MapManager.manager.getPositionOf(0, columnID), digger.transform.position));
 
-            CaveBody body = new CaveBody(digger);
+            if (travelCounter <= 0)
+            {
+                digger.layer -= 2;
+                CaveBody body = new CaveBody(digger);
+                //Debug.Log("digger finished digging entrance - entrance length: " + Vector3.Distance(MapManager.manager.getPositionOf(0, columnID), digger.transform.position));
+            }
+            else {
+                travelCounter--;
+                digger.gradient = 0;
+            }
         }
     }
 
@@ -81,11 +92,12 @@ public class CaveEntrance : CaveComponent
         digger.transform.position = Vector3.zero;
         digger.setScale(entrancesize);
         digger.gradient = 2;
+        direction = dir;
 
 
-
-        digger.right = Vector3.Cross(direction, -MapManager.manager.getPositionOf(0, columnID));
+        digger.right = Vector3.Cross(direction, -MapManager.manager.getPositionOf(0, columnID)).normalized;
         digger.travelDir = direction.normalized;
+        //Debug.Log("creating new digger with dir = " + digger.travelDir + " right = " + digger.right);
         digger.nextDest = MapManager.manager.getPositionOf(0, colID);
 
         digger.gameObject.SetActive(true);

@@ -6,9 +6,12 @@ using UnityEngine.Networking;
 
 public class SubVoxel : NetworkBehaviour
 {
+    public Transform voxelPosition;
+
     private void Start()
     {
-        //Debug.Log("a found voxel has a pos: " + gameObject.GetComponent<Voxel>().layer + " , " + gameObject.GetComponent<Voxel>().columnID);
+        // Set the position to the world centre of the voxel so that its position can be tracked
+        voxelPosition.position = GetComponent<Voxel>().worldCentreOfObject;
     }
 
     public override void OnStartClient()
@@ -39,7 +42,7 @@ public class SubVoxel : NetworkBehaviour
             double scale = Math.Pow(Voxel.scaleRatio, Math.Abs(spawnedVox.layer)) * MapManager.mapSize;
             transform.localScale = Vector3.one * (float) scale;
             //Debug.Log("absorbing found vox into spawned vox ; making scale: " + scale);
-            
+
             if (spawnedVox.shatterLevel == 0)
             {
                 MapManager.manager.voxels[spawnedVox.layer][spawnedVox.columnID] = spawnedVox;

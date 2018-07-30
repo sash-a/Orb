@@ -67,7 +67,7 @@ public class CaveManager : NetworkBehaviour
                         //Debug.Log("found another entrance too close: " + dist);
                     }
                 }
-                if (farEnough)
+                if (farEnough)//the new cave entrance is far enough away from all other cave entrances
                 {
                     Vector3 dir = Vector3.zero;
 
@@ -82,6 +82,9 @@ public class CaveManager : NetworkBehaviour
                         count++;
                     }
                     dir = planariseDir(colID, dir);
+                    //dir is now a direction which is pointing away from all other
+
+                    
                     foreach (CaveEntrance ent in manager.entrances)
                     {
                         double dist = Vector3.Distance(MapManager.manager.getPositionOf(0, colID), MapManager.manager.getPositionOf(0, ent.columnID));
@@ -90,6 +93,7 @@ public class CaveManager : NetworkBehaviour
                             farEnough = false;
                         }
                     }
+                    
                     //dir = planariseDir(colID, dir);
                     if (farEnough)
                     {

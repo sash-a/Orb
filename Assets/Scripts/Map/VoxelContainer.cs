@@ -143,6 +143,7 @@ public class VoxelContainer : Voxel
                 subVoxelScript.isBottom = i > 2 && i <= 5 || (i == 7 && !majorVoxel.isBottom) || (i == 6 && majorVoxel.isBottom);
                 subVoxelScript.subVoxelID = majorVoxel.subVoxelID + "," + i;
                 subVoxelScript.info += "id: " + (subVoxelScript.subVoxelID);
+                subVoxelScript.hasEnergy = majorVoxel.hasEnergy;
 
                 subVoxelScript.filter = subMesh;
                 subVoxelScript.deletedPoints = new HashSet<int>();

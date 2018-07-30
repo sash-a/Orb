@@ -17,7 +17,8 @@ public class MapManager : NetworkBehaviour
 
     [SyncVar] public int shatters = 2; //make zero to turn off shattering
     public static bool useHills = true;
-    public static int noCaves = 5;
+    public static int noCaves = 4;
+    public static bool useMapAssets = true;
 
     bool loaded = false;
 
@@ -172,10 +173,18 @@ public class MapManager : NetworkBehaviour
         }
     }
 
+
+
     public void voxelsLoaded()
     {
         //Debug.Log("voxels loaded called");
         Debug.Log("voxels loaded - found " + spawnedVoxels.Count + " initialised  voxels");
+        StartCoroutine(allVoxelsLoaded());
+    }
+
+    IEnumerator allVoxelsLoaded()
+    {
+        yield return new WaitForSeconds(1f);
         loadNeighboursMap();
 
         foreach (Voxel vox in voxels[0].Values)
@@ -190,7 +199,7 @@ public class MapManager : NetworkBehaviour
         }
 
 
-        if (noCaves>0 && isServer)
+        if (noCaves > 0 && isServer)
         {
             //Debug.Log("digging caves");
             CaveManager.digCaves();
@@ -208,9 +217,10 @@ public class MapManager : NetworkBehaviour
                 finishMap();
             }
         }
+
     }
 
-    public void finishMap()
+        public void finishMap()
     {
         BuildLog.writeLog("Map finished");
         Debug.Log("Map finished");

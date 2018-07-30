@@ -9,6 +9,7 @@ public class Telekinesis : MonoBehaviour
     [SerializeField] private Transform requiredPos;
     [SerializeField] private Rigidbody rb;
     [SerializeField] private Voxel vox;
+    private Transform voxPos;
 
     private const float voxelSpeed = 5;
     private const float gunnerSpeed = 2;
@@ -28,30 +29,31 @@ public class Telekinesis : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         vox = GetComponent<Voxel>();
+        voxPos = GetComponent<SubVoxel>().voxelPosition.transform;
 
         var shape = teleEffect.GetComponent<ParticleSystem>().shape;
-        shape.mesh = vox.filter.mesh;        
-        
+        shape.mesh = vox.filter.mesh;
+
         hasReleased = false;
         throwForce = 150;
     }
 
     public void setUp(Transform stuckTo, int typeHit, string casterID)
-    {        
+    {
         requiredPos = stuckTo;
         this.casterID = casterID;
 
         if (typeHit == VOXEL) speed = voxelSpeed;
         else if (typeHit == GUNNER) speed = gunnerSpeed;
         else speed = beastSpeed;
-        
+
         rb = GetComponent<Rigidbody>();
         if (rb == null)
         {
             Debug.LogWarning("Waiting for rigidbody to spawn");
             StartCoroutine(getRB());
         }
-        
+
         teleEffect.gameObject.SetActive(true);
         teleEffect.Play();
     }
@@ -60,14 +62,13 @@ public class Telekinesis : MonoBehaviour
     {
         if (hasReleased || rb == null) return; // Timer + explode
 
-        var oldPos = new Vector3(rb.position.x, rb.position.y, rb.position.z);
+        // Stops the voxel from "bouncing" when player not looking around
+        if ((voxPos.position - requiredPos.position).magnitude < 1) return;
+        
         rb.MovePosition(rb.position +
-                        (requiredPos.position - vox.worldCentreOfObject).normalized * Time.deltaTime * speed);
-        
-        var diff = rb.position - oldPos;
-        vox.worldCentreOfObject += diff; // Updating the voxels position in world co-ords
-        
-        teleEffect.transform.position = vox.worldCentreOfObject;
+                        (requiredPos.position - voxPos.position).normalized * Time.deltaTime * speed);
+
+        teleEffect.transform.position = voxPos.position;
     }
 
     public void throwObject(Vector3 direction)

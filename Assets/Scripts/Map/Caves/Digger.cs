@@ -43,32 +43,12 @@ public class Digger : NetworkBehaviour
         if (Vector3.Distance(transform.position, nextDest) < 4f)
         {
             transform.position = nextDest;
-            /**
-            if (layer == depth && state.Equals(State.Entrance)) {
-                gradient = length + 2;
-                neighbourCount = 0;
-                travelDir = travelDir.normalized + right *(float) (rand.NextDouble() * 1.5f - 0.75f);
-                right = Vector3.Cross(travelDir, -transform.position);
-                state = State.Cave;
-                transform.localScale = Vector3.one * size;
-                layer-=2;
-                //Debug.Log("finished digging entrance");
-            }
-            if (state.Equals(State.Cave) && neighbourCount >= length) {//has finished digging cave
-                Debug.Log("finished digging cave - size : " + transform.localScale.magnitude);
-                state = State.Exit;
-                gradient=0;
-                transform.localScale = stdscale* size;
-            }
-            if (state.Equals(State.Exit)&& layer<=0) {
-                Debug.Log("finished cave");
-                CaveManager.removeDigger(this);
-            }
-            */
 
             master.informArrived();
             nextDest = getNextVox();
-            travelDir = Vector3.Cross(-transform.position, right);
+            Vector3 temp = Vector3.Cross(-transform.position, right);
+            travelDir = (Vector3.Dot(temp, travelDir) < 0 ? temp * -1 : temp);
+            //Debug.Log("digger arrived at next dest: " + layer + " : " + colID + " traveldir: " + travelDir + " right dir: " + right);
         }
         travelToNext();
 

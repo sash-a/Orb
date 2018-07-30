@@ -40,6 +40,8 @@ public class Voxel : NetworkBehaviour
 
     public MapAsset asset;
 
+    public bool hasEnergy;
+
 
     private void Start()
     {
@@ -48,7 +50,8 @@ public class Voxel : NetworkBehaviour
             recalcCenters();
         }
 
-        if (rand == null) {
+        if (rand == null)
+        {
             rand = new System.Random(layer * columnID + columnID);
         }
 
@@ -91,8 +94,9 @@ public class Voxel : NetworkBehaviour
                 shatterLevel = 0;
                 isBottom = false;
                 gameObject.name = "TriVoxel";
-                setTexture();
+                hasEnergy = layer > 3 && rand.NextDouble() < 0.1f;
 
+                setTexture();
 
                 MapManager.manager.voxelSpawned(columnID);
 
@@ -152,41 +156,48 @@ public class Voxel : NetworkBehaviour
 
     public void setTexture()
     {
-        if (layer == 0)
+        if (hasEnergy)
         {
-            StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyGrass")));
-        }
-        else if (layer == MapManager.mapLayers - 1)
-        {
-            StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyCrust")));
+            StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyEnergy")));
         }
         else
         {
-            //StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyGround")));
-            if (earthTexNo == -1)
+            if (layer == 0)
             {
-                earthTexNo = rand.Next(0, 9);
-                //Debug.Log("using earth texture " + earthTexNo);
+                StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyGrass")));
             }
-
-            GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth" + earthTexNo);
-            //GetComponent<MeshRenderer>().material.SetTextureScale("Earth" + earthTexNo, new Vector2(texScale,texScale));
-
-            if (layer < 6)
+            else if (layer == MapManager.mapLayers - 1)
             {
-                GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth2");
-            }
-            else if (layer < 11)
-            {
-                GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth7");
+                StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyCrust")));
             }
             else
             {
-                GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth8");
-            }
+                //StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyGround")));
+                if (earthTexNo == -1)
+                {
+                    earthTexNo = rand.Next(0, 9);
+                    //Debug.Log("using earth texture " + earthTexNo);
+                }
 
-            GetComponent<MeshRenderer>().material.mainTextureScale = new Vector2(
-                texScale / (float)Math.Pow(1.7, shatterLevel), texScale / (float)Math.Pow(1.7, shatterLevel));
+                GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth" + earthTexNo);
+                //GetComponent<MeshRenderer>().material.SetTextureScale("Earth" + earthTexNo, new Vector2(texScale,texScale));
+
+                if (layer < 6)
+                {
+                    GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth2");
+                }
+                else if (layer < 11)
+                {
+                    GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth7");
+                }
+                else
+                {
+                    GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth8");
+                }
+
+                GetComponent<MeshRenderer>().material.mainTextureScale = new Vector2(
+                    texScale / (float)Math.Pow(1.7, shatterLevel), texScale / (float)Math.Pow(1.7, shatterLevel));
+            }
         }
     }
 
@@ -359,7 +370,7 @@ public class Voxel : NetworkBehaviour
                 RaycastHit hit;
                 Ray ray = new Ray(centreOfObject, dir);
 
-                if (Physics.Raycast(ray, out hit))
+                if (Physics.Raycast(ray, out hit) && false)
                 {
                     if (lastHit != null && hit.collider.gameObject == lastHit)
                     {
@@ -374,8 +385,7 @@ public class Voxel : NetworkBehaviour
                     }
                     else
                     {
-                        Debug.LogError(
-                            "no voxel comoponent on neighbour ray hit -  hit " + hit.collider.gameObject.name);
+                        Debug.LogError("no voxel comoponent on neighbour ray hit -  hit " + hit.collider.gameObject.name);
                     }
 
                     lastHit = hit.collider.gameObject;
