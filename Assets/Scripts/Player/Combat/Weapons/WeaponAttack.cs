@@ -16,6 +16,7 @@ public class WeaponAttack : AAttackBehaviour
     public GameObject hitEffect;
     public GameObject VoxelDestroyEffect;
     public GameObject explosionEffect;
+    public GameObject voxelFragmentSpawner;
 
     private int selectedWeapon = 0;
 
@@ -195,7 +196,13 @@ public class WeaponAttack : AAttackBehaviour
 
                     if (hit.collider.GetComponent<NetHealth>().getHealth() <= 0)
                     {
-                        CmdVoxelDestructionEffect(hit.point, hit.normal);
+                        //CmdVoxelDestructionEffect(hit.point, hit.normal);
+
+                        //fetches material of voxel it hits
+                        Material mat = hit.transform.GetComponent<Renderer>().material;
+                        //Creates instance of fragment spawner and call its spawn method
+                        GameObject voxelFragSpawner = Instantiate(voxelFragmentSpawner, hit.point, Quaternion.identity);
+                        voxelFragSpawner.GetComponent<VoxelDestructionEffect>().spawnVoxelFragment(hit.point, mat);
                     }
 
 

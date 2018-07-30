@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
 
-[RequireComponent(typeof(ResourceManager))]
+//[RequireComponent(typeof(ResourceManager))] //not sure if this is neccesary
 public class grenade : AAttackBehaviour
 {
     public float delay = 3f;
