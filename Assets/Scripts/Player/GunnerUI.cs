@@ -6,12 +6,12 @@ public class GunnerUI : MonoBehaviour
 {
     #region Variables
 
-    [SerializeField] private GameObject player;
+    private GameObject player;
 
     // Components
-    [SerializeField] private NetHealth health;
-    [SerializeField] private ResourceManager resourceManager;
-    [SerializeField] private WeaponAttack weapons;
+    private NetHealth health;
+    private ResourceManager resourceManager;
+    private WeaponAttack weapons;
 
     // Bars
     [SerializeField] private RectTransform healthBar;
@@ -34,6 +34,14 @@ public class GunnerUI : MonoBehaviour
     #endregion
 
     public static bool isPaused;
+
+    private void Start()
+    {
+        if (player != null && player.GetComponent<Identifier>().typePrefix != Identifier.gunnerType)
+        {
+            Debug.LogError("Displaying incorrect HUD");
+        }
+    }
 
     public void setUp(GameObject localPlayer)
     {
