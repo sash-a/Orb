@@ -36,7 +36,12 @@ public class PlayerSetup : NetworkBehaviour
             playerUIInstance = Instantiate(playerUIPrefab);
             playerUIInstance.name = playerUIPrefab.name;
             // Might need to check if null
-            playerUIInstance.GetComponent<PlayerUI>().setPlayer(gameObject);
+            var type = GetComponent<Identifier>().typePrefix;
+            if (type == Identifier.gunnerType)
+            {
+                playerUIInstance.GetComponentInChildren<GunnerUI>().setUp(gameObject);
+
+            }
         }
     }
 

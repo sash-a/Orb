@@ -4,11 +4,12 @@ using UnityEngine.Networking;
 
 public class ResourceManager : NetworkBehaviour
 {
-
     [SerializeField] private float energy = 100;
     [SerializeField] private float maxEnergy = 100;
 
- 
+    [SerializeField] private float shield = 0;
+    [SerializeField] private float maxShield = 100;
+
     /// <summary>
     /// Adds energy to the players resource manager
     /// </summary>
@@ -53,10 +54,6 @@ public class ResourceManager : NetworkBehaviour
             A.setMagAmmo(A.getPrimaryAmmo());
             A.setPrimaryAmmo(0);
         }
-
-
-        
-        
     }
 
     public void pickupGrenade(int amount, Ammo A)
@@ -121,5 +118,20 @@ public class ResourceManager : NetworkBehaviour
     public float getMaxEnergy()
     {
         return maxEnergy;
+    }
+
+    public float getShield()
+    {
+        return shield;
+    }
+
+    public void setShield(float amount)
+    {
+        shield = Mathf.Max(0.0f, Mathf.Min(maxShield, shield));
+    }
+
+    public float getShieldPercent()
+    {
+        return shield / maxShield;
     }
 }

@@ -18,9 +18,8 @@ public class WeaponAttack : AAttackBehaviour
     public GameObject explosionEffect;
     public GameObject voxelFragmentSpawner;
 
-    private int selectedWeapon = 0;
-
-    List<WeaponType> weapons;
+    public int selectedWeapon = 0;
+    public List<WeaponType> weapons;
 
     //grenade specific
     public GameObject grenadeSpawn;

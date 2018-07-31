@@ -282,20 +282,41 @@ public class Voxel : NetworkBehaviour
                 //Debug.Log("destroying a subVoxel");
                 MapManager.manager.RpcDestroyNextSubvoxel(layer, columnID, subVoxelID);
             }
+
+
+            if (asset != null)
+            {
+                asset.voxel = null;
+                asset = null;
+            }
         }
         else
         {
-            //Debug.Log("destroying voxel at layer: " + layer + "  no shattering");
-            showNeighbours(true);
-            if (asset != null)
-            {
-                //Debug.Log("destroying voxels asset");
-                NetworkServer.Destroy(asset.gameObject);
-                Destroy(asset.gameObject);
-            }
-
-            NetworkServer.Destroy(gameObject);
+            CmdDestroyVoxelNoShatter();
         }
+
+    }
+
+    [Command]
+    internal void CmdDestroyVoxelNoShatter()
+    {
+        if (!isServer)
+        {
+            Debug.LogError("destroy vox called from in vox");
+        }
+
+
+        //Debug.Log("destroying voxel at layer: " + layer + "  no shattering");
+        showNeighbours(true);
+        if (asset != null)
+        {
+            //Debug.Log("destroying voxels asset");
+            NetworkServer.Destroy(asset.gameObject);
+            Destroy(asset.gameObject);
+        }
+
+        NetworkServer.Destroy(gameObject);
+
 
         if (asset != null)
         {
@@ -303,7 +324,6 @@ public class Voxel : NetworkBehaviour
             asset = null;
         }
 
-        //Destroy(gameObject);
     }
 
     [ClientRpc]
