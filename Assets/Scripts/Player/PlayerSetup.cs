@@ -21,7 +21,7 @@ public class PlayerSetup : NetworkBehaviour
         {
             foreach (Behaviour comp in componentsToDisable)
                 comp.enabled = false;
-            
+
             assignRemotePlayer();
         }
         else
@@ -36,11 +36,23 @@ public class PlayerSetup : NetworkBehaviour
             playerUIInstance = Instantiate(playerUIPrefab);
             playerUIInstance.name = playerUIPrefab.name;
             // Might need to check if null
-            var type = GetComponent<Identifier>().typePrefix;
-            if (type == Identifier.gunnerType)
+            var type = GetComponent<Identifier>();
+            // Enabling and setting up the correct UI for the class
+            if (type.typePrefix == Identifier.gunnerType)
             {
-                playerUIInstance.GetComponentInChildren<GunnerUI>().setUp(gameObject);
-
+                var ui = playerUIInstance.GetComponentInChildren<GunnerUI>();
+                ui.setUp(gameObject);
+                ui.magicianUI.SetActive(false);
+                ui.gameObject.SetActive(true);
+                type.UI = ui;
+            }
+            else if (type.typePrefix == Identifier.magicianType)
+            {
+                var ui = playerUIInstance.GetComponentInChildren<MagicianUI>();
+                ui.setUp(gameObject);
+                ui.gunnerUI.SetActive(false);
+                ui.gameObject.SetActive(true);
+                type.UI = ui;
             }
         }
     }
@@ -60,7 +72,7 @@ public class PlayerSetup : NetworkBehaviour
     private void OnDisable()
     {
         Destroy(playerUIInstance);
-        
+
         if (mainCam != null && isLocalPlayer)
             mainCam.gameObject.SetActive(true);
 

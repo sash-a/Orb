@@ -7,8 +7,8 @@ public class ResourceManager : NetworkBehaviour
     [SerializeField] private float energy = 100;
     [SerializeField] private float maxEnergy = 100;
 
-    [SerializeField] private float shield = 0;
-    [SerializeField] private float maxShield = 100;
+    [SerializeField] private float gunnerShield = 0;
+    [SerializeField] private float maxGunnerShield = 100;
 
     /// <summary>
     /// Adds energy to the players resource manager
@@ -122,16 +122,16 @@ public class ResourceManager : NetworkBehaviour
 
     public float getShield()
     {
-        return shield;
+        return gunnerShield;
     }
 
-    public void setShield(float amount)
+    public void setGunnerShield(float amount)
     {
-        shield = Mathf.Max(0.0f, Mathf.Min(maxShield, shield));
+        gunnerShield = Mathf.Max(0.0f, Mathf.Min(maxGunnerShield, gunnerShield));
     }
 
-    public float getShieldPercent()
+    public float getGunnerShieldPercent()
     {
-        return shield / maxShield;
+        return gunnerShield / maxGunnerShield;
     }
 }

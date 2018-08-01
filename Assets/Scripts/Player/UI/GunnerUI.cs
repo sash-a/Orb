@@ -2,12 +2,10 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GunnerUI : MonoBehaviour
+public class GunnerUI : PlayerUI
 {
     #region Variables
-
-    private GameObject player;
-
+    
     // Components
     private NetHealth health;
     private ResourceManager resourceManager;
@@ -31,6 +29,9 @@ public class GunnerUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI livingPlayerCount;
     [SerializeField] private TextMeshProUGUI killCount;
 
+    // Other classes UIs
+    public GameObject magicianUI;
+
     #endregion
 
     public static bool isPaused;
@@ -46,6 +47,12 @@ public class GunnerUI : MonoBehaviour
     public void setUp(GameObject localPlayer)
     {
         player = localPlayer;
+        if (player != null && player.GetComponent<Identifier>().typePrefix != Identifier.gunnerType)
+        {
+            Debug.LogError("Displaying incorrect HUD");
+            return;
+        }
+
         health = player.GetComponent<NetHealth>();
         resourceManager = player.GetComponent<ResourceManager>();
         weapons = player.GetComponent<WeaponAttack>();
@@ -59,7 +66,7 @@ public class GunnerUI : MonoBehaviour
     void Update()
     {
         setHealth(health.getHealthPercent());
-        setShield(resourceManager.getShieldPercent());
+        setShield(resourceManager.getGunnerShieldPercent());
         setEnergy((int) (resourceManager.getEnergy() / resourceManager.getMaxEnergy()));
         setAmmo
         (

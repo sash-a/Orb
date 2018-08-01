@@ -99,11 +99,11 @@ public class MagicAttack : AAttackBehaviour
                 if (hit.collider.CompareTag(PLAYER_TAG))
                 {
                     var character = hit.collider.gameObject.GetComponent<Identifier>().typePrefix;
-                    if(character == "Magician")  // Heal
+                    if (character == "Magician") // Heal
                     {
                         CmdPlayerAttacked(hit.collider.name, -20);
                     }
-                    else  // Damage
+                    else // Damage
                     {
                         CmdPlayerAttacked(hit.collider.name, 50);
                     }
@@ -187,7 +187,7 @@ public class MagicAttack : AAttackBehaviour
     {
         if (type.isTelekenetic)
         {
-//            CmdEndTeleken();
+            CmdEndTeleken();
         }
         else if (type.isForcePush)
         {
@@ -246,6 +246,7 @@ public class MagicAttack : AAttackBehaviour
         currentShield.setCaster(GetComponent<Identifier>());
 
         shieldInst.GetComponent<NetHealth>().setInitialHealth(currentShield.shieldHealth);
+
         shieldInst.transform.parent = transform;
         RpcPrepShield(shieldInst.GetComponent<Identifier>().id, GetComponent<Identifier>().id);
     }
@@ -258,9 +259,17 @@ public class MagicAttack : AAttackBehaviour
     [ClientRpc]
     private void RpcPrepShield(string shieldID, string parentID)
     {
-        GameManager.getObject(shieldID).transform.parent =
+        var shieldInst = GameManager.getObject(shieldID);
+        // This might only need to be done server and local player side, not on all machines
+        currentShield = shieldInst.GetComponent<Shield>();
+        currentShield.setCaster(GetComponent<Identifier>());
+
+        shieldInst.GetComponent<NetHealth>().setInitialHealth(currentShield.shieldHealth);
+        // Up to here
+
+        shieldInst.transform.parent =
             GameManager.getObject(parentID).GetComponentInChildren<Camera>().transform;
-        GameManager.getObject(shieldID).GetComponent<Shield>()
+        shieldInst.GetComponent<Shield>()
             .setCaster(GameManager.getObject(parentID).GetComponent<Identifier>());
     }
 
@@ -283,7 +292,7 @@ public class MagicAttack : AAttackBehaviour
     private void CmdVoxelTeleken(int col, int layer, string subID)
     {
         currentTelekeneticVoxel = MapManager.manager.getSubVoxelAt(layer, col, subID).gameObject;
-        
+
         // Prepare the voxel for telekenisis
         RpcPrepVoxel(col, layer, subID, GetComponent<Identifier>().id);
     }
@@ -354,9 +363,7 @@ public class MagicAttack : AAttackBehaviour
     [ClientRpc]
     void RpcPush(string id)
     {
-        Debug.LogWarning("in rpc");
         var direction = GameManager.getObject(id).transform.position - transform.position;
-        Debug.LogError(direction);
 
         GameManager.getObject(id).gameObject.GetComponent<Rigidbody>()
             .AddForce(transform.forward.normalized * force /* * (1 / direction.sqrMagnitude)*/);

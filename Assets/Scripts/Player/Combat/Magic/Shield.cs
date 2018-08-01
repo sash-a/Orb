@@ -10,7 +10,7 @@ public class Shield : NetworkBehaviour
     [SerializeField] private Identifier caster;
 
     // Stats
-    [SerializeField] public int shieldHealth;
+    public int shieldHealth;
 
     // How will this be done for artifacts? Needs to be static as needs to be checked that has enough magic to use
     [SerializeField] public static int initialEnergyUsage = 20;
@@ -45,6 +45,8 @@ public class Shield : NetworkBehaviour
     public void setCaster(Identifier id)
     {
         caster = id;
+        // UI
+        ((MagicianUI) caster.UI).onShieldUp(GetComponent<NetHealth>());
     }
 
 
@@ -55,5 +57,8 @@ public class Shield : NetworkBehaviour
 
         magic.shieldDown();
         GameManager.deregister(transform.name);
+
+        // Remove from UI
+        ((MagicianUI) caster.GetComponent<Identifier>().UI).onShieldDown();
     }
 }

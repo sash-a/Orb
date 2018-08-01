@@ -34,7 +34,6 @@ public class VoxelDestructionEffect : NetworkBehaviour
         NetworkServer.Spawn(VF3);
         NetworkServer.Spawn(VF4);
         NetworkServer.Spawn(VF5);
-
     }
 
 
