@@ -10,17 +10,21 @@ public class MagicianUI : PlayerUI
     private NetHealth health;
     private ResourceManager resourceManager;
     public NetHealth shieldHealth;
+    public MagicAttack magic;
 
     // Bars
     [SerializeField] private RectTransform healthBar;
     [SerializeField] private RectTransform shieldBar;
     [SerializeField] private RectTransform energyBar;
 
-    // Magic icons
+    // Slot borders
     [SerializeField] private Image magicSlot0;
     [SerializeField] private Image magicSlot1;
     [SerializeField] private Image magicSlot2;
     [SerializeField] private Image magicSlot3;
+
+    [SerializeField] private Sprite borderEquipped;
+    [SerializeField] private Sprite borderUnequipped;
 
 
     // Game state indicators
@@ -54,6 +58,7 @@ public class MagicianUI : PlayerUI
 
         health = player.GetComponent<NetHealth>();
         resourceManager = player.GetComponent<ResourceManager>();
+        magic = player.GetComponent<MagicAttack>();
 
         setHealth(1);
         setShield();
@@ -66,10 +71,33 @@ public class MagicianUI : PlayerUI
         setHealth(health.getHealthPercent());
         setShield();
         setEnergy(resourceManager.getEnergy(), resourceManager.getMaxEnergy());
+        showEquipped();
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             togglePauseMenu();
+        }
+    }
+
+    void showEquipped()
+    {
+        if (magic.currentWeapon == 0)
+        {
+            magicSlot0.sprite = borderEquipped;
+            magicSlot1.sprite = borderUnequipped;
+            magicSlot2.sprite = borderUnequipped;
+        }
+        else if (magic.currentWeapon == 1)
+        {
+            magicSlot0.sprite = borderUnequipped;
+            magicSlot1.sprite = borderEquipped;
+            magicSlot2.sprite = borderUnequipped;
+        }
+        else if (magic.currentWeapon == 2)
+        {
+            magicSlot0.sprite = borderUnequipped;
+            magicSlot1.sprite = borderUnequipped;
+            magicSlot2.sprite = borderEquipped;
         }
     }
 
