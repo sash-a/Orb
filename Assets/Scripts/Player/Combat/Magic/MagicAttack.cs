@@ -26,7 +26,7 @@ public class MagicAttack : AAttackBehaviour
     /// 1 = Push
     /// 2 = Telekinesis
     /// </summary>
-    public int currentWeapon;
+    private int currentWeapon;
 
     private bool isAttacking;
 
@@ -59,21 +59,15 @@ public class MagicAttack : AAttackBehaviour
     {
         if (!isLocalPlayer || isAttacking) return;
 
-        var scroll = Input.GetAxis("Mouse ScrollWheel");
-
-        // I understand the direction makes no sense, but it works better for the UI
-        if (scroll < 0f)
+        if (Input.GetAxis("Mouse ScrollWheel") > 0f)
         {
             currentWeapon = (++currentWeapon) % 3;
             changeWeapon();
         }
-        else if (scroll > 0f)
-        {
-            if (currentWeapon == 0) 
-                currentWeapon = 2;
-            else 
-                currentWeapon = --currentWeapon % 3;
 
+        if (Input.GetAxis("Mouse ScrollWheel") < 0f)
+        {
+            currentWeapon = (--currentWeapon) % 3;
             changeWeapon();
         }
     }
@@ -81,8 +75,8 @@ public class MagicAttack : AAttackBehaviour
     private void changeWeapon()
     {
         if (currentWeapon == 0) type.changeToDamage();
-        else if (currentWeapon == 1) type.changeToTeleken();
-        else if (currentWeapon == 2) type.changeToPush();
+        else if (currentWeapon == 1) type.changeToPush();
+        else if (currentWeapon == 2) type.changeToTeleken();
     }
 
     [Client]
