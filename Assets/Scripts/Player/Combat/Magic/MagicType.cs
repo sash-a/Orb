@@ -7,30 +7,37 @@ public class MagicType : Item
     public bool isDamage;
     public bool isShield;
     public bool isForcePush;
+    public bool isDigger;
 
     public void changeToDamage()
     {
-        Debug.Log("Damage Weapon");
-        
         isDamage = true;
         isTelekenetic = false;
         isForcePush = false;
+        isDigger = false;
     }
-    
+
     public void changeToTeleken()
     {
-        Debug.Log("Teleken Weapon");
-
         isDamage = false;
         isTelekenetic = true;
         isForcePush = false;
+        isDigger = false;
     }
+
     public void changeToPush()
     {
-        Debug.Log("Push Weapon");
-
         isDamage = false;
         isTelekenetic = false;
         isForcePush = true;
+        isDigger = false;
+    }
+
+    public void changeToDigger()
+    {
+        isDamage = false;
+        isTelekenetic = false;
+        isForcePush = false;
+        isDigger = true;
     }
 }
