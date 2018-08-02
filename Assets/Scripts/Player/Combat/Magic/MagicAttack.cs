@@ -29,6 +29,7 @@ public class MagicAttack : AAttackBehaviour
     public int currentWeapon;
 
     private bool isAttacking;
+    private bool isDigging;
 
     void Start()
     {
@@ -51,8 +52,11 @@ public class MagicAttack : AAttackBehaviour
         if (!resourceManager.hasEnergy() && currentShield != null && shieldUp) endSecondaryAttack();
 
         // Energy gain/drain
-        if (!shieldUp) resourceManager.gainEnery(Shield.energyGainRate * Time.deltaTime);
+        if (!shieldUp && !isAttacking) resourceManager.gainEnery(Shield.energyGainRate * Time.deltaTime);
         if (shieldUp) resourceManager.useEnergy(Shield.energyDrainRate * Time.deltaTime);
+
+        // Digging
+        if (isDigging) CmdDig();
     }
 
     private void cycleWeapons()
@@ -115,7 +119,7 @@ public class MagicAttack : AAttackBehaviour
                     }
                 }
                 else if (hit.collider.CompareTag(VOXEL_TAG))
-                    CmdVoxelDamaged(hit.collider.gameObject, 50); // weapontype.envDamage?
+                    CmdVoxelDamaged(hit.collider.gameObject, 10); // weapontype.envDamage?
                 else if (hit.collider.CompareTag("Shield"))
                     CmdShieldHit(hit.collider.gameObject, 50);
             }
@@ -164,9 +168,6 @@ public class MagicAttack : AAttackBehaviour
                         Debug.LogError("Null");
                     }
 
-//                    coll.gameObject.GetComponent<Rigidbody>()
-//                         .AddForce(direction.normalized * force /* * (1 / direction.sqrMagnitude)*/,
-//                            ForceMode.Impulse);
                     CmdPush(coll.gameObject.GetComponent<Identifier>().id, direction);
                 }
             }
@@ -175,7 +176,7 @@ public class MagicAttack : AAttackBehaviour
         }
         else if (type.isDigger)
         {
-            Debug.Log("Digger");
+            isDigging = true;
         }
     }
 
@@ -206,6 +207,10 @@ public class MagicAttack : AAttackBehaviour
         else if (type.isDamage)
         {
             attackEffect.Stop();
+        }
+        else if (type.isDigger)
+        {
+            isDigging = false;
         }
 
         isAttacking = false;
@@ -377,6 +382,33 @@ public class MagicAttack : AAttackBehaviour
 
         GameManager.getObject(id).gameObject.GetComponent<Rigidbody>()
             .AddForce(transform.forward.normalized * force /* * (1 / direction.sqrMagnitude)*/);
+    }
+
+    [Command]
+    void CmdDig()
+    {
+        RaycastHit hit;
+
+        // TODO change range
+        // TODO damage nums need tweeking
+        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask))
+        {
+            if (hit.collider.gameObject.CompareTag(VOXEL_TAG))
+            {
+                if (hit.collider.gameObject.GetComponent<Voxel>().hasEnergy)
+                {
+                    CmdVoxelDamaged(hit.collider.gameObject, 5 * Time.deltaTime);
+                    resourceManager.gainEnery(1 * Time.deltaTime); // Get energy
+                }
+                else
+                {
+                    CmdVoxelDamaged(hit.collider.gameObject, 10 * Time.deltaTime);
+                }
+
+                // Play energy effect
+                // Use energy? small amount!
+            }
+        }
     }
 
     /// <summary>
