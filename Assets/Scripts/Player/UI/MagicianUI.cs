@@ -119,7 +119,8 @@ public class MagicianUI : PlayerUI
             return;
         }
 
-        shieldBar.localScale = new Vector3(1f, shieldHealth.getHealth() / shieldHealth.maxHealth, 1f);
+        if (shieldHealth.maxHealth != 0)
+            shieldBar.localScale = new Vector3(1f, shieldHealth.getHealth() / shieldHealth.maxHealth, 1f);
     }
 
     void setEnergy(float amount, float maxEnergy)

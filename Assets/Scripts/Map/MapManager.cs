@@ -600,17 +600,14 @@ public class MapManager : NetworkBehaviour
 
     public Voxel getSubVoxelAt(int layer, int columnID, String subID)
     {
-        Voxel
-            v = voxels[layer][columnID]; //v should be a voxel container for this to be a valid call to destroy subvoxel
-        //Debug.Log("found top level container: " + v + " of type: " + v.GetType());
+        // v should be a voxel container for this to be a valid call to destroy subvoxel
+        Voxel v = voxels[layer][columnID]; 
         int shatterLevel = subID.Split(',').Length - 1;
 
         for (int i = 1; i <= shatterLevel; i++)
         {
             VoxelContainer vc = v.gameObject.GetComponent<VoxelContainer>();
-            //Debug.Log("opening container " + vc + " - " + vc.subVoxelID);
             v = (Voxel)vc.subVoxels[int.Parse(subID.Split(',')[i])]; // TODO try catch, this isn't working every time
-            //Debug.Log("opening contained subVoxel " + v + " - " + v.subVoxelID);
         }
 
         return v;

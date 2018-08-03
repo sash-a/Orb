@@ -11,6 +11,9 @@ public abstract class AAttackBehaviour : NetworkBehaviour
 
     // Layers that the local player can attack.
     [SerializeField] protected LayerMask mask;
+    
+    // Manages ammo and energy for players
+    protected ResourceManager resourceManager;
 
     void Start()
     {
@@ -98,4 +101,12 @@ public abstract class AAttackBehaviour : NetworkBehaviour
         shield.RpcDamage(damage);
     }
 
+    /// <summary>
+    /// Returns the resource manager for this player
+    /// </summary>
+    /// <returns>The <code>ResourceManager</code> of the local player</returns>
+    public ResourceManager getResourceManager()
+    {
+        return resourceManager;
+    }
 }

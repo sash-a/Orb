@@ -26,11 +26,10 @@ public class WeaponAttack : AAttackBehaviour
     public GameObject grenadePrefab;
     public float throwForce = 40;
 
-    private ResourceManager resourceManager;
-
     void Start()
     {
         resourceManager = GetComponent<ResourceManager>();
+
         weapons = new List<WeaponType>();
         //damage, range, fireRate, muzzleFlashEffect, primaryAmmo, currentMagAmmo, maxAmmo, MagSize
         WeaponType pistol = new WeaponType(5, 60, 5, PistolMuzzleFlash, 20, 12, 300, 12);

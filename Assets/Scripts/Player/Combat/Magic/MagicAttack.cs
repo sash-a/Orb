@@ -7,37 +7,44 @@ using UnityEngine.Networking;
 public class MagicAttack : AAttackBehaviour
 {
     [SerializeField] private MagicType type;
+    
+    private bool isAttacking;
+    // Digger tool
+    private bool isDigging;
+    // Shield
+    private Shield currentShield; // The current instance of shield=
     [SerializeField] private GameObject shield;
-    [SerializeField] private GameObject telekenObjectPos;
-
-    [SerializeField] private GameObject currentTelekeneticVoxel;
-
     [SerializeField] private bool shieldUp; // True if the player is currently using a shield
+    // Telekenesis
+    [SerializeField] private GameObject telekenObjectPos;
+    [SerializeField] private GameObject currentTelekeneticVoxel;
+    // Force push
     [SerializeField] private bool canCastPush; // True once player can recast forcePush
     [SerializeField] private float force;
 
-    private ResourceManager resourceManager;
-    private Shield currentShield; // The current instance of shield
-
+    // Effects
     [SerializeField] private ParticleSystem attackEffect;
+    private EnergyBlockEffectSpawner energyBlockEffectSpawner;
 
     /// <summary>
-    /// 0 = Damage/Heal
-    /// 1 = Push
+    /// 0 = Digger
+    /// 1 = Damage/Heal
     /// 2 = Telekinesis
+    /// 3 = push? (not implemented)
     /// </summary>
     public int currentWeapon;
-
-    private bool isAttacking;
-    private bool isDigging;
 
     void Start()
     {
         resourceManager = GetComponent<ResourceManager>();
+        energyBlockEffectSpawner = GetComponent<EnergyBlockEffectSpawner>();
 
         shieldUp = false;
         isAttacking = false;
         force = 100;
+
+        type.changeToDigger();
+        currentWeapon = 0;
 
         attackEffect.Stop();
     }
@@ -56,7 +63,7 @@ public class MagicAttack : AAttackBehaviour
         if (shieldUp) resourceManager.useEnergy(Shield.energyDrainRate * Time.deltaTime);
 
         // Digging
-        if (isDigging) CmdDig();
+        if (isDigging && resourceManager.hasEnergy()) CmdDig();
     }
 
     private void cycleWeapons()
@@ -168,7 +175,7 @@ public class MagicAttack : AAttackBehaviour
                         Debug.LogError("Null");
                     }
 
-                    CmdPush(coll.gameObject.GetComponent<Identifier>().id, direction);
+//                    CmdPush(coll.gameObject.GetComponent<Identifier>().id, direction);
                 }
             }
 
@@ -178,16 +185,6 @@ public class MagicAttack : AAttackBehaviour
         {
             isDigging = true;
         }
-    }
-
-    [Command]
-    void CmdPush(String id, Vector3 direction)
-    {
-        Debug.Log("CMD: " + id);
-//        GameManager.getObject(id).GetComponent<Rigidbody>()
-//            .AddForce(transform.forward.normalized * force /* * (1 / direction.sqrMagnitude)*/,
-//                ForceMode.Impulse);
-        RpcPush(id);
     }
 
     /// <summary>
@@ -368,44 +365,55 @@ public class MagicAttack : AAttackBehaviour
             currentTelekeneticVoxel.GetComponent<Telekinesis>().throwObject(cam.transform.forward);
         }
     }
-
+//    [Command]
+//    void CmdPush(String id, Vector3 direction)
+//    {
+//        Debug.Log("CMD: " + id);
+////        GameManager.getObject(id).GetComponent<Rigidbody>()
+////            .AddForce(transform.forward.normalized * force /* * (1 / direction.sqrMagnitude)*/,
+////                ForceMode.Impulse);
+//        RpcPush(id);
+//    }
 //    [Command]
 //    void CmdPush(string id)
 //    {
 //        RpcPush(id);
 //    }
 
-    [ClientRpc]
-    void RpcPush(string id)
-    {
-        var direction = GameManager.getObject(id).transform.position - transform.position;
-
-        GameManager.getObject(id).gameObject.GetComponent<Rigidbody>()
-            .AddForce(transform.forward.normalized * force /* * (1 / direction.sqrMagnitude)*/);
-    }
+//    [ClientRpc]
+//    void RpcPush(string id)
+//    {
+//        var direction = GameManager.getObject(id).transform.position - transform.position;
+//
+//        GameManager.getObject(id).gameObject.GetComponent<Rigidbody>()
+//            .AddForce(transform.forward.normalized * force /* * (1 / direction.sqrMagnitude)*/);
+//    }
 
     [Command]
     void CmdDig()
     {
         RaycastHit hit;
 
+        float voxdmg = 80;
+        float energydmg = 80;
         // TODO change range
         // TODO damage nums need tweeking
         if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask))
         {
             if (hit.collider.gameObject.CompareTag(VOXEL_TAG))
             {
-                if (hit.collider.gameObject.GetComponent<Voxel>().hasEnergy)
+                var voxel = hit.collider.gameObject.GetComponent<Voxel>();
+                if (voxel.hasEnergy)
                 {
-                    CmdVoxelDamaged(hit.collider.gameObject, 5 * Time.deltaTime);
-                    resourceManager.gainEnery(1 * Time.deltaTime); // Get energy
+                    CmdVoxelDamaged(hit.collider.gameObject, 50 * Time.deltaTime);
+                    
+                    energyBlockEffectSpawner.setVoxel(voxel.gameObject);
+                    energyBlockEffectSpawner.spawnBlock();
                 }
                 else
                 {
-                    CmdVoxelDamaged(hit.collider.gameObject, 10 * Time.deltaTime);
+                    CmdVoxelDamaged(hit.collider.gameObject, 80 * Time.deltaTime);
                 }
-
-                // Play energy effect
                 // Use energy? small amount!
             }
         }
@@ -417,14 +425,5 @@ public class MagicAttack : AAttackBehaviour
     public void shieldDown()
     {
         shieldUp = false;
-    }
-
-    /// <summary>
-    /// Returns the resource manager for this player
-    /// </summary>
-    /// <returns>The <code>ResourceManager</code> of the local player</returns>
-    public ResourceManager getResourceManager()
-    {
-        return resourceManager;
     }
 }
