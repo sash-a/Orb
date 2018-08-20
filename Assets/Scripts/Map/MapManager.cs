@@ -17,20 +17,25 @@ public class MapManager : NetworkBehaviour
 
     [SyncVar] public int shatters = 2; //make zero to turn off shattering
     public static bool useHills = true;
-    public static int noCaves = 4;
+    public static int noCaves = 5;
     public static bool useMapAssets = true;
+    public static bool usePortals = false;
 
     bool loaded = false;
 
     public static int mapLayers = 15;
-    public static int mapSize = 200;
-    public static int splits = 0;
+    public static int mapSize = 300;
+    public static int splits = 1;
 
     public bool mapDoneLocally;
 
 
     public HashSet<int> spawnedVoxels;
     public Dictionary<int, Dictionary<int, Voxel>> voxels; // indexed like voxels[layer][column]
+    public HashSet<Voxel> caveWalls;
+    public HashSet<Voxel> caveFloors;
+    public HashSet<Voxel> caveCeilings;
+
 
     public Dictionary<int, Vector3> voxelPositions; // the object centers of the layer=0 voxels
 
@@ -65,68 +70,14 @@ public class MapManager : NetworkBehaviour
         spawnedVoxels = new HashSet<int>();
         voxelPositions = new Dictionary<int, Vector3>();
         neighboursMap = new Dictionary<int, HashSet<int>>();
+        loadNeighboursMap();
         portals = new HashSet<Portal>();
+        caveFloors = new HashSet<Voxel>();
+        caveCeilings = new HashSet<Voxel>();
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.M))
-        {
-            Voxel.earthTexNo = -1;
-            for (int i = 0; i < voxels.Count; i++)
-            {
-                foreach (Voxel vox in voxels[i].Values)
-                {
-                    try
-                    {
-                        vox.setTexture();
-                    }
-                    catch
-                    {
-                    }
-                }
-            }
-        }
-
-        if (Input.GetKeyDown(KeyCode.N))
-        {
-            Voxel.texScale *= 1.4f;
-            for (int i = 0; i < voxels.Count; i++)
-            {
-                foreach (Voxel vox in voxels[i].Values)
-                {
-                    try
-                    {
-                        vox.setTexture();
-                    }
-                    catch
-                    {
-                    }
-                }
-            }
-
-            Debug.Log("texture scale " + Voxel.texScale);
-        }
-
-        if (Input.GetKeyDown(KeyCode.B))
-        {
-            Voxel.texScale *= 0.7f;
-            for (int i = 0; i < voxels.Count; i++)
-            {
-                foreach (Voxel vox in voxels[i].Values)
-                {
-                    try
-                    {
-                        vox.setTexture();
-                    }
-                    catch
-                    {
-                    }
-                }
-            }
-
-            Debug.Log("texture scale " + Voxel.texScale);
-        }
 
         if (Input.GetKeyDown(KeyCode.T))
         {
@@ -136,8 +87,7 @@ public class MapManager : NetworkBehaviour
 
     internal void replaceSubVoxel(Voxel spawnedVox)
     {
-        Voxel v = voxels[spawnedVox.layer][
-                spawnedVox.columnID]; //v should be a voxel container for this to be a valid call to destroy subvoxel
+        Voxel v = voxels[spawnedVox.layer][spawnedVox.columnID]; //v should be a voxel container for this to be a valid call to destroy subvoxel
         //Debug.Log("found top level container: " + v + " of type: " + v.GetType());
         int shatterLevel = spawnedVox.subVoxelID.Split(',').Length - 1;
 
@@ -146,7 +96,7 @@ public class MapManager : NetworkBehaviour
         {
             vc = v.gameObject.GetComponent<VoxelContainer>();
             //Debug.Log("opening container " + vc + " - " + vc.subVoxelID);
-            v = (Voxel)vc.subVoxels[int.Parse(spawnedVox.subVoxelID.Split(',')[i])];
+            v = (Voxel) vc.subVoxels[int.Parse(spawnedVox.subVoxelID.Split(',')[i])];
             //Debug.Log("opening contained subVoxel " + v + " - " + v.subVoxelID);
         }
 
@@ -174,25 +124,30 @@ public class MapManager : NetworkBehaviour
     }
 
 
-
     public void voxelsLoaded()
     {
-        //Debug.Log("voxels loaded called");
-        Debug.Log("voxels loaded - found " + spawnedVoxels.Count + " initialised  voxels");
+        //Debug.Log("voxels loaded - found " + spawnedVoxels.Count + " initialised  voxels");
         StartCoroutine(allVoxelsLoaded());
     }
 
     IEnumerator allVoxelsLoaded()
     {
         yield return new WaitForSeconds(1f);
-        loadNeighboursMap();
+        
 
         foreach (Voxel vox in voxels[0].Values)
         {
             //vox.gameObject.transform.localScale *= MapManager.mapSize;
             vox.checkNeighbourCount();
             //Debug.Log("adding position for voxel 0, " + vox.columnID);
-            voxelPositions.Add(vox.columnID, vox.centreOfObject);
+            try
+            {
+                voxelPositions.Add(vox.columnID, vox.centreOfObject);
+            }
+            catch (ArgumentException a) {
+                Debug.LogError(a);
+                Debug.Log("already added this voxel to voxel positions? colID = " + vox.columnID + " old center: " + voxelPositions[vox.columnID] + " new center: " + vox.centreOfObject);
+            }
 
             // This was uneccasarry and was causing errors with new lobby system (names are still trivoxel
             // vox.gameObject.name = "TriVoxel";
@@ -217,20 +172,45 @@ public class MapManager : NetworkBehaviour
                 finishMap();
             }
         }
-
     }
 
-        public void finishMap()
+    public void finishMap()
     {
         BuildLog.writeLog("Map finished");
         Debug.Log("Map finished");
         mapDoneLocally = true;
         SmoothVoxels();
-        finishAssets();
+        //finishAssets();
         //LobbyManager.s_Singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
         //        NetworkManager.singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
         localPlayer.transform.position = new Vector3(0, -30, 0);
+        gatherCaveVoxels();
+        GetComponent<MapAssetManager>().genAssets();
+    }
 
+    private void gatherCaveVoxels()
+    {
+        for (int i = 0; i < mapLayers; i++)
+        {
+            foreach (Voxel vox in voxels[i].Values)
+            {
+                if (vox.layer > 4 && doesVoxelExist(i, vox.columnID)) {
+                    if (isDeleted(i - 1, vox.columnID)) {
+                        //Debug.Log("found cave floor vox");
+                        caveFloors.Add(vox);
+                        vox.hasEnergy = false;
+                        StartCoroutine(vox.setTexture(Resources.Load<Material>("Materials/LowPolyCaveGrass")));
+                    }
+                    if (isDeleted(i + 1, vox.columnID))
+                    {
+                        //Debug.Log("found cave ceiling vox");
+                        caveCeilings.Add(vox);
+                        vox.hasEnergy = false;
+                        StartCoroutine(vox.setTexture(Resources.Load<Material>("Materials/LowPolyCaveGrass")));
+                    }
+                }
+            }
+        }
     }
 
     private void finishAssets()
@@ -262,7 +242,9 @@ public class MapManager : NetworkBehaviour
         catch
         {
         }
-        if (!found) {
+
+        if (!found)
+        {
             BuildLog.writeLog("trying to move back in directory");
             try
             {
@@ -291,6 +273,7 @@ public class MapManager : NetworkBehaviour
                     neighboursMap[i].Add(int.Parse(n));
                 }
             }
+
             BuildLog.writeLog("loaded neighbours map");
         }
         else
@@ -344,9 +327,9 @@ public class MapManager : NetworkBehaviour
             float ampTot = 0;
             for (int i = 0; i < waveNo; i++)
             {
-                frequencies[i] = (float)(r.NextDouble() * avWaveLength + avWaveLength);
-                offsets[i] = (float)(r.NextDouble() * avWaveLength + avWaveLength);
-                amplitudes[i] = (float)r.NextDouble();
+                frequencies[i] = (float) (r.NextDouble() * avWaveLength + avWaveLength);
+                offsets[i] = (float) (r.NextDouble() * avWaveLength + avWaveLength);
+                amplitudes[i] = (float) r.NextDouble();
                 ampTot += amplitudes[i];
             }
 
@@ -373,6 +356,7 @@ public class MapManager : NetworkBehaviour
                 }
             }
         }
+
         //Debug.Log("finisheing map - dug caves - deviated height");
         finishMap();
     }
@@ -390,7 +374,7 @@ public class MapManager : NetworkBehaviour
             for (int i = 0; i < waveNo; i++)
             {
                 //a sinusoidal func of x,y,z
-                height += (float)(amplitudes[i] * Math.Sin(frequencies[i] * (func.x - offsets[i])) +
+                height += (float) (amplitudes[i] * Math.Sin(frequencies[i] * (func.x - offsets[i])) +
                                    amplitudes[i] *
                                    Math.Sin(frequencies[(i + 1) % waveNo] * (func.y - offsets[(i + 1) % waveNo])) +
                                    amplitudes[i] *
@@ -410,9 +394,8 @@ public class MapManager : NetworkBehaviour
         vox.setTexture();
         if (vox.asset != null)
         {
-            vox.asset.gameObject.transform.position = vox.worldCentreOfObject;
+            vox.asset.CmdMoveTo(vox.worldCentreOfObject);
         }
-
     }
 
     public static void SmoothVoxels()
@@ -431,7 +414,7 @@ public class MapManager : NetworkBehaviour
 
                 for (int j = 0; j < keys.Count; j++)
                 {
-                    manager.voxels[i][(int)keys[j]].smoothBlockInPlace();
+                    manager.voxels[i][(int) keys[j]].smoothBlockInPlace();
                 }
             }
         }
@@ -459,7 +442,6 @@ public class MapManager : NetworkBehaviour
     [Command]
     internal void CmdInformDeleted(int layer, int columnID) //block at layer columnID
     {
-
         RpcInformDeleted(layer, columnID);
         //manager.StartCoroutine(informNeighbours(layer, columnID));
     }
@@ -548,27 +530,33 @@ public class MapManager : NetworkBehaviour
 
     Vector3 shredOrigin;
     int shredNo = 0;
-    float radius ;
+    float radius;
 
     [Command]
-    public void CmdShredMap() {
+    public void CmdShredMap()
+    {
         //StartCoroutine(ShredMap());
         ShredMap();
     }
 
-    void ShredMap() {
+    void ShredMap()
+    {
         //yield return new WaitForSecondsRealtime(0.1f);
 
-        if (radius > mapSize * 2.5) {
+        if (radius > mapSize * 2.5)
+        {
             return;
         }
+
         if (shredNo == 0)
         {
             shredOrigin = new Vector3(0, mapSize * 2, 0);
             radius = mapSize * 1.8f;
         }
+
         GameObject mapChunk = Instantiate(Resources.Load<GameObject>("Prefabs/Map/MapChunk"));
         MapChunk chunk = mapChunk.GetComponent<MapChunk>();
+        //Debug.Log("chunk: " + chunk);
         Vector3 center = Vector3.zero;
         int count = 0;
 
@@ -578,16 +566,21 @@ public class MapManager : NetworkBehaviour
             {
                 if (!isDeleted(i, vox.columnID))
                 {
-                    try
-                    {
+                    //try { 
                         if (Vector3.Distance(vox.worldCentreOfObject, shredOrigin) < radius)
                         {
                             chunk.addVoxel(vox);
                             count++;
                             center += vox.worldCentreOfObject;
                         }
+                        /*
                     }
-                    catch { }
+                    catch(Exception e)
+                    {
+                        Debug.Log("world cent: " + vox.worldCentreOfObject + " origin: " + shredOrigin);
+                        Debug.Log(e.Message + "\n vox: " + vox + " shredNo: " + shredNo );
+                    }
+                    */
                 }
             }
         }
@@ -601,13 +594,13 @@ public class MapManager : NetworkBehaviour
     public Voxel getSubVoxelAt(int layer, int columnID, String subID)
     {
         // v should be a voxel container for this to be a valid call to destroy subvoxel
-        Voxel v = voxels[layer][columnID]; 
+        Voxel v = voxels[layer][columnID];
         int shatterLevel = subID.Split(',').Length - 1;
 
         for (int i = 1; i <= shatterLevel; i++)
         {
             VoxelContainer vc = v.gameObject.GetComponent<VoxelContainer>();
-            v = (Voxel)vc.subVoxels[int.Parse(subID.Split(',')[i])]; // TODO try catch, this isn't working every time
+            v = (Voxel) vc.subVoxels[int.Parse(subID.Split(',')[i])]; // TODO try catch, this isn't working every time
         }
 
         return v;
@@ -620,12 +613,12 @@ public class MapManager : NetworkBehaviour
         if (l <= -1) return true;
 
 
-
         if (voxels.ContainsKey(l))
         {
             if (voxels[l].ContainsKey(columnID))
             {
-                if (voxels[l][columnID] == null) {
+                if (voxels[l][columnID] == null)
+                {
                     return true;
                 }
 
@@ -646,7 +639,7 @@ public class MapManager : NetworkBehaviour
     //returns the position of a voxel whether it exists or not
     public Vector3 getPositionOf(int layer, int columnID)
     {
-        float scale = (float)Math.Pow(Voxel.scaleRatio, layer);
+        float scale = (float) Math.Pow(Voxel.scaleRatio, layer);
         //Debug.Log("rec cen: " + voxelPositions[columnID] + " act cen " + voxels[0][columnID].centreOfObject);
         return voxelPositions[columnID] * scale * mapSize;
     }

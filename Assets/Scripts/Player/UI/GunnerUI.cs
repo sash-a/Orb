@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public class GunnerUI : PlayerUI
 {
     #region Variables
-    
+
     // Components
     private NetHealth health;
     private ResourceManager resourceManager;
@@ -16,10 +16,22 @@ public class GunnerUI : PlayerUI
     [SerializeField] private RectTransform shieldBar;
 
     // Gun icons
-    [SerializeField] private Image gunSlot0;
-    [SerializeField] private Image gunSlot1;
-    [SerializeField] private Image gunSlot2;
-    [SerializeField] private Image gunSlot3;
+    [SerializeField] private Image gunSlotBorder0;
+    [SerializeField] private Image gunSlotBorder1;
+    [SerializeField] private Image gunSlotBorder2;
+
+    [SerializeField] private Image gunIcon1;
+    [SerializeField] private Image gunIcon2;
+
+    public Sprite pistolIcon;
+    public Sprite rifleIcon;
+    public Sprite shotgunIcon;
+    public Sprite sniperIcon;
+
+
+    [SerializeField] private Sprite borderEquipped;
+    [SerializeField] private Sprite borderUnequipped;
+
 
     // Ammo count
     [SerializeField] private TextMeshProUGUI ammoCount;
@@ -33,8 +45,6 @@ public class GunnerUI : PlayerUI
     public GameObject magicianUI;
 
     #endregion
-
-    public static bool isPaused;
 
     private void Start()
     {
@@ -68,21 +78,46 @@ public class GunnerUI : PlayerUI
         setHealth(health.getHealthPercent());
         setShield(resourceManager.getGunnerShieldPercent());
         setEnergy((int) (resourceManager.getEnergy() / resourceManager.getMaxEnergy()));
-        setAmmo
-        (
-            weapons.weapons[weapons.selectedWeapon].ammunition.getMagAmmo(),
-            weapons.weapons[weapons.selectedWeapon].ammunition.getPrimaryAmmo()
-        );
+        showEquipped();
 
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (weapons.weapons[weapons.selectedWeapon].name == "digging tool")
         {
-            togglePauseMenu();
+            setAmmo
+            (
+                true
+            );
+        }
+        else
+        {
+            setAmmo
+            (
+                false,
+                weapons.weapons[weapons.selectedWeapon].ammunition.getMagAmmo(),
+                weapons.weapons[weapons.selectedWeapon].ammunition.getPrimaryAmmo()
+            );
         }
     }
 
-    void togglePauseMenu()
+    void showEquipped()
     {
-        isPaused = !isPaused;
+        if (weapons.equippedWeapon == 0)
+        {
+            gunSlotBorder0.sprite = borderEquipped;
+            gunSlotBorder1.sprite = borderUnequipped;
+            gunSlotBorder2.sprite = borderUnequipped;
+        }
+        else if (weapons.equippedWeapon == 1)
+        {
+            gunSlotBorder0.sprite = borderUnequipped;
+            gunSlotBorder1.sprite = borderEquipped;
+            gunSlotBorder2.sprite = borderUnequipped;
+        }
+        else if (weapons.equippedWeapon == 2)
+        {
+            gunSlotBorder0.sprite = borderUnequipped;
+            gunSlotBorder1.sprite = borderUnequipped;
+            gunSlotBorder2.sprite = borderEquipped;
+        }
     }
 
     void setHealth(float h)
@@ -100,8 +135,16 @@ public class GunnerUI : PlayerUI
         energyCount.text = amount + "";
     }
 
-    void setAmmo(int clip, int total)
+    void setAmmo(bool isDigger, int clip = 0, int total = 0)
     {
-        ammoCount.text = clip + "|" + total;
+        if (isDigger)
+        {
+            ammoCount.text = "inf";
+        }
+        else
+        {
+            ammoCount.text = clip + "|" + total;
+        }
+
     }
 }

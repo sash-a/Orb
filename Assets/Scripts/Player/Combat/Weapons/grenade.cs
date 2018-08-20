@@ -7,6 +7,7 @@ public class grenade : AAttackBehaviour
     public float delay = 3f;
     public float blastRadius = 5f;
     public float damage = 10f;
+    public float envDamage = 10f;
 
     float countdown;
 
@@ -40,13 +41,13 @@ public class grenade : AAttackBehaviour
         NetworkServer.Spawn(explosion);
     }
 
-    [Command]
-    private void CmdVoxelDestructionEffect(Vector3 position, Vector3 normal)
-    {
-        GameObject VoxelParticle = Instantiate(VoxelDestroyEffect, position,
-                                Quaternion.LookRotation(normal));
-        NetworkServer.Spawn(VoxelParticle);
-    }
+    //[Command]
+    //private void CmdVoxelDestructionEffect(Vector3 position, Vector3 normal)
+    //{
+    //    GameObject VoxelParticle = Instantiate(VoxelDestroyEffect, position,
+    //                            Quaternion.LookRotation(normal));
+    //    NetworkServer.Spawn(VoxelParticle);
+    //}
 
     //explodes
     [Client]
@@ -58,24 +59,34 @@ public class grenade : AAttackBehaviour
 
         //all items in blast radius
         RaycastHit[] colliders = Physics.SphereCastAll(transform.position, blastRadius, transform.position, 0, mask, QueryTriggerInteraction.UseGlobal);
-        
+
         //loop through every item in blast radius
-        foreach(RaycastHit nearbyObject in colliders)
+        foreach (RaycastHit nearbyObject in colliders)
         {
-            
+
             if (nearbyObject.collider.tag == PLAYER_TAG)
-                CmdPlayerAttacked(nearbyObject.collider.name, damage);
+            {
+                if (nearbyObject.distance >= 0 && nearbyObject.distance < 1)
+                {
+                    CmdPlayerAttacked(nearbyObject.collider.name, damage);
+                }
+                else
+                {
+                    CmdPlayerAttacked(nearbyObject.collider.name, damage / nearbyObject.distance);
+                }
+            }
+
 
             if (nearbyObject.collider.tag == VOXEL_TAG)
             {
                 //adjust damage so that the further away something is from grenade the less damage it does
                 if (nearbyObject.distance >= 0 && nearbyObject.distance < 1)
                 {
-                    CmdVoxelDamaged(nearbyObject.collider.gameObject, damage); // weapontype.envDamage?
+                    CmdVoxelDamaged(nearbyObject.collider.gameObject, envDamage); // weapontype.envDamage?
                 }
                 else
                 {
-                    CmdVoxelDamaged(nearbyObject.collider.gameObject, damage / nearbyObject.distance); // weapontype.envDamage?
+                    CmdVoxelDamaged(nearbyObject.collider.gameObject, envDamage / nearbyObject.distance); // weapontype.envDamage?
                 }
 
 
@@ -138,4 +149,5 @@ public class grenade : AAttackBehaviour
     {
         throw new System.NotImplementedException();
     }
+
 }

@@ -1,22 +1,28 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class VoxelFragmentForce : MonoBehaviour
 {
-
-    public int forceStrength = 40;
-    public int eRadius = 10;
+    public int minForce;
+    public int maxForce;
+    public float livingTime;
 
     // Use this for initialization
     void Start()
     {
         Rigidbody rb = GetComponent<Rigidbody>();
-        //rb.AddForce(-forceStrength* transform.position.normalized, ForceMode.Acceleration)
-        rb.AddExplosionForce(-forceStrength, transform.position.normalized, eRadius);
-
-        Destroy(gameObject, 3);
+        rb.AddForce
+        (
+            -Random.Range(minForce, maxForce) * (transform.position.normalized + Random.onUnitSphere).normalized,
+            ForceMode.Impulse
+        );
+        StartCoroutine(destroy());
     }
 
-
+    IEnumerator destroy()
+    {
+        yield return new WaitForSeconds(livingTime);
+        NetworkServer.Destroy(gameObject);
+    }
 }

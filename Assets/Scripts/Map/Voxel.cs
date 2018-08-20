@@ -17,7 +17,7 @@ public class Voxel : NetworkBehaviour
     // decrease constant to move blocks further away from eachother//0.0025 - overlaps slightly ; 0.00249 leaves minute gap
 
     //0.002485 overlaps
-    public static float scaleRatio = (0.00248f * MapManager.mapSize + extrudeLength) / (0.00248f * MapManager.mapSize);
+    public static float scaleRatio = (0.00248f * MapManager.mapSize + extrudeLength*MapManager.mapSize/200) / (0.00248f * MapManager.mapSize);
     public double scale;
 
     [SyncVar] public int columnID;
@@ -100,7 +100,7 @@ public class Voxel : NetworkBehaviour
 
                 MapManager.manager.voxelSpawned(columnID);
 
-                if (isServer && rand.NextDouble() < 0.2f)
+                if (isServer && rand.NextDouble() < 0.2f && MapManager.usePortals)
                 {
                     bool farEnough = true;
                     foreach (Portal p in MapManager.manager.portals)
@@ -162,41 +162,30 @@ public class Voxel : NetworkBehaviour
         }
         else
         {
-            if (layer == 0)
+            if (MapManager.manager.caveFloors.Contains(this))
             {
-                StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyGrass")));
+                StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyCaveGrass")));
             }
-            else if (layer == MapManager.mapLayers - 1)
-            {
-                StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyCrust")));
-            }
-            else
-            {
-                //StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyGround")));
-                if (earthTexNo == -1)
+            else {
+                if (MapManager.manager.caveCeilings.Contains(this))
                 {
-                    earthTexNo = rand.Next(0, 9);
-                    //Debug.Log("using earth texture " + earthTexNo);
+                    StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyCaveGrass")));
                 }
-
-                GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth" + earthTexNo);
-                //GetComponent<MeshRenderer>().material.SetTextureScale("Earth" + earthTexNo, new Vector2(texScale,texScale));
-
-                if (layer < 6)
-                {
-                    GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth2");
+                else {
+                    if (layer == 0)
+                    {
+                        StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyGrass")));
+                    }
+                    else if (layer == MapManager.mapLayers - 1)
+                    {
+                        StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyCrust")));
+                    }
+                    else
+                    {
+                        StartCoroutine(setTexture(Resources.Load<Material>("Materials/LowPolyGround")));
+                    }
                 }
-                else if (layer < 11)
-                {
-                    GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth7");
-                }
-                else
-                {
-                    GetComponent<MeshRenderer>().material = Resources.Load<Material>("Materials/Earth/Earth8");
-                }
-
-                GetComponent<MeshRenderer>().material.mainTextureScale = new Vector2(
-                    texScale / (float)Math.Pow(1.7, shatterLevel), texScale / (float)Math.Pow(1.7, shatterLevel));
+               
             }
         }
     }
@@ -204,7 +193,7 @@ public class Voxel : NetworkBehaviour
     /// <summary>
     /// Adds an asset to this voxel so that when the voxel is destroyed so is the asset
     /// </summary>
-    internal void addAsset()
+    internal void addMainAsset()
     {
         scale = Math.Pow(scaleRatio, Math.Abs(layer));
         worldCentreOfObject = centreOfObject * (float)scale * MapManager.mapSize;
@@ -214,7 +203,7 @@ public class Voxel : NetworkBehaviour
         }
     }
 
-    IEnumerator setTexture(Material material)
+    public IEnumerator setTexture(Material material)
     {
         var matt = new Material(material);
         var colour = matt.color;
@@ -234,7 +223,6 @@ public class Voxel : NetworkBehaviour
             filter = GetComponent<MeshFilter>();
         }
 
-        // TODO sometimes array out of range?
         var norm = Vector3.Cross(filter.mesh.vertices[0] - filter.mesh.vertices[1],
             filter.mesh.vertices[2] - filter.mesh.vertices[1]);
         var angle = Vector3.Angle(norm, centreOfObject);
@@ -354,8 +342,8 @@ public class Voxel : NetworkBehaviour
         }
         */
         transform.position = Vector3.one * 1000f; //moves far away
+        yield return new WaitForSeconds(1.5f); //waits for subvoxels to generate on all systems
         Destroy(gameObject.GetComponent<MeshCollider>()); //deconstruct this voxel locally
-        yield return new WaitForSeconds(1f); //waits for subvoxels to generate on all systems
 
         Destroy(gameObject.GetComponent<MeshRenderer>());
         Destroy(gameObject.GetComponent<MeshFilter>());
@@ -595,6 +583,7 @@ public class Voxel : NetworkBehaviour
             return;
         }
 
+
         if (MapManager.manager.isDeleted(layer + 1, columnID) || MapManager.manager.isDeleted(layer - 1, columnID))
         {
             try
@@ -723,6 +712,8 @@ public class Voxel : NetworkBehaviour
                                     smoothNeighbours(closestIDs[1], corner);
 
                                     updateCollider();
+                                    hasEnergy = false;
+                                    setTexture();
                                 }
                                 else
                                 {
@@ -778,6 +769,8 @@ public class Voxel : NetworkBehaviour
                             {
                                 deletePoint(closestID);
                                 info += "|using 2fac smoothing|";
+                                hasEnergy = false;
+                                setTexture();
                             }
 
 
@@ -796,6 +789,8 @@ public class Voxel : NetworkBehaviour
                             shrink(4, 0.5f);
                             shrink(5, 0.5f);
                             info += "|using 3fac smoothing|";
+                            hasEnergy = false;
+                            setTexture();
                         }
 
                         if (MapManager.manager.isDeleted(layer - 1, columnID))
@@ -805,6 +800,8 @@ public class Voxel : NetworkBehaviour
                             shrink(1, 0.5f);
                             shrink(2, 0.5f);
                             info += "|using 3fac smoothing|";
+                            hasEnergy = false;
+                            setTexture();
                         }
                     }
                 }

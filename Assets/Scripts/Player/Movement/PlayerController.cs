@@ -4,14 +4,15 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerActions))]
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private float speed = 18f;
-    [SerializeField] private float lookSens = 8f;
+    [SerializeField] private float speed;
+    [SerializeField] private float lookSens;
+    [SerializeField] private float jumpForce;
+    [SerializeField] private float runMultiplier;
     private PlayerActions actions;
 
     void Start()
     {
         actions = GetComponent<PlayerActions>();
-        //StartCoroutine(hackPos());
     }
 
     void Update()
@@ -28,7 +29,7 @@ public class PlayerController : MonoBehaviour
         var yMov = Input.GetAxis("Vertical") * transform.forward;
         var velocity = (xMov + yMov).normalized * speed;
 
-        actions.move(Input.GetKey(KeyCode.LeftShift) ? velocity * 1.5f : velocity);
+        actions.move(Input.GetKey(KeyCode.LeftShift) ? velocity * runMultiplier : velocity);
 
         // Rotation
         var yRot = new Vector3(0, Input.GetAxis("Mouse X"), 0) * lookSens;
@@ -37,7 +38,9 @@ public class PlayerController : MonoBehaviour
         actions.rotate(yRot, xRot);
 
         if (Input.GetButtonDown("Jump"))
-            actions.jump();
+            actions.jump(jumpForce);
+
+       
     }
 
     IEnumerator hackPos()

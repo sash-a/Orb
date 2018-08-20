@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 
 public class Digger : NetworkBehaviour
 {
-    static int speed = 150;//150
+    static int speed = 75;//150
 
     public int gradient;//number of neighbours it will bouonce to before increasing the layer
     public int neighbourCount;//the count for number of runs without rise
@@ -93,7 +93,11 @@ public class Digger : NetworkBehaviour
             body = GetComponent<Rigidbody>();
         }
         body.velocity = (nextDest - transform.position).normalized * speed; //100f;
-        body.MoveRotation(Quaternion.LookRotation(travelDir.normalized, -transform.position.normalized));
+        if (!travelDir.normalized.Equals(Vector3.zero) && !transform.position.normalized.Equals(Vector3.zero))
+        {
+            Quaternion look = Quaternion.LookRotation(travelDir.normalized, -transform.position.normalized);
+            body.MoveRotation(look);
+        }
         if (Vector3.Dot((nextDest - transform.position).normalized, lastDir) < 0)
         {//has passed the required dest in the last step
             //Debug.Log("digger passed dest");

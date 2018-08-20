@@ -142,7 +142,7 @@ namespace Prototype.NetworkLobby
             }
 
             var lp = conn.playerControllers[0].gameObject.GetComponent<LobbyPlayer>();
-            Debug.Log("Chosen char: " + lp.character);
+            //Debug.Log("Chosen char: " + lp.character);
             var chosenCharacter = Instantiate(spawnPrefabs[lp.character]);
 
             return chosenCharacter;

@@ -7,7 +7,7 @@ public class aim : MonoBehaviour {
     public Animator animator;
     private bool scopedIn = false;
 
-    public Camera mainCamera;
+    public Camera Camera;
 
     private void Update()
     {

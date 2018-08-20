@@ -27,7 +27,7 @@ GameObject:
   - component: {fileID: 54525053995690130}
   - component: {fileID: 114658905300153154}
   - component: {fileID: 114153999270463960}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: grenade
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -186,6 +186,7 @@ MonoBehaviour:
   delay: 3
   blastRadius: 8
   damage: 10
+  envDamage: 10
   explosionEffect: {fileID: 100010, guid: 031d08f52af1daa4f929b85221519426, type: 2}
   VoxelDestroyEffect: {fileID: 1404482007908908, guid: beb6e44ae8b90074cbc88fa9111cadc0,
     type: 2}

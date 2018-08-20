@@ -60,7 +60,6 @@
             <e p="ToggleAnim.cs" t="Include" />
           </e>
         </e>
-        <e p="Overlord.cs" t="Include" />
         <e p="Plugins" t="Include">
           <e p="GitHub" t="Include">
             <e p="Editor" t="Include">
@@ -75,8 +74,21 @@
           </e>
         </e>
         <e p="Scripts" t="Include">
+          <e p="Critters" t="Include">
+            <e p="CritterActions.cs" t="Include" />
+            <e p="CritterAnchor.cs" t="Include" />
+            <e p="CritterController.cs" t="Include" />
+            <e p="CritterGravity.cs" t="Include" />
+          </e>
           <e p="Debug" t="Include">
             <e p="BuildLog.cs" t="Include" />
+          </e>
+          <e p="Effects" t="Include">
+            <e p="DestructionEffectSpawner.cs" t="Include" />
+            <e p="EnergyBlockEffect.cs" t="Include" />
+            <e p="EnergyBlockEffectSpawner.cs" t="Include" />
+            <e p="VoxelDestructionEffect.cs" t="Include" />
+            <e p="VoxelFragmentForce.cs" t="Include" />
           </e>
           <e p="Map" t="Include">
             <e p="Caves" t="Include">
@@ -88,6 +100,7 @@
               <e p="Tunnel.cs" t="Include" />
             </e>
             <e p="MapAsset.cs" t="Include" />
+            <e p="MapAssetManager.cs" t="Include" />
             <e p="MapChunk.cs" t="Include" />
             <e p="MapManager.cs" t="Include" />
             <e p="Portal.cs" t="Include" />
@@ -106,7 +119,9 @@
           <e p="Networking" t="Include">
             <e p="GameManager.cs" t="Include" />
             <e p="Identifier.cs" t="Include" />
+            <e p="NetworkConfig.cs" t="Include" />
             <e p="NetworkMapGen.cs" t="Include" />
+            <e p="Overlord.cs" t="Include" />
             <e p="RegisterPrefabs.cs" t="Include" />
             <e p="UI" t="Include">
               <e p="HostGame.cs" t="Include" />
@@ -136,17 +151,18 @@
                 <e p="WeaponType.cs" t="Include" />
               </e>
             </e>
-            <e p="GunnerUI.cs" t="Include" />
             <e p="Movement" t="Include">
               <e p="PlayerActions.cs" t="Include" />
               <e p="PlayerController.cs" t="Include" />
             </e>
             <e p="PlayerSetup.cs" t="Include" />
             <e p="PlayerType.cs" t="Include" />
-            <e p="PlayerUI.cs" t="Include" />
+            <e p="UI" t="Include">
+              <e p="GunnerUI.cs" t="Include" />
+              <e p="MagicianUI.cs" t="Include" />
+              <e p="PlayerUI.cs" t="Include" />
+            </e>
           </e>
-          <e p="VoxelDestructionEffect.cs" t="Include" />
-          <e p="VoxelFragmentForce.cs" t="Include" />
         </e>
         <e p="Standard Assets" t="Include">
           <e p="CrossPlatformInput" t="Include">

@@ -106,16 +106,17 @@ public class VoxelContainer : Voxel
     {
 
         Mesh majorMesh = majorVoxel.filter.mesh;
-        if (majorVoxel.deletedPoints.Count == 0)
+        if (majorVoxel.deletedPoints.Count == 0 )
         {//is a full voxel
             //need to construct 6 submeshes using the major mesh data
             Vector3[] centerPoints = getCenterPoints(majorMesh);//0 bottom; 1 middle; 2 top
-            if (shatterLevel > 0)
-            {
-                randDev = new float[] { (float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble() };
-            }
-            for (int i = 0; i < (shatterLevel == 0 ? 6 : 8); i++)
-            {
+
+            randDev = new float[] { (float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble() };
+            
+            //for (int i = 0; i < (shatterLevel == 0 ? 6 : 8); i++)//for the 6 split first then the 8 split
+            for (int i = 0; i < 8; i++)// for the 8 split both times
+                //for (int i = 0; i < (shatterLevel == 0 ? 8 : 4); i++)//for the 8 split then the 4 split(8split without cutting the voxel depth in two)
+                {
                 //sub mesh i is the triangle that goes from vert i -> vert [(i+1)%3+ (i > 2 ? 3 : 0)] -> center - 0,1,2 is bottom 3    4,5,6 is top 3
                 GameObject subVoxelObject = genNewSubVoxel();
                 Voxel subVoxelScript = subVoxelObject.GetComponent<Voxel>();
@@ -207,7 +208,7 @@ public class VoxelContainer : Voxel
 
         float variation = 0.5f;
 
-        if (shatterLevel == 0)
+        if (shatterLevel == 0 && false)
         {
             //Debug.Log("i= " + i + " subsequent = " + subsequent);
 
@@ -224,34 +225,24 @@ public class VoxelContainer : Voxel
         else
         {
             if (i < 6)
-            {
+            {//the first 6 are outter(bottom and top) 
                 int remaining = findRemainingOnSide(new int[] { i, subsequent })[0];
                 verts[0] = majorMesh.vertices[i];
-                //verts[1] = (majorMesh.vertices[i] + majorMesh.vertices[subsequent]) / 2.0f;
                 verts[1] = majorMesh.vertices[i] + (majorMesh.vertices[subsequent] - majorMesh.vertices[i]) * (0.5f - variation / 2.0f + randDev[i % 3] * variation);
-
-                //verts[2] = (majorMesh.vertices[i] + majorMesh.vertices[findRemainingOnSide(new int[] { i, subsequent })[0]]) / 2.0f;
                 verts[2] = majorMesh.vertices[i] + (majorMesh.vertices[remaining] - majorMesh.vertices[i]) * (0.5f + variation / 2.0f - randDev[remaining % 3] * variation);
 
-
                 verts[3] = getMidPoint(majorMesh, i);
-                //verts[4] = (getMidPoint(majorMesh, i) + getMidPoint(majorMesh, subsequent)) / 2.0f;
                 verts[4] = getMidPoint(majorMesh, i) + (getMidPoint(majorMesh, subsequent) - getMidPoint(majorMesh, i)) * (0.5f - variation / 2.0f + randDev[i % 3] * variation);
-
-
-                //verts[5] = (getMidPoint(majorMesh, i) + getMidPoint(majorMesh, remaining)) / 2.0f;
                 verts[5] = getMidPoint(majorMesh, i) + (getMidPoint(majorMesh, remaining) - getMidPoint(majorMesh, i)) * (0.5f + variation / 2.0f - randDev[remaining % 3] * variation);
 
             }
             else
-            {
+            {//the inner triangles- one bottom one top
                 int a = (i == 6 ? 0 : 3);
                 for (int k = 0; k < 3; k++)
                 {
-                    //verts[k] = (majorMesh.vertices[k + a] + majorMesh.vertices[(k + 1) % 3 + a]) / 2.0f;
                     verts[k] = majorMesh.vertices[k + a] + (majorMesh.vertices[(k + 1) % 3 + a] - majorMesh.vertices[k + a]) * (0.5f - variation / 2.0f + randDev[k % 3] * variation);
 
-                    //verts[k + 3] = (getMidPoint(majorMesh, k + a) + getMidPoint(majorMesh, (k + 1) % 3 + a)) / 2.0f;
                     verts[k + 3] = getMidPoint(majorMesh, k + a) + (getMidPoint(majorMesh, (k + 1) % 3 + a) - getMidPoint(majorMesh, k + a)) * (0.5f - variation / 2.0f + randDev[k % 3] * variation);
                 }
 

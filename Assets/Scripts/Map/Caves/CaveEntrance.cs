@@ -63,7 +63,7 @@ public class CaveEntrance : CaveComponent
 
             if (travelCounter <= 0)
             {
-                digger.layer -= 2;
+                digger.layer -= 1;
                 CaveBody body = new CaveBody(digger);
                 //Debug.Log("digger finished digging entrance - entrance length: " + Vector3.Distance(MapManager.manager.getPositionOf(0, columnID), digger.transform.position));
             }

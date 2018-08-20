@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections;
 using System.Collections.Generic;
+//collab is a cunt
 
 [RequireComponent(typeof(ResourceManager))]
 public class WeaponAttack : AAttackBehaviour
@@ -12,6 +13,7 @@ public class WeaponAttack : AAttackBehaviour
     public ParticleSystem AssaultMuzzleFlash;
     public ParticleSystem ShotgunMuzzleFlash;
     public ParticleSystem SniperMuzzleFlash;
+    public ParticleSystem DiggingBeam;
 
     public GameObject hitEffect;
     public GameObject VoxelDestroyEffect;
@@ -19,7 +21,9 @@ public class WeaponAttack : AAttackBehaviour
     public GameObject voxelFragmentSpawner;
 
     public int selectedWeapon = 0;
+    public int equippedWeapon = 0;
     public List<WeaponType> weapons;
+    public List<WeaponType> equippedWeapons;
 
     //grenade specific
     public GameObject grenadeSpawn;
@@ -31,19 +35,25 @@ public class WeaponAttack : AAttackBehaviour
         resourceManager = GetComponent<ResourceManager>();
 
         weapons = new List<WeaponType>();
-        //damage, range, fireRate, muzzleFlashEffect, primaryAmmo, currentMagAmmo, maxAmmo, MagSize
-        WeaponType pistol = new WeaponType(5, 60, 5, PistolMuzzleFlash, 20, 12, 300, 12);
-        WeaponType assault = new WeaponType(3, 70, 8, AssaultMuzzleFlash, 30000, 30, 500, 30); //pA origonally 300
-        WeaponType shotgun = new WeaponType(12, 30, 2, ShotgunMuzzleFlash, 1000, 6, 300, 6); //pA origonally 100
-        WeaponType sniper = new WeaponType(12, 350, 1, SniperMuzzleFlash, 60, 12, 100, 12);
+        //name, damage, envDamage, range, fireRate, muzzleFlashEffect, primaryAmmo, currentMagAmmo, maxAmmo, MagSize
+        WeaponType diggingTool = new WeaponType("digging tool", 1, 15, 20, 30, DiggingBeam);
+        WeaponType pistol = new WeaponType("pistol", 5, 5, 60, 5, PistolMuzzleFlash, 20, 12, 300, 12);
+        WeaponType assault = new WeaponType("assault rifle", 3, 3, 70, 8, AssaultMuzzleFlash, 30000, 30, 500, 30); //pA origonally 300
+        WeaponType shotgun = new WeaponType("shotgun", 12, 12, 30, 2, ShotgunMuzzleFlash, 1000, 6, 300, 6); //pA origonally 100
+        WeaponType sniper = new WeaponType("sniper", 12, 12, 350, 1, SniperMuzzleFlash, 60, 12, 100, 12);
         //number of current grenades, grenade capacity
-        WeaponType grenade = new WeaponType(3, 5);
+        WeaponType grenade = new WeaponType("grenade", 3, 5);
         //needs to be added in the exact same order as the prefabs under player camera to work NB!!!
+        weapons.Add(diggingTool);
         weapons.Add(pistol);
         weapons.Add(assault);
         weapons.Add(shotgun);
         weapons.Add(sniper);
         weapons.Add(grenade);
+
+        equippedWeapons.Add(diggingTool);
+        equippedWeapons.Add(pistol);
+        equippedWeapons.Add(sniper);
     }
 
     private void Update()
@@ -52,52 +62,52 @@ public class WeaponAttack : AAttackBehaviour
 
         if (Input.GetKey(KeyCode.Alpha1))
         {
-            selectedWeapon = 0;
+            equippedWeapon = 0;
         }
 
         if (Input.GetKey(KeyCode.Alpha2))
         {
-            selectedWeapon = 1;
+            equippedWeapon = 1;
         }
 
         if (Input.GetKey(KeyCode.Alpha3))
         {
-            selectedWeapon = 2;
+            equippedWeapon = 2;
         }
 
-        if (Input.GetKey(KeyCode.Alpha4))
-        {
-            selectedWeapon = 3;
-        }
-
-        if (Input.GetKey(KeyCode.Alpha5))
-        {
-            selectedWeapon = 4;
-        }
-
+        var scroll = Input.GetAxis("Mouse ScrollWheel");
         //scroll up changes weapons
-        if (Input.GetAxis("Mouse ScrollWheel") > 0f && isLocalPlayer) //need to prevent weapon switching when aiming!
+        if (scroll > 0f && isLocalPlayer) //need to prevent weapon switching when aiming!
         {
-            if (selectedWeapon >= weapons.Count - 1)
+            if (equippedWeapon >= equippedWeapons.Count - 1)
             {
-                selectedWeapon = 0;
+                equippedWeapon = 0;
             }
             else
             {
-                selectedWeapon++;
+                equippedWeapon++;
             }
         }
 
         //scroll down changes weapons
-        if (Input.GetAxis("Mouse ScrollWheel") < 0f && isLocalPlayer)
+        if (scroll < 0f && isLocalPlayer)
         {
-            if (selectedWeapon <= 0)
+            if (equippedWeapon <= 0)
             {
-                selectedWeapon = weapons.Count - 1;
+                equippedWeapon = weapons.Count - 1;
             }
             else
             {
-                selectedWeapon--;
+                equippedWeapon--;
+            }
+        }
+
+        //Find the correct selected weapon in weapons (causing errors?)
+        for (int i = 0; i < weapons.Count; i++)
+        {
+            if (weapons[i] == equippedWeapons[equippedWeapon])
+            {
+                selectedWeapon = i;
             }
         }
 
@@ -145,8 +155,6 @@ public class WeaponAttack : AAttackBehaviour
         {
             resourceManager.reloadMagazine(A.getMagSize() - A.getMagAmmo(), A);
         }
-
-        Debug.Log("Primary Ammo: " + A.getPrimaryAmmo());
     }
 
     [Client]
@@ -158,15 +166,22 @@ public class WeaponAttack : AAttackBehaviour
             return;
         }
 
-        if (!weapons[selectedWeapon].isExplosive && weapons[selectedWeapon].ammunition.getMagAmmo() > 0)
+        if (!weapons[selectedWeapon].isExplosive && weapons[selectedWeapon].name == "digging tool" || weapons[selectedWeapon].ammunition.getMagAmmo() > 0)
         {
-            //only works when the particle effect is dragged in directly from the gun's children for some reason 
-            //its because: it can't be prefab needs to specifically be particle effect - will modify this later
-            weapons[selectedWeapon].muzzleFlash.Play();
+            if (weapons[selectedWeapon].name != "digging tool")
+            {
+                //only works when the particle effect is dragged in directly from the gun's children for some reason 
+                //its because: it can't be prefab needs to specifically be particle effect - will modify this later
+                weapons[selectedWeapon].muzzleFlash.Play();
 
-            //Relevant to ammo
-            resourceManager.useMagazineAmmo(1, weapons[selectedWeapon].ammunition);
-            //Debug.Log(weapons[selectedWeapon].ammunition.getMagAmmo());
+                //Relevant to ammo
+                resourceManager.useMagazineAmmo(1, weapons[selectedWeapon].ammunition);
+            }
+            else if (weapons[selectedWeapon].name == "digging tool")
+            {
+                // this isnt working for some reason
+                // weapons[selectedWeapon].digBeam.Play();
+            }
 
 
             //hit is the object that is hit (or not hit)
@@ -186,11 +201,10 @@ public class WeaponAttack : AAttackBehaviour
                 }
 
 
-                // Only add this if we are sure that voxels are getting damaged by guns otherwise check gun type before damaging
                 if (hit.collider.gameObject.tag == VOXEL_TAG)
                 {
                     //Debug.Log("weapon hit voxel ("+ hit.collider.gameObject .name+ ") at layer " + hit.collider.gameObject.GetComponent<Voxel>().layer);
-                    CmdVoxelDamaged(hit.collider.gameObject, weapons[selectedWeapon].damage); // weapontype.envDamage?
+                    CmdVoxelDamaged(hit.collider.gameObject, weapons[selectedWeapon].envDamage); // envDamage = environment damage
 
                     if (hit.collider.GetComponent<NetHealth>().getHealth() <= 0)
                     {
@@ -210,24 +224,18 @@ public class WeaponAttack : AAttackBehaviour
                 }
             }
         }
+
         else if (weapons[selectedWeapon].isExplosive && weapons[selectedWeapon].ammunition.getNumGrenades() > 0)
         {
-            //Can only throw one grenade now!? <- HAVE NO IDEA WHY!?!?!? 
-            Debug.Log("Grenade Thrown");
             CmdthrowGrenade();
             resourceManager.useGrenade(1, weapons[selectedWeapon].ammunition);
         }
         else
         {
-            Debug.Log("Soz, out of ammo bud!");
             //can play a sound or something (empty mag)
         }
 
-        //even this only prints once, WHAT IS GOING ON!!!
-        if (selectedWeapon == 4)
-        {
-            Debug.Log("G");
-        }
+
     }
 
 

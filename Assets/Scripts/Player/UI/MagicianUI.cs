@@ -37,8 +37,6 @@ public class MagicianUI : PlayerUI
 
     #endregion
 
-    public static bool isPaused;
-
     private void Start()
     {
         if (player != null && player.GetComponent<Identifier>().typePrefix != Identifier.magicianType)
@@ -72,11 +70,6 @@ public class MagicianUI : PlayerUI
         setShield();
         setEnergy(resourceManager.getEnergy(), resourceManager.getMaxEnergy());
         showEquipped();
-
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            togglePauseMenu();
-        }
     }
 
     void showEquipped()
@@ -99,11 +92,6 @@ public class MagicianUI : PlayerUI
             magicSlot1.sprite = borderUnequipped;
             magicSlot2.sprite = borderEquipped;
         }
-    }
-
-    void togglePauseMenu()
-    {
-        isPaused = !isPaused;
     }
 
     void setHealth(float h)

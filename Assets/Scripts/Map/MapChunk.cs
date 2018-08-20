@@ -38,6 +38,9 @@ public class MapChunk : MonoBehaviour
     {
         foreach (Voxel vox in containedVoxels)
         {
+            if (vox.asset != null) {
+                vox.asset.gameObject.transform.parent = transform;
+            }
             MapManager.manager.CmdInformDeleted(vox.layer, vox.columnID);
         }
     }
@@ -49,7 +52,7 @@ public class MapChunk : MonoBehaviour
             containedVoxels = new HashSet<Voxel>();
         }
 
-        v.GetComponent<NetworkTransform>().enabled = true;
+        //v.GetComponent<NetworkTransform>().enabled = true;
         containedVoxels.Add(v);
         //v.GetComponent<Rigidbody>().isKinematic = true;
         Destroy(v.GetComponent<Rigidbody>());

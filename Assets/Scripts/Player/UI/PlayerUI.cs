@@ -2,8 +2,8 @@
 
 public class PlayerUI : MonoBehaviour
 {
+    // The player using the UI
     [SerializeField] protected GameObject player;
-
 
     public static bool isPaused;
 

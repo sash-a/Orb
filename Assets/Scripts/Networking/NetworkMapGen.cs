@@ -12,14 +12,9 @@ public class NetworkMapGen : NetworkBehaviour
     Dictionary<int, Voxel> voxelDict = new Dictionary<int, Voxel>();
 
     public GameObject parent;
-    public int density;
 
     public static NetworkMapGen mapGen;
 
-//    void Start()
-//    {
-//        mapGen = this;
-//    }
 
     public void start()
     {
@@ -28,7 +23,6 @@ public class NetworkMapGen : NetworkBehaviour
         mapGen = this;
 
         spawnVoxelsOnServer(MapManager.splits);
-        genTrees(density);
     }
 
 
@@ -106,38 +100,5 @@ public class NetworkMapGen : NetworkBehaviour
     }
 
 
-    private void genTrees(int density)
-    {
-        if (!isServer) return;
-        if (!MapManager.useMapAssets) return;
-        //random group of trees between 10 and 20
-        int numTrees = UnityEngine.Random.Range(10, 20);
-        // d is related to density
-        int d = density;
-        //loop through every surface voxel
-        foreach (Voxel vox in MapManager.manager.voxels[0].Values)
-        {
-            //when the appropriate number of voxels have been skipped
-            if (d == 0)
-            {
-                //a new tree group size is selected
-                numTrees = UnityEngine.Random.Range(10, 20);
-                //and d is reset to chosen density value
-                d = density;
-                //and the process then repeats itself
-            }
-
-            //spawn trees on voxels when conditions met
-            if (numTrees > 0 && density > 0 && isServer)
-            {
-                vox.addAsset();
-            }
-
-            //if trees are still spawning, decrement numTree counter
-            if (numTrees > 0) numTrees--;
-
-            //once a group of trees has been instantiated, skip a number of voxels related to density
-            if (numTrees <= 0) d--;
-        }
-    }
+ 
 }

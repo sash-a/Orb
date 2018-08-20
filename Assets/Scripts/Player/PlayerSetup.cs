@@ -8,8 +8,8 @@ public class PlayerSetup : NetworkBehaviour
 
     private Camera mainCam;
 
-    [SerializeField] private const string REMOTE_LAYER_NAME = "RemotePlayer";
-    [SerializeField] private const string LOCAL_LAYER_NAME = "LocalPlayer";
+    public const string REMOTE_LAYER_NAME = "RemotePlayer";
+    public const string LOCAL_LAYER_NAME = "LocalPlayer";
 
     [SerializeField] private GameObject playerUIPrefab;
     private GameObject playerUIInstance;
@@ -19,8 +19,11 @@ public class PlayerSetup : NetworkBehaviour
     {
         if (!isLocalPlayer)
         {
-            foreach (Behaviour comp in componentsToDisable)
-                comp.enabled = false;
+            if (componentsToDisable != null)
+            {
+                foreach (Behaviour comp in componentsToDisable)
+                    comp.enabled = false;
+            }
 
             assignRemotePlayer();
         }
@@ -33,8 +36,12 @@ public class PlayerSetup : NetworkBehaviour
                 mainCam.gameObject.SetActive(false);
 
             // Create player UI
-            playerUIInstance = Instantiate(playerUIPrefab);
-            playerUIInstance.name = playerUIPrefab.name;
+            if (playerUIPrefab != null)
+            {
+                playerUIInstance = Instantiate(playerUIPrefab);
+                playerUIInstance.name = playerUIPrefab.name;
+            }
+            
             // Might need to check if null
             var type = GetComponent<Identifier>();
             // Enabling and setting up the correct UI for the class

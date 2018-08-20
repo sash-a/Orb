@@ -6,6 +6,8 @@ using UnityEngine.Networking;
 
 public class CaveManager : NetworkBehaviour
 {
+
+
     public static HashSet<Digger> diggers;
     static int shatters;
 
@@ -59,7 +61,7 @@ public class CaveManager : NetworkBehaviour
                 farEnough = true;
                 foreach (CaveEntrance ent in manager.entrances)
                 {//checks if proposed position of new cave entrance is too close to any existing cave entrance or an estimated position of a cave body
-                    if (Vector3.Distance(MapManager.manager.getPositionOf(0, colID), MapManager.manager.getPositionOf(0, ent.columnID)) < 70 ||
+                    if (Vector3.Distance(MapManager.manager.getPositionOf(0, colID), MapManager.manager.getPositionOf(0, ent.columnID)) < 160 ||
                         Vector3.Distance(MapManager.manager.getPositionOf(0, colID), MapManager.manager.getPositionOf(0, ent.columnID) + ent.direction.normalized * estimatedEntranceDistance * 0.7f) < 130
                         )
                     {

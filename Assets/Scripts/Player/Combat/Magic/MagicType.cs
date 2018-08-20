@@ -3,11 +3,42 @@
 [System.Serializable]
 public class MagicType : Item
 {
+    #region Variables
+
+    // Type of magic
     public bool isTelekenetic;
     public bool isDamage;
     public bool isShield;
     public bool isForcePush;
     public bool isDigger;
+
+    // Magic stats
+    public float manaRegen;
+    // Digger
+    public float diggerDamage;
+    public float diggerEnvDamage;
+    public float diggerRange;
+    public float diggerMana;
+
+    // Attack
+    public float attackDamage;
+    public float attackEnvDamage;
+    public float attackShieldDamage;
+    public float heal;
+    public float attackRange;
+    public float attackMana;
+
+    // Shield
+    public float shieldMana;
+    public float initialShieldMana;
+    public float shieldHealth;
+
+    // Teleken
+    public float telekenMana;
+    public float telekenRange;
+
+    #endregion
+
 
     public void changeToDamage()
     {

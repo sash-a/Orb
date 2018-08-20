@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
 
+[RequireComponent(typeof(Rigidbody))]
 public class Gravity : MonoBehaviour
 {
     private Rigidbody rb;
 
-    private static float acceleration = 2000f;
+    private static float acceleration = 4000f;//4000
 
     // Update is called once per frame
     void Start()
@@ -23,18 +24,12 @@ public class Gravity : MonoBehaviour
     void Update()
     {
         age++;
-        if (rb == null)
-        {
-            //Destroy(this);
-        }
         if (!(gameObject.name.Contains("oxel")))
         {
             rb.AddForce(transform.position.normalized * acceleration * Time.deltaTime);
         }
         else
         {
-            //rb.AddForce(gameObject.GetComponent<Voxel>().centreOfObject.normalized * acceleration * Time.deltaTime);
-
             try
             {
                 rb.AddForce(gameObject.GetComponent<Voxel>().centreOfObject.normalized * acceleration * Time.deltaTime);

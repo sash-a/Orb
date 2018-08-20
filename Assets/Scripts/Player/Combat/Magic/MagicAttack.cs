@@ -1,30 +1,38 @@
-﻿using System;
-using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 
 [RequireComponent(typeof(ResourceManager))]
 public class MagicAttack : AAttackBehaviour
 {
-    [SerializeField] private MagicType type;
-    
+    [SerializeField] private MagicType attackStats;
+
     private bool isAttacking;
+
     // Digger tool
     private bool isDigging;
+
+    // Damage
+    private bool isDamaging;
+
     // Shield
     private Shield currentShield; // The current instance of shield=
     [SerializeField] private GameObject shield;
     [SerializeField] private bool shieldUp; // True if the player is currently using a shield
+
     // Telekenesis
+    private bool isTelekening;
     [SerializeField] private GameObject telekenObjectPos;
     [SerializeField] private GameObject currentTelekeneticVoxel;
+
     // Force push
     [SerializeField] private bool canCastPush; // True once player can recast forcePush
     [SerializeField] private float force;
 
     // Effects
     [SerializeField] private ParticleSystem attackEffect;
+    [SerializeField] private ParticleSystem diggerEffect;
     private EnergyBlockEffectSpawner energyBlockEffectSpawner;
+    private DestructionEffectSpawner destructionEffectSpawner;
 
     /// <summary>
     /// 0 = Digger
@@ -38,15 +46,19 @@ public class MagicAttack : AAttackBehaviour
     {
         resourceManager = GetComponent<ResourceManager>();
         energyBlockEffectSpawner = GetComponent<EnergyBlockEffectSpawner>();
+        destructionEffectSpawner = GetComponent<DestructionEffectSpawner>();
 
+        currentWeapon = 0;
         shieldUp = false;
         isAttacking = false;
         force = 100;
 
-        type.changeToDigger();
-        currentWeapon = 0;
+        // Initial weapon selection
+        attackStats.changeToDigger();
 
+        // Stopping all effects
         attackEffect.Stop();
+        diggerEffect.Stop();
     }
 
     void Update()
@@ -55,15 +67,16 @@ public class MagicAttack : AAttackBehaviour
         base.Update();
 
         cycleWeapons();
+        energyUser();
+
         // Ends the shield if no energy remaining
         if (!resourceManager.hasEnergy() && currentShield != null && shieldUp) endSecondaryAttack();
 
-        // Energy gain/drain
-        if (!shieldUp && !isAttacking) resourceManager.gainEnery(Shield.energyGainRate * Time.deltaTime);
-        if (shieldUp) resourceManager.useEnergy(Shield.energyDrainRate * Time.deltaTime);
-
         // Digging
-        if (isDigging && resourceManager.hasEnergy()) CmdDig();
+        if (isDigging && resourceManager.hasEnergy()) dig();
+
+        // Damaging
+        if (isDamaging && resourceManager.hasEnergy()) damage();
     }
 
     private void cycleWeapons()
@@ -87,13 +100,28 @@ public class MagicAttack : AAttackBehaviour
 
             changeWeapon();
         }
+
+        if (Input.GetKey(KeyCode.Alpha1))
+        {
+            currentWeapon = 0;
+        }
+
+        if (Input.GetKey(KeyCode.Alpha2))
+        {
+            currentWeapon = 1;
+        }
+
+        if (Input.GetKey(KeyCode.Alpha3))
+        {
+            currentWeapon = 2;
+        }
     }
 
     private void changeWeapon()
     {
-        if (currentWeapon == 0) type.changeToDigger();
-        else if (currentWeapon == 1) type.changeToDamage();
-        else if (currentWeapon == 2) type.changeToTeleken();
+        if (currentWeapon == 0) attackStats.changeToDigger();
+        else if (currentWeapon == 1) attackStats.changeToDamage();
+        else if (currentWeapon == 2) attackStats.changeToTeleken();
     }
 
     [Client]
@@ -101,89 +129,47 @@ public class MagicAttack : AAttackBehaviour
     {
         if (!MapManager.manager.mapDoneLocally)
         {
-            Debug.LogError("attacking before map finished");
+            Debug.LogError("Attacking before map finished");
             return;
         }
 
         isAttacking = true;
-        if (type.isDamage)
+        if (attackStats.isDamage)
         {
-            RaycastHit hit;
+            isDamaging = true;
             attackEffect.Play();
-
-            if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask))
-            {
-                if (hit.collider.CompareTag(PLAYER_TAG))
-                {
-                    var character = hit.collider.gameObject.GetComponent<Identifier>().typePrefix;
-                    if (character == "Magician") // Heal
-                    {
-                        CmdPlayerAttacked(hit.collider.name, -20);
-                    }
-                    else // Damage
-                    {
-                        CmdPlayerAttacked(hit.collider.name, 50);
-                    }
-                }
-                else if (hit.collider.CompareTag(VOXEL_TAG))
-                    CmdVoxelDamaged(hit.collider.gameObject, 10); // weapontype.envDamage?
-                else if (hit.collider.CompareTag("Shield"))
-                    CmdShieldHit(hit.collider.gameObject, 50);
-            }
         }
-        else if (type.isTelekenetic)
+        else if (attackStats.isTelekenetic)
         {
             RaycastHit hit;
-            if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask))
+            if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, attackStats.telekenRange,
+                mask))
+                return;
+
+            if (!hit.collider.CompareTag(VOXEL_TAG)) return;
+
+            var voxel = hit.collider.gameObject.GetComponent<Voxel>();
+            if (voxel.shatterLevel >= 1) // need to change this to accomodate the teleken artifact
             {
-                if (hit.collider.CompareTag(VOXEL_TAG))
-                {
-                    var voxel = hit.collider.gameObject.GetComponent<Voxel>();
-                    if (voxel.shatterLevel >= 1) // need to change this to accomodate the teleken artifact
-                    {
-                        CmdVoxelTeleken(voxel.columnID, voxel.layer, voxel.subVoxelID);
-                        // Just run telekenisis locally network transform will sync movements
-                        var tele = currentTelekeneticVoxel.GetComponent<Telekinesis>();
-                        tele.enabled = true;
-                        tele.setUp(telekenObjectPos.transform, Telekinesis.VOXEL, GetComponent<Identifier>().id);
-                    }
-                    else
-                    {
-                        // Play some effect to show that voxel is too big
-                    }
-                }
+                isTelekening = true;
+                CmdVoxelTeleken(voxel.columnID, voxel.layer, voxel.subVoxelID);
+                // Just run telekenisis locally network transform will sync movements
+                var tele = currentTelekeneticVoxel.GetComponent<Telekinesis>();
+                tele.enabled = true;
+                tele.setUp(telekenObjectPos.transform, Telekinesis.VOXEL, GetComponent<Identifier>().id);
+            }
+            else
+            {
+                // Play some effect to show that voxel is too big
             }
         }
-        else if (type.isForcePush) // This is not yet working
+        else if (attackStats.isForcePush) // This is not yet working
         {
-            Debug.Log("Pushing");
-//            force.setUp(transform.position, 50);
-            if (!canCastPush) return;
-
-            var myColl = GetComponent<Collider>();
-            foreach (var coll in Physics.OverlapSphere(transform.position, 15))
-            {
-                Debug.Log(coll.name);
-                if (coll.CompareTag(PLAYER_TAG) && coll != myColl)
-                {
-                    Debug.LogWarning(coll.gameObject.GetComponent<Identifier>().id);
-
-                    var direction = coll.transform.position - transform.position;
-
-                    if (coll.gameObject.GetComponent<Rigidbody>() == null)
-                    {
-                        Debug.LogError("Null");
-                    }
-
-//                    CmdPush(coll.gameObject.GetComponent<Identifier>().id, direction);
-                }
-            }
-
-            canCastPush = false;
         }
-        else if (type.isDigger)
+        else if (attackStats.isDigger)
         {
             isDigging = true;
+            diggerEffect.Play();
         }
     }
 
@@ -193,21 +179,24 @@ public class MagicAttack : AAttackBehaviour
     [Client]
     public override void endAttack()
     {
-        if (type.isTelekenetic)
+        if (attackStats.isTelekenetic)
         {
+            isTelekening = false;
             CmdEndTeleken();
         }
-        else if (type.isForcePush)
+        else if (attackStats.isForcePush)
         {
             canCastPush = true;
         }
-        else if (type.isDamage)
+        else if (attackStats.isDamage)
         {
+            isDamaging = false;
             attackEffect.Stop();
         }
-        else if (type.isDigger)
+        else if (attackStats.isDigger)
         {
             isDigging = false;
+            diggerEffect.Stop();
         }
 
         isAttacking = false;
@@ -222,11 +211,11 @@ public class MagicAttack : AAttackBehaviour
     {
         if (!isLocalPlayer) return;
 
-        if (resourceManager.getEnergy() > Shield.initialEnergyUsage && type.isShield && !shieldUp)
+        if (resourceManager.getEnergy() > attackStats.initialShieldMana && attackStats.isShield && !shieldUp)
         {
-            resourceManager.useEnergy(Shield.initialEnergyUsage);
+            resourceManager.useEnergy(attackStats.initialShieldMana);
 
-            CmdSpawnShield();
+            CmdSpawnShield(GetComponent<Identifier>().id);
             shieldUp = true;
         }
     }
@@ -238,29 +227,134 @@ public class MagicAttack : AAttackBehaviour
     [Client]
     public override void endSecondaryAttack()
     {
-        if (type.isShield)
+        if (attackStats.isShield)
         {
+            Debug.LogWarning("Ending secondary attack");
             CmdDestroyShield();
             shieldUp = false;
         }
     }
 
     /// <summary>
+    /// Drains and gains energy depending on active spells
+    /// </summary>
+    private void energyUser()
+    {
+        // Mana gain
+        if (!shieldUp && !isAttacking) resourceManager.gainEnery(attackStats.manaRegen * Time.deltaTime);
+
+        // Mana drain
+        // Dig
+        if (isDigging) resourceManager.useEnergy(attackStats.diggerMana * Time.deltaTime);
+
+        // Attacker
+        if (isDamaging) resourceManager.useEnergy(attackStats.attackMana * Time.deltaTime);
+
+        // Shield
+        if (shieldUp) resourceManager.useEnergy(attackStats.shieldMana * Time.deltaTime);
+
+        // Teleken
+        if (isTelekening) resourceManager.useEnergy(attackStats.telekenMana * Time.deltaTime);
+    }
+
+    /// <summary>
+    /// Orients the digger effect and damages relevent objects while mouse 1 held down
+    /// </summary>
+    [Client]
+    void dig()
+    {
+        RaycastHit hit;
+        if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask)) return;
+
+        // Rotating the effect
+        diggerEffect.transform.LookAt(hit.point);
+
+        // Checking range, need high distance in raycast to orient effect
+        if (Mathf.Abs(Vector3.Distance(hit.point, transform.position)) > attackStats.diggerRange) return;
+
+        if (hit.collider.gameObject.CompareTag(VOXEL_TAG))
+        {
+            var voxel = hit.collider.gameObject.GetComponent<Voxel>();
+
+            // If voxel is about to die
+            if (!voxel.hasEnergy && voxel.GetComponent<NetHealth>().getHealth() <=
+                attackStats.diggerEnvDamage * Time.deltaTime)
+                destructionEffectSpawner.play(hit.point, voxel);
+
+
+            CmdVoxelDamaged(hit.collider.gameObject, attackStats.diggerEnvDamage * Time.deltaTime);
+
+            if (voxel.hasEnergy)
+            {
+                energyBlockEffectSpawner.setVoxel(voxel.gameObject);
+                energyBlockEffectSpawner.spawnBlock();
+            }
+        }
+        else if (hit.collider.CompareTag(PLAYER_TAG) || hit.collider.CompareTag("Shield"))
+        {
+            CmdVoxelDamaged(hit.collider.gameObject, attackStats.diggerDamage * Time.deltaTime);
+        }
+    }
+
+    /// <summary>
+    /// Controls which voxel gets damaged each frame and the orientation of the effect
+    /// </summary>
+    [Client]
+    void damage()
+    {
+        RaycastHit hit;
+        if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask))
+            return;
+
+        // Pointing the effect in the correct direction
+        attackEffect.transform.LookAt(hit.point);
+        var angles = attackEffect.transform.rotation.eulerAngles;
+        attackEffect.transform.rotation = Quaternion.Euler(angles.x + 90, angles.y, angles.z + 180);
+
+        // Checking range, need high distance in raycast to orient effect
+        if (Mathf.Abs(Vector3.Distance(hit.point, transform.position)) > attackStats.attackRange) return;
+
+        if (hit.collider.CompareTag(PLAYER_TAG))
+        {
+            var character = hit.collider.gameObject.GetComponent<Identifier>().typePrefix;
+            if (character == Identifier.magicianType) // Heal
+            {
+                CmdPlayerAttacked(hit.collider.name, -attackStats.heal * Time.deltaTime);
+            }
+            else // Damage
+            {
+                CmdPlayerAttacked(hit.collider.name, attackStats.attackDamage * Time.deltaTime);
+            }
+        }
+        else if (hit.collider.CompareTag(VOXEL_TAG))
+            CmdVoxelDamaged(hit.collider.gameObject, attackStats.attackEnvDamage * Time.deltaTime);
+        else if (hit.collider.CompareTag("Shield"))
+            CmdShieldHit(hit.collider.gameObject, attackStats.attackShieldDamage * Time.deltaTime);
+    }
+
+    public void setUpShield(GameObject shieldInst)
+    {
+        currentShield = shieldInst.GetComponent<Shield>();
+        currentShield.GetComponent<NetHealth>().setInitialHealth(attackStats.shieldHealth);
+        // Setting the caster to this magician and setting up UI
+        currentShield.setCaster(GetComponent<Identifier>());
+
+        // Allowing it to move with the player
+        currentShield.transform.parent = transform;
+    }
+
+    /// <summary>
     /// Called on the server to spawn a shield for the local player
     /// </summary>
     [Command]
-    public void CmdSpawnShield()
+    public void CmdSpawnShield(string casterID)
     {
         var shieldInst = Instantiate(shield, transform.position, Quaternion.identity);
         NetworkServer.Spawn(shieldInst);
-
-        currentShield = shieldInst.GetComponent<Shield>();
-        currentShield.setCaster(GetComponent<Identifier>());
-
-        shieldInst.GetComponent<NetHealth>().setInitialHealth(currentShield.shieldHealth);
-
-        shieldInst.transform.parent = transform;
-        RpcPrepShield(shieldInst.GetComponent<Identifier>().id, GetComponent<Identifier>().id);
+        // Servers current shield is not neccaserily the servers instance of shield (is likely local clients instance)
+        setUpShield(shieldInst);
+        RpcCuntBitchAssTestMotherFucker();
+        RpcSetUpShieldUI(casterID, shieldInst.GetComponent<Identifier>().id);
     }
 
     /// <summary>
@@ -269,20 +363,31 @@ public class MagicAttack : AAttackBehaviour
     /// <param name="shieldInst">The game object to be the child</param>
     /// <param name="parent">The game object to be the parent</param>
     [ClientRpc]
-    private void RpcPrepShield(string shieldID, string parentID)
+    private void RpcSetUpShieldUI(string casterID, string shieldID)
     {
-        var shieldInst = GameManager.getObject(shieldID);
         // This might only need to be done server and local player side, not on all machines
-        currentShield = shieldInst.GetComponent<Shield>();
-        currentShield.setCaster(GetComponent<Identifier>());
-
-        shieldInst.GetComponent<NetHealth>().setInitialHealth(currentShield.shieldHealth);
+//        currentShield = shieldInst.GetComponent<Shield>();
+//        currentShield.setCaster(GameManager.getObject(parentID));
+//
+//        shieldInst.GetComponent<NetHealth>().setInitialHealth(currentShield.shieldHealth);
         // Up to here
 
-        shieldInst.transform.parent =
-            GameManager.getObject(parentID).GetComponentInChildren<Camera>().transform;
-        shieldInst.GetComponent<Shield>()
-            .setCaster(GameManager.getObject(parentID).GetComponent<Identifier>());
+        // The object is not added to the dictionary fast enough for this to work
+//        var shieldInst = GameManager.getObject(shieldID);
+
+//        shieldInst.transform.parent = GameManager.getObject(parentID).GetComponentInChildren<Camera>().transform;
+//        shieldInst.GetComponent<Shield>().setCaster(GameManager.getObject(parentID).GetComponent<Identifier>());
+        
+        // Setting caster and UI on all clients
+        Debug.Log("In rpc calling set caster");
+        GameManager.getObject(shieldID).GetComponent<Shield>().setCaster(GameManager.getObject(casterID));
+        GameManager.getObject(shieldID).transform.parent = GameManager.getObject(casterID).transform;
+    }
+
+    [ClientRpc]
+    void RpcCuntBitchAssTestMotherFucker()
+    {
+        Debug.Log("FUCK YOU UNET FUCK YOU SO FUCKING HARD");
     }
 
     /// <summary>
@@ -304,8 +409,6 @@ public class MagicAttack : AAttackBehaviour
     private void CmdVoxelTeleken(int col, int layer, string subID)
     {
         currentTelekeneticVoxel = MapManager.manager.getSubVoxelAt(layer, col, subID).gameObject;
-
-        // Prepare the voxel for telekenisis
         RpcPrepVoxel(col, layer, subID, GetComponent<Identifier>().id);
     }
 
@@ -363,59 +466,6 @@ public class MagicAttack : AAttackBehaviour
         if (currentTelekeneticVoxel != null)
         {
             currentTelekeneticVoxel.GetComponent<Telekinesis>().throwObject(cam.transform.forward);
-        }
-    }
-//    [Command]
-//    void CmdPush(String id, Vector3 direction)
-//    {
-//        Debug.Log("CMD: " + id);
-////        GameManager.getObject(id).GetComponent<Rigidbody>()
-////            .AddForce(transform.forward.normalized * force /* * (1 / direction.sqrMagnitude)*/,
-////                ForceMode.Impulse);
-//        RpcPush(id);
-//    }
-//    [Command]
-//    void CmdPush(string id)
-//    {
-//        RpcPush(id);
-//    }
-
-//    [ClientRpc]
-//    void RpcPush(string id)
-//    {
-//        var direction = GameManager.getObject(id).transform.position - transform.position;
-//
-//        GameManager.getObject(id).gameObject.GetComponent<Rigidbody>()
-//            .AddForce(transform.forward.normalized * force /* * (1 / direction.sqrMagnitude)*/);
-//    }
-
-    [Command]
-    void CmdDig()
-    {
-        RaycastHit hit;
-
-        float voxdmg = 80;
-        float energydmg = 80;
-        // TODO change range
-        // TODO damage nums need tweeking
-        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask))
-        {
-            if (hit.collider.gameObject.CompareTag(VOXEL_TAG))
-            {
-                var voxel = hit.collider.gameObject.GetComponent<Voxel>();
-                if (voxel.hasEnergy)
-                {
-                    CmdVoxelDamaged(hit.collider.gameObject, 50 * Time.deltaTime);
-                    
-                    energyBlockEffectSpawner.setVoxel(voxel.gameObject);
-                    energyBlockEffectSpawner.spawnBlock();
-                }
-                else
-                {
-                    CmdVoxelDamaged(hit.collider.gameObject, 80 * Time.deltaTime);
-                }
-                // Use energy? small amount!
-            }
         }
     }
 

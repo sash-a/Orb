@@ -28,7 +28,7 @@ GameObject:
   - component: {fileID: 114657407228821008}
   - component: {fileID: 114629642727911856}
   - component: {fileID: 114347651793574718}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: grenade prototype
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -166,6 +166,7 @@ MonoBehaviour:
   delay: 3
   blastRadius: 8
   damage: 10
+  envDamage: 10
   explosionEffect: {fileID: 100010, guid: 031d08f52af1daa4f929b85221519426, type: 2}
   VoxelDestroyEffect: {fileID: 1404482007908908, guid: beb6e44ae8b90074cbc88fa9111cadc0,
     type: 2}
@@ -182,6 +183,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   energy: 100
   maxEnergy: 100
+  gunnerShield: 0
+  maxGunnerShield: 100
 --- !u!114 &114813118013431692
 MonoBehaviour:
   m_ObjectHideFlags: 1

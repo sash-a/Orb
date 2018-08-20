@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
+
 
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerActions : MonoBehaviour
+public class PlayerActions : NetworkBehaviour
 {
     Vector3 velocity;
     Vector3 rotation;
@@ -18,9 +20,13 @@ public class PlayerActions : MonoBehaviour
     bool needsHop;
     Vector3 lastFramePos;
 
+
     void Start()
     {
         initVars();
+        if (!isLocalPlayer) {
+            cam.GetComponent<AudioListener>().enabled = false;
+        }
     }
 
     private void initVars()
@@ -38,11 +44,19 @@ public class PlayerActions : MonoBehaviour
         Vector3 forward = getFoward();
         if (!forward.Equals(Vector3.zero) && !transform.position.Equals(Vector3.zero))
         {
-            rb.MoveRotation(Quaternion.LookRotation(forward, -transform.position.normalized));
+            //rb.MoveRotation(Quaternion.LookRotation(forward, -transform.position.normalized));
+            transform.rotation = Quaternion.LookRotation(forward, -transform.position.normalized);
         }
 
         doMovement();
         doRotations();
+
+        if (transform.position.magnitude > MapManager.mapSize * 5)
+        {
+            transform.position = new Vector3(0, -10, 0);
+            rb.velocity = Vector3.zero;
+        }
+
     }
 
     // TODO this should be move to a utility/player properites class
@@ -64,7 +78,7 @@ public class PlayerActions : MonoBehaviour
         velocity = _velocity;
     }
 
-    void doMovement()
+    public void doMovement()
     {
         if (velocity.magnitude > 0)
         {
@@ -89,7 +103,7 @@ public class PlayerActions : MonoBehaviour
         camRotationX = _camRot;
     }
 
-    void doRotations()
+    public void doRotations()
     {
         // Rotating player around y
         rb.MoveRotation(rb.rotation * Quaternion.Euler(rotation));
@@ -99,18 +113,18 @@ public class PlayerActions : MonoBehaviour
         cam.transform.localEulerAngles = new Vector3(currentCamRotX, 0, 0);
     }
 
-    public void jump()
+    public void jump(float jumpForce)
     {
         if (isJumping)
         {
             isJumping = false;
-            rb.AddForce(-transform.position.normalized * 900);
+            rb.AddForce(-transform.position.normalized * jumpForce);
         }
     }
 
     void OnCollisionEnter(Collision other)
     {
-        isJumping = other.gameObject.name.Contains("Voxel")  ;
+        isJumping = other.gameObject.name.Contains("Voxel");
         if (other.gameObject.name.Equals("TriVoxel"))
         {
             Voxel vox = other.gameObject.GetComponent<Voxel>();

@@ -16,7 +16,7 @@ namespace Prototype.NetworkLobby
 
         static Color[] Colors = new Color[]
         {
-            /* Color.magenta, Color.red, Color.cyan, Color.blue,*/ Color.green, Color.yellow
+            /* Color.magenta, Color.red, Color.cyan, */Color.blue, Color.green, Color.yellow
         };
 
         //used on server to avoid assigning the same color to two player
@@ -267,7 +267,7 @@ namespace Prototype.NetworkLobby
             playerColor = Colors[idx];
             //Debug.Log(idx);
             character = idx;
-            CmdNameChanged("Player" + playerNo + (character == 0 ? " - Gunner" :  (character==1? " - Magician" : " - Beast") ));
+            CmdNameChanged("Player" + playerNo + (character == 0 ? " - Gunner" :  (character==1? " - Magician" : " - Critter") ));
             OnMyName(playerName);
 
         }

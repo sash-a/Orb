@@ -5,7 +5,6 @@ using UnityEngine.Networking;
 public class EnergyBlockEffectSpawner : NetworkBehaviour
 {
     public GameObject energyBlock;
-    private GameObject voxel;
     private Vector3 pos;
 
     public void setVoxel(GameObject voxel)
@@ -36,10 +35,10 @@ public class EnergyBlockEffectSpawner : NetworkBehaviour
         var blockInst = Instantiate
         (
             energyBlock,
-            pos, // get pos if sub vox?
+            pos + (Random.insideUnitSphere * 4),
             Quaternion.identity
         );
-        
+
         blockInst.GetComponent<EnergyBlockEffect>().target = transform;
         NetworkServer.Spawn(blockInst);
     }
