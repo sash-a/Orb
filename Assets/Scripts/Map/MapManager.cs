@@ -51,6 +51,8 @@ public class MapManager : NetworkBehaviour
     public static MapManager manager;
     public static GameObject localPlayer;
 
+    public HashSet<PickUpItem> collectables;
+
 
     /// <summary>
     /// Sets up mapmanager datastructures
@@ -68,6 +70,7 @@ public class MapManager : NetworkBehaviour
             voxels[i] = new Dictionary<int, Voxel>();
         }
 
+        collectables = new HashSet<PickUpItem>();
         DeletedVoxel = new Voxel(); // TODO why?
         spawnedVoxels = new HashSet<int>();
         voxelPositions = new Dictionary<int, Vector3>();

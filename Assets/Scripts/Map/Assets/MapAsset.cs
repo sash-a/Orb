@@ -90,7 +90,7 @@ public class MapAsset : NetworkBehaviour
 
     private static GameObject spawnGrass(Voxel vox, int side)
     {
-        string pref = (vox.layer == 0 ? "Prefabs/Map/MapAssets/Grass" : "Prefabs/Map/MapAssets/CaveGrass");
+        string pref = (vox.layer == 0 ? "Prefabs/Map/MapAssets/Grass/Grass" : "Prefabs/Map/MapAssets/Grass/CaveGrass");
         GameObject grass = (GameObject)Instantiate(Resources.Load<UnityEngine.Object>(pref), vox.worldCentreOfObject, Quaternion.identity);
         grass.GetComponent<MapAsset>().type = Type.GRASS;
         grass.GetComponent<MapAsset>().united = true;

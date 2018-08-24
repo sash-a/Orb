@@ -381,7 +381,7 @@ public class Voxel : NetworkBehaviour
             {//add the other side
                 int id = (i + 3) % 6;
                 verts[count] = filter.mesh.vertices[id];
-                Debug.Log("landed on smoothed vox");
+                //Debug.Log("landed on smoothed vox");
             }
             else
             {
@@ -687,7 +687,7 @@ public class Voxel : NetworkBehaviour
     internal void smoothBlockInPlace()
     {
         //implement order independant simplified smoothing
-        if (!MapManager.useSmoothingInGame)
+        if (!MapManager.useSmoothingInGame&&MapManager.manager.mapDoneLocally)
         {
             return;
         }
