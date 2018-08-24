@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.VR;
 
 [RequireComponent(typeof(Identifier))]
 public class Shield : NetworkBehaviour
@@ -24,19 +25,15 @@ public class Shield : NetworkBehaviour
         gameObject.layer = LayerMask.NameToLayer(PlayerSetup.REMOTE_LAYER_NAME);
     }
 
-    public void setCaster(Identifier id)
+    public void setCaster(Identifier id, float maxHealth)
     {
         caster = id;
         // UI
-//        if(!isLocalPlayer) return;
-        if (isServer)
-        {
-            Debug.Log("I'm a server I will not call this code");
-            return;
-        }
-        
-        Debug.Log("I'm a client I should call this code");
-        ((MagicianUI) caster.UI).onShieldUp(GetComponent<NetHealth>()); // server error on cast
+        if (isServer) return;
+       
+        var netHealth = GetComponent<NetHealth>();
+        netHealth.setInitialHealth(maxHealth);
+        ((MagicianUI) caster.UI).onShieldUp(netHealth); // server error on cast
         Debug.Log(GetComponent<NetHealth>().getHealth() + "/" + GetComponent<NetHealth>().maxHealth);
     }
 

@@ -20,9 +20,9 @@ public class MapChunk : MonoBehaviour
     {
         foreach (Voxel vox in containedVoxels)
         {
-            if (vox.asset != null)
+            if (vox.mainAsset != null)
             {
-                NetworkServer.Destroy(vox.asset.gameObject);
+                NetworkServer.Destroy(vox.mainAsset.gameObject);
             }
 
             if (vox != null)
@@ -38,8 +38,8 @@ public class MapChunk : MonoBehaviour
     {
         foreach (Voxel vox in containedVoxels)
         {
-            if (vox.asset != null) {
-                vox.asset.gameObject.transform.parent = transform;
+            if (vox.mainAsset != null) {
+                vox.mainAsset.gameObject.transform.parent = transform;
             }
             MapManager.manager.CmdInformDeleted(vox.layer, vox.columnID);
         }
@@ -58,7 +58,7 @@ public class MapChunk : MonoBehaviour
         Destroy(v.GetComponent<Rigidbody>());
         Destroy(v.GetComponent<MeshCollider>());
 
-        if (v.asset != null) {
+        if (v.mainAsset != null) {
             //v.asset.changeParent(gameObject.transform);
         }
     }

@@ -43,7 +43,7 @@ public class Gravity : MonoBehaviour
 
         if (!gameObject.tag.Equals("Player"))
         {
-            if (Vector3.Distance(transform.position, oldPos) < 0.1f && age > 20 && rb.velocity.magnitude < 0.1f)
+            if (Vector3.Distance(transform.position, oldPos) < 0.25f && age > 20 && rb.velocity.magnitude < 0.18f)
             {
                 try
                 {

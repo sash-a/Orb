@@ -2,7 +2,7 @@
 using UnityEngine.Networking;
 
 [System.Serializable] // Allows unity to show in inspector
-public class WeaponType : Item
+public class WeaponType
 {
     public string name;
     public float damage;
@@ -50,7 +50,7 @@ public class WeaponType : Item
         ammunition = new Ammo(prA, mgA, mxA, mgSz);
     }
 
-    //grenade constructor (attributes assigned in grenade script)
+    //grenade constructor (other attributes assigned in grenade script)
     public WeaponType(string name, int numGr, int maxNum)
     {
         this.name = name;
@@ -58,4 +58,15 @@ public class WeaponType : Item
         ammunition = new Ammo(numGr, maxNum);
         fireRate = 1;
     }
+
+    //crossbow constructor (damage attributes assigned in grenade script)
+    public WeaponType(string name, float range, float fireRate, int prA, int mgA, int mxA, int mgSz)
+    {
+        this.name = name;
+        this.range = range;
+        this.fireRate = fireRate;
+        isExplosive = true;
+        ammunition = new Ammo(prA, mgA, mxA, mgSz);
+    }
+
 }

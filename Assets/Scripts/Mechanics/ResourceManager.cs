@@ -4,7 +4,7 @@ using UnityEngine.Networking;
 
 public class ResourceManager : NetworkBehaviour
 {
-    [SerializeField] private float energy = 100;
+    [SerializeField] [SyncVar] private float energy = 100;
     [SerializeField] private float maxEnergy = 100;
 
     [SerializeField] private float gunnerShield = 0;
@@ -105,9 +105,10 @@ public class ResourceManager : NetworkBehaviour
         A.setNumGrenades(Math.Max(0, A.getNumGrenades() - amount));
     }
 
+    // TODO this is returning false server side?
     public bool hasEnergy()
     {
-        return energy != 0;
+        return energy > 0;
     }
 
     public float getEnergy()

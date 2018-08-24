@@ -22,7 +22,9 @@ public class WeaponAttack : AAttackBehaviour
 
     public int selectedWeapon = 0;
     public int equippedWeapon = 0;
+    //List of all weapons in the game
     public List<WeaponType> weapons;
+    //List of all currently equipped weapons
     public List<WeaponType> equippedWeapons;
 
     //grenade specific
@@ -30,30 +32,43 @@ public class WeaponAttack : AAttackBehaviour
     public GameObject grenadePrefab;
     public float throwForce = 40;
 
+    //Special Weapon specific:
+    public GameObject Ex_boltSpawn;
+    public GameObject boltPrefab;
+
     void Start()
     {
         resourceManager = GetComponent<ResourceManager>();
 
+        //List of all weapons in the game
         weapons = new List<WeaponType>();
         //name, damage, envDamage, range, fireRate, muzzleFlashEffect, primaryAmmo, currentMagAmmo, maxAmmo, MagSize
+        //normal weapons:
         WeaponType diggingTool = new WeaponType("digging tool", 1, 15, 20, 30, DiggingBeam);
         WeaponType pistol = new WeaponType("pistol", 5, 5, 60, 5, PistolMuzzleFlash, 20, 12, 300, 12);
         WeaponType assault = new WeaponType("assault rifle", 3, 3, 70, 8, AssaultMuzzleFlash, 30000, 30, 500, 30); //pA origonally 300
         WeaponType shotgun = new WeaponType("shotgun", 12, 12, 30, 2, ShotgunMuzzleFlash, 1000, 6, 300, 6); //pA origonally 100
         WeaponType sniper = new WeaponType("sniper", 12, 12, 350, 1, SniperMuzzleFlash, 60, 12, 100, 12);
+        //Special weapons:
+        WeaponType Ex_crossbow = new WeaponType("Ex_crossbow", 60, 1, 8, 20, 40, 20);
         //number of current grenades, grenade capacity
-        WeaponType grenade = new WeaponType("grenade", 3, 5);
+        WeaponType grenade = new WeaponType("grenade", 6, 6);
         //needs to be added in the exact same order as the prefabs under player camera to work NB!!!
         weapons.Add(diggingTool);
         weapons.Add(pistol);
         weapons.Add(assault);
         weapons.Add(shotgun);
         weapons.Add(sniper);
+        weapons.Add(Ex_crossbow);
         weapons.Add(grenade);
 
         equippedWeapons.Add(diggingTool);
         equippedWeapons.Add(pistol);
+        equippedWeapons.Add(assault);
+        equippedWeapons.Add(shotgun);
         equippedWeapons.Add(sniper);
+        equippedWeapons.Add(Ex_crossbow);
+        //equippedWeapons.Add(grenade);
     }
 
     private void Update()
@@ -117,10 +132,20 @@ public class WeaponAttack : AAttackBehaviour
             attack();
         }
 
-        if (Input.GetKey(KeyCode.R))
+        if (Input.GetKey(KeyCode.R) && weapons[selectedWeapon].name != "digging tool")
         {
             //Debug.Log("Reload!");
             Reload(weapons[selectedWeapon].ammunition);
+        }
+
+        //NB: This method will only work if grenades is last item in weapons array
+        if (Input.GetKeyUp(KeyCode.G))
+        {
+            if (weapons[weapons.Count - 1].ammunition.getNumGrenades() > 0)
+            {
+                CmdthrowGrenade();
+                resourceManager.useGrenade(1, weapons[weapons.Count - 1].ammunition);
+            }
         }
     }
 
@@ -132,6 +157,16 @@ public class WeaponAttack : AAttackBehaviour
         Rigidbody rb = grenade.GetComponent<Rigidbody>();
         rb.AddForce(cam.transform.forward * throwForce, ForceMode.VelocityChange);
         NetworkServer.Spawn(grenade);
+    }
+
+    [Command]
+    public void CmdShootBolt()
+    {
+        GameObject Ex_bolt =
+            Instantiate(boltPrefab, Ex_boltSpawn.transform.position, Ex_boltSpawn.transform.rotation);
+        Rigidbody rb = Ex_bolt.GetComponent<Rigidbody>();
+        rb.AddForce(cam.transform.forward * 100, ForceMode.VelocityChange);
+        NetworkServer.Spawn(Ex_bolt);
     }
 
     [Command]
@@ -168,7 +203,7 @@ public class WeaponAttack : AAttackBehaviour
 
         if (!weapons[selectedWeapon].isExplosive && weapons[selectedWeapon].name == "digging tool" || weapons[selectedWeapon].ammunition.getMagAmmo() > 0)
         {
-            if (weapons[selectedWeapon].name != "digging tool")
+            if (weapons[selectedWeapon].name != "digging tool" && !weapons[selectedWeapon].isExplosive)
             {
                 //only works when the particle effect is dragged in directly from the gun's children for some reason 
                 //its because: it can't be prefab needs to specifically be particle effect - will modify this later
@@ -213,8 +248,8 @@ public class WeaponAttack : AAttackBehaviour
                         //fetches material of voxel it hits
                         Material mat = hit.transform.GetComponent<Renderer>().material;
                         //Creates instance of fragment spawner and call its spawn method
-                        GameObject voxelFragSpawner = Instantiate(voxelFragmentSpawner, hit.point, Quaternion.identity);
-                        voxelFragSpawner.GetComponent<VoxelDestructionEffect>().spawnVoxelFragment(hit.point, mat);
+//                        GameObject voxelFragSpawner = Instantiate(voxelFragmentSpawner, hit.point, Quaternion.identity);
+//                        voxelFragSpawner.GetComponent<VoxelDestructionEffect>().spawnVoxelFragment(hit.point, mat);
                     }
 
 
@@ -224,15 +259,16 @@ public class WeaponAttack : AAttackBehaviour
                 }
             }
         }
-
-        else if (weapons[selectedWeapon].isExplosive && weapons[selectedWeapon].ammunition.getNumGrenades() > 0)
-        {
-            CmdthrowGrenade();
-            resourceManager.useGrenade(1, weapons[selectedWeapon].ammunition);
-        }
         else
         {
             //can play a sound or something (empty mag)
+        }
+
+        //Crossbow
+        if (weapons[selectedWeapon].name == "Ex_crossbow")
+        {
+            CmdShootBolt();
+            resourceManager.useMagazineAmmo(1, weapons[selectedWeapon].ammunition);
         }
 
 

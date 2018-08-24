@@ -70,7 +70,7 @@ public class MagicAttack : AAttackBehaviour
         energyUser();
 
         // Ends the shield if no energy remaining
-        if (!resourceManager.hasEnergy() && currentShield != null && shieldUp) endSecondaryAttack();
+        if (!resourceManager.hasEnergy() && shieldUp) endSecondaryAttack();
 
         // Digging
         if (isDigging && resourceManager.hasEnergy()) dig();
@@ -337,7 +337,7 @@ public class MagicAttack : AAttackBehaviour
         currentShield = shieldInst.GetComponent<Shield>();
         currentShield.GetComponent<NetHealth>().setInitialHealth(attackStats.shieldHealth);
         // Setting the caster to this magician and setting up UI
-        currentShield.setCaster(GetComponent<Identifier>());
+        currentShield.setCaster(GetComponent<Identifier>(), attackStats.shieldHealth);
 
         // Allowing it to move with the player
         currentShield.transform.parent = transform;
@@ -353,7 +353,6 @@ public class MagicAttack : AAttackBehaviour
         NetworkServer.Spawn(shieldInst);
         // Servers current shield is not neccaserily the servers instance of shield (is likely local clients instance)
         setUpShield(shieldInst);
-        RpcCuntBitchAssTestMotherFucker();
         RpcSetUpShieldUI(casterID, shieldInst.GetComponent<Identifier>().id);
     }
 
@@ -365,29 +364,12 @@ public class MagicAttack : AAttackBehaviour
     [ClientRpc]
     private void RpcSetUpShieldUI(string casterID, string shieldID)
     {
-        // This might only need to be done server and local player side, not on all machines
-//        currentShield = shieldInst.GetComponent<Shield>();
-//        currentShield.setCaster(GameManager.getObject(parentID));
-//
-//        shieldInst.GetComponent<NetHealth>().setInitialHealth(currentShield.shieldHealth);
-        // Up to here
-
-        // The object is not added to the dictionary fast enough for this to work
-//        var shieldInst = GameManager.getObject(shieldID);
-
-//        shieldInst.transform.parent = GameManager.getObject(parentID).GetComponentInChildren<Camera>().transform;
-//        shieldInst.GetComponent<Shield>().setCaster(GameManager.getObject(parentID).GetComponent<Identifier>());
-        
-        // Setting caster and UI on all clients
-        Debug.Log("In rpc calling set caster");
-        GameManager.getObject(shieldID).GetComponent<Shield>().setCaster(GameManager.getObject(casterID));
+        GameManager.getObject(shieldID).GetComponent<Shield>().setCaster
+        (
+            GameManager.getObject(casterID), 
+            attackStats.shieldHealth
+        );
         GameManager.getObject(shieldID).transform.parent = GameManager.getObject(casterID).transform;
-    }
-
-    [ClientRpc]
-    void RpcCuntBitchAssTestMotherFucker()
-    {
-        Debug.Log("FUCK YOU UNET FUCK YOU SO FUCKING HARD");
     }
 
     /// <summary>

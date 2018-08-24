@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 [System.Serializable]
-public class MagicType : Item
+public class MagicType
 {
     #region Variables
 

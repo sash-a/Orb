@@ -4,6 +4,8 @@ using UnityEngine.Networking;
 //[RequireComponent(typeof(ResourceManager))] //not sure if this is neccesary
 public class grenade : AAttackBehaviour
 {
+    //Shane's gravity script is causing grenades to fall through the ground!!!!!!!!
+
     public float delay = 3f;
     public float blastRadius = 5f;
     public float damage = 10f;
@@ -151,3 +153,4 @@ public class grenade : AAttackBehaviour
     }
 
 }
+

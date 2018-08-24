@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 
 public class Digger : NetworkBehaviour
 {
-    static int speed = 75;//150
+    static int speed = 70;//150
 
     public int gradient;//number of neighbours it will bouonce to before increasing the layer
     public int neighbourCount;//the count for number of runs without rise
@@ -14,7 +14,7 @@ public class Digger : NetworkBehaviour
     public static int minSize = 3;
 
 
-    public static Vector3 stdscale = new Vector3(5000f, 1f, 1f).normalized;//(3.5f, 0.5f, 0.5f)
+    public static Vector3 stdscale = new Vector3(5000f, 500f, 1f).normalized;//(3.5f, 0.5f, 0.5f)
 
     public Vector3 nextDest;
     public int layer;
@@ -29,6 +29,7 @@ public class Digger : NetworkBehaviour
 
     internal void init(CaveComponent m)
     {
+        transform.localScale *= 1.1f;
         rand = new System.Random();
         body = GetComponent<Rigidbody>();
         gameObject.SetActive(false);
