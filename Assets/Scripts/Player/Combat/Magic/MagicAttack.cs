@@ -9,10 +9,12 @@ public class MagicAttack : AAttackBehaviour
     private bool isAttacking;
 
     // Digger tool
-    [SyncVar(hook = "onDig")] private bool isDigging;
+    /*[SyncVar(hook = "onDig")] */
+    private bool isDigging;
 
     // Damage
-    [SyncVar(hook = "onDamage")] private bool isDamaging;
+    /*[SyncVar(hook = "onDamage")]*/
+    private bool isDamaging;
 
     // Shield
     private Shield currentShield; // The current instance of shield=
@@ -45,7 +47,7 @@ public class MagicAttack : AAttackBehaviour
     void Start()
     {
         if (!isLocalPlayer) return;
-      
+
         resourceManager = GetComponent<ResourceManager>();
         energyBlockEffectSpawner = GetComponent<EnergyBlockEffectSpawner>();
         destructionEffectSpawner = GetComponent<DestructionEffectSpawner>();
@@ -82,6 +84,119 @@ public class MagicAttack : AAttackBehaviour
         // Damaging
         if (isDamaging && resourceManager.hasEnergy()) damage();
     }
+
+    [Client]
+    public override void attack()
+    {
+        if (!MapManager.manager.mapDoneLocally)
+        {
+            Debug.LogError("Attacking before map finished");
+            return;
+        }
+
+        isAttacking = true;
+        if (attackStats.isDamage)
+        {
+            isDamaging = true;
+            playDamageEffect(true);
+        }
+        else if (attackStats.isTelekenetic)
+        {
+            RaycastHit hit;
+            if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, attackStats.telekenRange,
+                mask))
+                return;
+
+            if (!hit.collider.CompareTag(VOXEL_TAG)) return;
+
+            var voxel = hit.collider.gameObject.GetComponent<Voxel>();
+            if (voxel.shatterLevel >= 1) // need to change this to accomodate the teleken artifact
+            {
+                isTelekening = true;
+                CmdVoxelTeleken(voxel.columnID, voxel.layer, voxel.subVoxelID);
+                // Just run telekenisis locally network transform will sync movements
+                var tele = currentTelekeneticVoxel.GetComponent<Telekinesis>();
+                tele.enabled = true;
+                tele.setUp(telekenObjectPos.transform, Telekinesis.VOXEL, GetComponent<Identifier>().id);
+            }
+            else
+            {
+                // Play some effect to show that voxel is too big
+            }
+        }
+        else if (attackStats.isForcePush) // This is not yet working
+        {
+        }
+        else if (attackStats.isDigger)
+        {
+            playDiggerEffect(true);
+            isDigging = true;
+        }
+    }
+
+    /// <summary>
+    /// Called when mouse 1 released
+    /// </summary>
+    [Client]
+    public override void endAttack()
+    {
+        if (attackStats.isTelekenetic)
+        {
+            isTelekening = false;
+            CmdEndTeleken();
+        }
+        else if (attackStats.isForcePush)
+        {
+            canCastPush = true;
+        }
+        else if (attackStats.isDamage)
+        {
+            isDamaging = false;
+            playDamageEffect(false);
+        }
+        else if (attackStats.isDigger)
+        {
+            playDiggerEffect(false);
+            isDigging = false;
+        }
+
+        isAttacking = false;
+    }
+
+    /// <summary>
+    /// Called when mouse2 pressed
+    /// Spawns a shield if the player has enough energy
+    /// </summary>
+    [Client]
+    public override void secondaryAttack()
+    {
+        if (!isLocalPlayer) return;
+
+        if (resourceManager.getEnergy() > attackStats.initialShieldMana && attackStats.isShield && !shieldUp)
+        {
+            resourceManager.useEnergy(attackStats.initialShieldMana);
+
+            CmdSpawnShield(GetComponent<Identifier>().id);
+            shieldUp = true;
+        }
+    }
+
+    /// <summary>
+    /// Called on mouse 2 released
+    /// Ends the players shield and its energy drain
+    /// </summary>
+    [Client]
+    public override void endSecondaryAttack()
+    {
+        if (attackStats.isShield)
+        {
+            Debug.LogWarning("Ending secondary attack");
+            CmdDestroyShield();
+            shieldUp = false;
+        }
+    }
+
+    #region weaponSwitching
 
     private void cycleWeapons()
     {
@@ -128,119 +243,8 @@ public class MagicAttack : AAttackBehaviour
         else if (currentWeapon == 2) attackStats.changeToTeleken();
     }
 
-    [Client]
-    public override void attack()
-    {
-        if (!MapManager.manager.mapDoneLocally)
-        {
-            Debug.LogError("Attacking before map finished");
-            return;
-        }
-
-        isAttacking = true;
-        if (attackStats.isDamage)
-        {
-            isDamaging = true;
-            attackEffect.Play();
-        }
-        else if (attackStats.isTelekenetic)
-        {
-            RaycastHit hit;
-            if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, attackStats.telekenRange,
-                mask))
-                return;
-
-            if (!hit.collider.CompareTag(VOXEL_TAG)) return;
-
-            var voxel = hit.collider.gameObject.GetComponent<Voxel>();
-            if (voxel.shatterLevel >= 1) // need to change this to accomodate the teleken artifact
-            {
-                isTelekening = true;
-                CmdVoxelTeleken(voxel.columnID, voxel.layer, voxel.subVoxelID);
-                // Just run telekenisis locally network transform will sync movements
-                var tele = currentTelekeneticVoxel.GetComponent<Telekinesis>();
-                tele.enabled = true;
-                tele.setUp(telekenObjectPos.transform, Telekinesis.VOXEL, GetComponent<Identifier>().id);
-            }
-            else
-            {
-                // Play some effect to show that voxel is too big
-            }
-        }
-        else if (attackStats.isForcePush) // This is not yet working
-        {
-        }
-        else if (attackStats.isDigger)
-        {
-            CmdSetBool(ref isDigging, true);
-            isDigging = true;
-            diggerEffect.Play();
-        }
-    }
-
-    /// <summary>
-    /// Called when mouse 1 released
-    /// </summary>
-    [Client]
-    public override void endAttack()
-    {
-        if (attackStats.isTelekenetic)
-        {
-            isTelekening = false;
-            CmdEndTeleken();
-        }
-        else if (attackStats.isForcePush)
-        {
-            canCastPush = true;
-        }
-        else if (attackStats.isDamage)
-        {
-            isDamaging = false;
-            attackEffect.Stop();
-        }
-        else if (attackStats.isDigger)
-        {
-            CmdSetBool(ref isDigging, false);
-            isDigging = false;
-            diggerEffect.Stop();
-        }
-
-        isAttacking = false;
-    }
-
-    /// <summary>
-    /// Called when mouse2 pressed
-    /// Spawns a shield if the player has enough energy
-    /// </summary>
-    [Client]
-    public override void secondaryAttack()
-    {
-        if (!isLocalPlayer) return;
-
-        if (resourceManager.getEnergy() > attackStats.initialShieldMana && attackStats.isShield && !shieldUp)
-        {
-            resourceManager.useEnergy(attackStats.initialShieldMana);
-
-            CmdSpawnShield(GetComponent<Identifier>().id);
-            shieldUp = true;
-        }
-    }
-
-    /// <summary>
-    /// Called on mouse 2 released
-    /// Ends the players shield and its energy drain
-    /// </summary>
-    [Client]
-    public override void endSecondaryAttack()
-    {
-        if (attackStats.isShield)
-        {
-            Debug.LogWarning("Ending secondary attack");
-            CmdDestroyShield();
-            shieldUp = false;
-        }
-    }
-
+    #endregion
+    
     /// <summary>
     /// Drains and gains energy depending on active spells
     /// </summary>
@@ -338,6 +342,8 @@ public class MagicAttack : AAttackBehaviour
             CmdShieldHit(hit.collider.gameObject, attackStats.attackShieldDamage * Time.deltaTime);
     }
 
+    #region shield
+
     public void setUpShield(GameObject shieldInst)
     {
         currentShield = shieldInst.GetComponent<Shield>();
@@ -348,7 +354,7 @@ public class MagicAttack : AAttackBehaviour
         // Allowing it to move with the player
         currentShield.transform.parent = transform;
     }
-
+    
     /// <summary>
     /// Called on the server to spawn a shield for the local player
     /// </summary>
@@ -387,6 +393,18 @@ public class MagicAttack : AAttackBehaviour
         Destroy(currentShield.gameObject);
         NetworkServer.Destroy(currentShield.gameObject);
     }
+
+    /// <summary>
+    /// Sets <code>shieldUp</code> to false
+    /// </summary>
+    public void shieldDown()
+    {
+        shieldUp = false;
+    }
+    
+    #endregion
+
+    #region teleken
 
     /// <summary>
     /// Allows the player to control a voxel
@@ -454,57 +472,84 @@ public class MagicAttack : AAttackBehaviour
             currentTelekeneticVoxel.GetComponent<Telekinesis>().throwObject(cam.transform.forward);
         }
     }
-
-    /// <summary>
-    /// Sets <code>shieldUp</code> to false
-    /// </summary>
-    public void shieldDown()
-    {
-        shieldUp = false;
-    }
+    
+    #endregion
+    
+    #region syncParticleEffects
 
     /*
      * Playing partilce effects on all clients
      */
-    void onDamage(bool playing)
+
+    #region playDiggerEffect
+
+    void playDiggerEffect(bool digging)
     {
-        isDamaging = playing;
-        
-        Debug.Log("onDmg" + isDamaging);
+        if (isLocalPlayer)
+        {
+            CmdDiggerEffect(digging);
+        }
 
-        if (isDamaging)
-            attackEffect.Play();
-        else
-            attackEffect.Stop();
-    }
-
-    void onDig(bool playing)
-    {
-
-        isDigging = playing;
-        Debug.Log("on dig " + isDigging);
-
-        
-        if (isDigging)
+        if (digging)
+        {
             diggerEffect.Play();
-        else
-            diggerEffect.Stop();
+            return;
+        }
+
+        diggerEffect.Stop();
     }
 
-    void CmdSetBool(ref bool svar, bool val)
+    [Command]
+    void CmdDiggerEffect(bool digging)
     {
-        svar = val;
+        RpcDiggerEffect(digging);
     }
 
-//    [Command]
-//    void CmdOrientEffect(ParticleSystem particles)
-//    {
-//        RpcPlayEffect(particles);
-//    }
-//
-//    [ClientRpc]
-//    void RpcOrientEffect(ParticleSystem particles)
-//    {
-//        particles.Play();
-//    }
+    [ClientRpc]
+    void RpcDiggerEffect(bool digging)
+    {
+        if (isLocalPlayer)
+        {
+            return;
+        }
+
+        playDiggerEffect(digging);
+    }
+
+    #endregion
+
+    #region playDamageEffect
+
+    void playDamageEffect(bool damaging)
+    {
+        if (isLocalPlayer)
+            CmdDamageEffect(damaging);
+
+        if (damaging)
+        {
+            attackEffect.Play();
+            return;
+        }
+
+        attackEffect.Stop();
+    }
+
+    [Command]
+    void CmdDamageEffect(bool damaging)
+    {
+        RpcDamageEffect(damaging);
+    }
+
+    [ClientRpc]
+    void RpcDamageEffect(bool damaging)
+    {
+        if (isLocalPlayer)
+            return;
+
+        playDamageEffect(damaging);
+    }
+
+    #endregion
+
+    #endregion
 }
