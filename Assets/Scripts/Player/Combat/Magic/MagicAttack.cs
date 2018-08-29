@@ -6,15 +6,15 @@ public class MagicAttack : AAttackBehaviour
 {
     [SerializeField] private MagicType attackStats;
 
-    private bool isAttacking;
+    [SyncVar] private bool isAttacking;
 
     // Digger tool
     /*[SyncVar(hook = "onDig")] */
-    private bool isDigging;
+    [SyncVar] private bool isDigging;
 
     // Damage
     /*[SyncVar(hook = "onDamage")]*/
-    private bool isDamaging;
+    [SyncVar] private bool isDamaging;
 
     // Shield
     private Shield currentShield; // The current instance of shield=
@@ -68,6 +68,26 @@ public class MagicAttack : AAttackBehaviour
 
     void Update()
     {
+        // Needs to be done for non-local clients
+        // Orient effects
+        RaycastHit hit = new RaycastHit();
+        if (isAttacking)
+        {
+            if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask)) return;
+
+            if (isDigging)
+            {
+                diggerEffect.transform.LookAt(hit.point);
+            }
+
+            if (isDamaging)
+            {
+                attackEffect.transform.LookAt(hit.point);
+                var angles = attackEffect.transform.rotation.eulerAngles;
+                attackEffect.transform.rotation = Quaternion.Euler(angles.x + 90, angles.y, angles.z + 180);
+            }
+        }
+
         if (!isLocalPlayer) return;
         // Checks when attack related keys are pressed
         base.Update();
@@ -79,10 +99,10 @@ public class MagicAttack : AAttackBehaviour
         if (!resourceManager.hasEnergy() && shieldUp) endSecondaryAttack();
 
         // Digging
-        if (isDigging && resourceManager.hasEnergy()) dig();
+        if (isDigging && resourceManager.hasEnergy()) dig(hit);
 
         // Damaging
-        if (isDamaging && resourceManager.hasEnergy()) damage();
+        if (isDamaging && resourceManager.hasEnergy()) damage(hit);
     }
 
     [Client]
@@ -244,7 +264,7 @@ public class MagicAttack : AAttackBehaviour
     }
 
     #endregion
-    
+
     /// <summary>
     /// Drains and gains energy depending on active spells
     /// </summary>
@@ -271,14 +291,8 @@ public class MagicAttack : AAttackBehaviour
     /// Orients the digger effect and damages relevent objects while mouse 1 held down
     /// </summary>
     [Client]
-    void dig()
+    void dig(RaycastHit hit)
     {
-        RaycastHit hit;
-        if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask)) return;
-
-        // Rotating the effect
-        diggerEffect.transform.LookAt(hit.point);
-
         // Checking range, need high distance in raycast to orient effect
         if (Mathf.Abs(Vector3.Distance(hit.point, transform.position)) > attackStats.diggerRange) return;
 
@@ -287,13 +301,14 @@ public class MagicAttack : AAttackBehaviour
             var voxel = hit.collider.gameObject.GetComponent<Voxel>();
 
             // If voxel is about to die
-            if (!voxel.hasEnergy && voxel.GetComponent<NetHealth>().getHealth() <=
-                attackStats.diggerEnvDamage * Time.deltaTime)
+            if (!voxel.hasEnergy &&
+                voxel.GetComponent<NetHealth>().getHealth() <= attackStats.diggerEnvDamage * Time.deltaTime)
                 destructionEffectSpawner.play(hit.point, voxel);
 
 
             CmdVoxelDamaged(hit.collider.gameObject, attackStats.diggerEnvDamage * Time.deltaTime);
 
+            // Spawn energy blocks
             if (voxel.hasEnergy)
             {
                 energyBlockEffectSpawner.setVoxel(voxel.gameObject);
@@ -310,17 +325,8 @@ public class MagicAttack : AAttackBehaviour
     /// Controls which voxel gets damaged each frame and the orientation of the effect
     /// </summary>
     [Client]
-    void damage()
+    void damage(RaycastHit hit)
     {
-        RaycastHit hit;
-        if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask))
-            return;
-
-        // Pointing the effect in the correct direction
-        attackEffect.transform.LookAt(hit.point);
-        var angles = attackEffect.transform.rotation.eulerAngles;
-        attackEffect.transform.rotation = Quaternion.Euler(angles.x + 90, angles.y, angles.z + 180);
-
         // Checking range, need high distance in raycast to orient effect
         if (Mathf.Abs(Vector3.Distance(hit.point, transform.position)) > attackStats.attackRange) return;
 
@@ -354,7 +360,7 @@ public class MagicAttack : AAttackBehaviour
         // Allowing it to move with the player
         currentShield.transform.parent = transform;
     }
-    
+
     /// <summary>
     /// Called on the server to spawn a shield for the local player
     /// </summary>
@@ -401,7 +407,7 @@ public class MagicAttack : AAttackBehaviour
     {
         shieldUp = false;
     }
-    
+
     #endregion
 
     #region teleken
@@ -472,9 +478,9 @@ public class MagicAttack : AAttackBehaviour
             currentTelekeneticVoxel.GetComponent<Telekinesis>().throwObject(cam.transform.forward);
         }
     }
-    
+
     #endregion
-    
+
     #region syncParticleEffects
 
     /*

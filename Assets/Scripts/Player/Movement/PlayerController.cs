@@ -13,8 +13,9 @@ public class PlayerController : MonoBehaviour
     //Animation
     public Animator animator;
     private bool isMoving = false;
-    private bool isWalking = false;
-    private bool isRunning = false;
+    //NB variables for walking/running Blend animations
+    private float xMove;
+    private float yMove;
     
 
     void Start()
@@ -47,34 +48,53 @@ public class PlayerController : MonoBehaviour
         if (Input.GetButtonDown("Jump"))
             actions.jump(jumpForce);
 
+        //Animation
+        MovementAnimation(velocity);
+
+    }
+
+    void MovementAnimation(Vector3 velocity)
+    {
         //Animation:
+        xMove = Input.GetAxis("Horizontal");
+        yMove = Input.GetAxis("Vertical");
+
         if (velocity != Vector3.zero)
         {
             isMoving = true;
             if (Input.GetKey(KeyCode.LeftShift))
             {
-                isRunning = true;
-                isWalking = false;
-            }
-            else
-            {
-                isRunning = false;
-                isWalking = true;
+                //When running xMove a yMove are equal to 2 or -2 (equal to 1 or -1 when walking)
+                if (Input.GetAxis("Horizontal") > 0) //RIGHT
+                {
+                    xMove += 1.0f;
+                }
+                else if (Input.GetAxis("Horizontal") < 0) //LEFT
+                {
+                    xMove -= 1.0f;
+                }
+
+                if (Input.GetAxis("Vertical") > 0) //FORWARD
+                {
+                    yMove += 1.0f;
+                }
+                else
+                {
+                    yMove -= 1.0f;
+                }
+                
             }
         }
         else
         {
             isMoving = false;
-            isWalking = false;
         }
+
+        //Jumping: set MoveY = 3?
+
         animator.SetBool("isMoving", isMoving);
-        animator.SetBool("isWalking", isWalking);
-        animator.SetBool("isRunning", isRunning);
-        animator.SetFloat("xMove", Input.GetAxis("Horizontal"));
-        animator.SetFloat("yMove", Input.GetAxis("Vertical"));
-
-        //Debug.Log("xMov: " + Input.GetAxis("Horizontal") + " yMov: " + Input.GetAxis("Vertical"));
-
+        animator.SetFloat("xMove", xMove);
+        animator.SetFloat("yMove", yMove);
     }
 
     IEnumerator hackPos()

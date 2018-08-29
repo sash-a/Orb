@@ -22,7 +22,7 @@ public class EnergyBlockEffectSpawner : NetworkBehaviour
 
     public void spawnBlock()
     {
-        int rand = Random.Range(0, 6);
+        int rand = Random.Range(0, 10);
         // Spawns a block 1 in 6 times
         if (rand == 0)
             CmdSpawnBlock();
@@ -35,7 +35,7 @@ public class EnergyBlockEffectSpawner : NetworkBehaviour
         var blockInst = Instantiate
         (
             energyBlock,
-            pos + (Random.insideUnitSphere * 4),
+            pos + (Random.insideUnitSphere * 6),
             Quaternion.identity
         );
 
