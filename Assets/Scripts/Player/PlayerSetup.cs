@@ -5,9 +5,13 @@ using UnityEngine.Networking;
 public class PlayerSetup : NetworkBehaviour
 {
     public Behaviour[] componentsToDisable;
+    public string dontDrawLayerName = "DontDraw";
+    public GameObject playerGraphics;
 
     private Camera mainCam;
 
+
+    
     public const string REMOTE_LAYER_NAME = "RemotePlayer";
     public const string LOCAL_LAYER_NAME = "LocalPlayer";
 
@@ -61,6 +65,9 @@ public class PlayerSetup : NetworkBehaviour
                 ui.gameObject.SetActive(true);
                 type.UI = ui;
             }
+            
+            // Disable local player graphics
+            setLayer(playerGraphics, LayerMask.NameToLayer(dontDrawLayerName));
         }
     }
 
@@ -76,6 +83,16 @@ public class PlayerSetup : NetworkBehaviour
         gameObject.layer = LayerMask.NameToLayer(REMOTE_LAYER_NAME);
     }
 
+    void setLayer(GameObject obj, int layer)
+    {
+        obj.layer = layer;
+
+        foreach (Transform child in obj.transform)
+        {
+            setLayer(child.gameObject, layer);
+        }
+    }
+    
     private void OnDisable()
     {
         Destroy(playerUIInstance);

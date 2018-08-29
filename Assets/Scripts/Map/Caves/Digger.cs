@@ -11,10 +11,10 @@ public class Digger : NetworkBehaviour
     public int gradient;//number of neighbours it will bouonce to before increasing the layer
     public int neighbourCount;//the count for number of runs without rise
     public static int maxSize = 20;
-    public static int minSize = 3;
+    public static int minSize = 5;
 
 
-    public static Vector3 stdscale = new Vector3(5000f, 500f, 1f).normalized;//(3.5f, 0.5f, 0.5f)
+    public static Vector3 stdscale = new Vector3(1f, 50000f, 1f).normalized;//(3.5f, 0.5f, 0.5f)
 
     public Vector3 nextDest;
     public int layer;
@@ -123,13 +123,15 @@ public class Digger : NetworkBehaviour
             }
         }
         //Debug.Log("found next best vox : " + bestID + " with comp in travelDir = " + bestComp);
+        bool changedLayer = false;
+
         neighbourCount++;
         if (gradient > 0)
         {
             if (neighbourCount >= gradient)
             {
                 layer++;
-                neighbourCount = 0;
+                changedLayer = true;
             }
         }
         else if (gradient < 0)
@@ -137,14 +139,21 @@ public class Digger : NetworkBehaviour
             if (neighbourCount >= -gradient)
             {
                 layer--;
-                neighbourCount = 0;
+                changedLayer = true;
             }
         }
 
-        colID = bestID;
-        return MapManager.manager.getPositionOf(layer, bestID);
+        int refLayer = layer;
+        //if (layer > 0) { refLayer-=1; }
+        if (changedLayer) {//travel to new layer in same colomn to make tunnel taller
+            neighbourCount = -1;
+        }
+        else
+        {
+            colID = bestID;
+        }
 
-
+        return 3* MapManager.manager.getPositionOf(refLayer, colID) - 2*MapManager.manager.getPositionOf(refLayer+1, colID);
     }
 
     public void setScale(float s)

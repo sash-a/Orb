@@ -26,6 +26,8 @@ public abstract class AAttackBehaviour : NetworkBehaviour
 
     protected void Update()
     {
+        if (!isLocalPlayer) return;
+        
         if (PlayerUI.isPaused) return;
         
         if (Input.GetButtonDown("Fire1")) attack();

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Networking;
 
 
@@ -50,6 +51,7 @@ public class PlayerActions : NetworkBehaviour
 
         doMovement();
         doRotations();
+        checkCollectables();
 
         if (transform.position.magnitude > MapManager.mapSize * 5)
         {
@@ -57,6 +59,19 @@ public class PlayerActions : NetworkBehaviour
             rb.velocity = Vector3.zero;
         }
 
+    }
+
+    private void checkCollectables()
+    {
+        if (MapManager.manager.collectables == null) return;
+        int count = 0;
+        foreach (PickUpItem item in MapManager.manager.collectables) {
+            count++;
+            if (Vector3.Distance(transform.position, item.gameObject.transform.position) < 20) {
+                Debug.Log("approached collectable");
+            }
+        }
+        //Debug.Log("checked " + count + " collectables");
     }
 
     // TODO this should be move to a utility/player properites class

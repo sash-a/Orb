@@ -11,7 +11,7 @@ public class CaveEntrance : CaveComponent
     int destDepth;//the depth the cave entrance ends at
     public int columnID;//the column id of the surface voxel this entrance begins at
 
-    static int entrancesize = 4;
+    static int entrancesize = 5;
 
     public CaveEntrance() : base(){
         destDepth = 6;
@@ -63,7 +63,7 @@ public class CaveEntrance : CaveComponent
 
             if (travelCounter <= 0)
             {
-                //digger.layer -= 1;
+                digger.layer -= 2;
                 CaveBody body = new CaveBody(digger);
                 //Debug.Log("digger finished digging entrance - entrance length: " + Vector3.Distance(MapManager.manager.getPositionOf(0, columnID), digger.transform.position));
             }
@@ -98,7 +98,7 @@ public class CaveEntrance : CaveComponent
         digger.right = Vector3.Cross(direction, -MapManager.manager.getPositionOf(0, columnID)).normalized;
         digger.travelDir = direction.normalized;
         //Debug.Log("creating new digger with dir = " + digger.travelDir + " right = " + digger.right);
-        digger.nextDest = MapManager.manager.getPositionOf(0, colID);
+        digger.nextDest = 3* MapManager.manager.getPositionOf(0, colID) - 2 * MapManager.manager.getPositionOf(1, colID);
 
         digger.gameObject.SetActive(true);
 

@@ -26,6 +26,9 @@ public class WeaponType
     int maxAmmo;
     public Ammo ammunition;
 
+    //Special specific
+    public bool isSpecial;
+
     //digging tool constructor 
     public WeaponType(string name, float damage, float envDamage, float range, float fireRate, ParticleSystem digBeam)
     {
@@ -35,6 +38,7 @@ public class WeaponType
         this.range = range;
         this.fireRate = fireRate;
         this.digBeam = digBeam;
+        isSpecial = false;
     }
 
     //weapon constructor
@@ -67,6 +71,7 @@ public class WeaponType
         this.fireRate = fireRate;
         isExplosive = true;
         ammunition = new Ammo(prA, mgA, mxA, mgSz);
+        isSpecial = true;
     }
 
 }

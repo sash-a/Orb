@@ -10,22 +10,24 @@ public class Altar : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-        spawnCollectable();
+        //spawnCollectable();
     }
 
-    private void spawnCollectable()
+    public void spawnCollectable()
     {
         string folder = "Prefabs/Map/MapAssets/";
         if (type.Equals(Type.ARTIFACT))
         {
-            folder += "Artifacts";
+            folder += "Artifacts/TestArtifact";
         }
         else
         {
             folder += "DummyGuns";
         }
-        GameObject collect = Instantiate(Resources.Load<GameObject>(folder), transform.position, transform.rotation);
-        collect.transform.position += collect.transform.up;
+        GameObject collect =(GameObject) Instantiate(Resources.Load<UnityEngine.Object>(folder), transform.position, transform.rotation);
+        collect.transform.position += transform.up*transform.parent.localScale.y;
+        collect.transform.parent = transform;
+        MapManager.manager.collectables.Add(collect.GetComponent<PickUpItem>());
     }
 
     // Update is called once per frame

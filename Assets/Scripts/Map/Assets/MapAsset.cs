@@ -8,7 +8,7 @@ using UnityEngine.Networking;
 //Colab is a bitch
 public class MapAsset : NetworkBehaviour
 {
-    public enum Type { MAIN, SECONDARY, GRASS };
+    public enum Type { MAIN, SECONDARY, GRASS, ALTAR, CRITTERSPANWER };
     [SyncVar] Type type;
 
 
@@ -33,8 +33,8 @@ public class MapAsset : NetworkBehaviour
 
     void Start()
     {
-        united = !type.Equals(Type.MAIN); 
-        if (type.Equals(Type.MAIN))
+        united = !(type.Equals(Type.MAIN) || type.Equals(Type.ALTAR)); 
+        if (type.Equals(Type.MAIN)|| type.Equals(Type.ALTAR))
         {
             //Debug.Log("setting asset to voxel");
             MapManager.manager.voxels[layer][colID].mainAsset = this;
@@ -58,7 +58,6 @@ public class MapAsset : NetworkBehaviour
         //Debug.Log("starting map asset at: " + transform.position);
         gameObject.tag = "MapAsset";
         StartCoroutine(waitNSet());
-
     }
 
     public static MapAsset createAsset(Voxel vox, int side, Type tp)
@@ -67,14 +66,15 @@ public class MapAsset : NetworkBehaviour
         GameObject ass = null;
 
         //ass = Instantiate(Resources.Load<GameObject>("Prefabs/Map/MapAssets/Palm_Tree"), vox.worldCentreOfObject, Quaternion.identity);
-        if (tp.Equals(Type.MAIN))
+        if (tp.Equals(Type.MAIN)|| tp.Equals(Type.ALTAR) || tp.Equals(Type.CRITTERSPANWER))
         {
-            ass = spawnMainAsset(vox, side);
+            ass = spawnMainAsset(vox, side,tp);
         }
         if (tp.Equals(Type.GRASS))
         {
             ass = spawnGrass(vox, side);
         }
+   
 
         ass.GetComponent<MapAsset>().voxel = vox;
         ass.GetComponent<MapAsset>().colID = vox.columnID;
@@ -82,7 +82,7 @@ public class MapAsset : NetworkBehaviour
         ass.GetComponent<MapAsset>().voxSide = side;
 
 
-        if (tp.Equals(Type.MAIN)) {
+        if (tp.Equals(Type.MAIN) || tp.Equals(Type.ALTAR)) {
             NetworkServer.Spawn(ass);
         }
         return ass.GetComponent<MapAsset>();
@@ -97,7 +97,7 @@ public class MapAsset : NetworkBehaviour
         return grass;
     }
 
-    private static GameObject spawnMainAsset(Voxel vox, int side)
+    private static GameObject spawnMainAsset(Voxel vox, int side, Type tp)
     {
         string folder = "";
         if (vox.layer == 0)
@@ -109,19 +109,31 @@ public class MapAsset : NetworkBehaviour
             folder = "MainCaveFloorAssets";
             //Debug.Log("placing cave floor asset");
         }
-      
 
 
-        GameObject ass = (GameObject)Instantiate(Resources.Load<UnityEngine.Object>("Prefabs/Map/MapAssets/MainAsset"), vox.worldCentreOfObject, Quaternion.identity);
-        UnityEngine.Object[] assets = Resources.LoadAll<GameObject>("Prefabs/Map/MapAssets/" + folder);
-        //GameObject model = Instantiate(Resources.Load<GameObject>("Prefabs/Map/MapAssets/MainAssets/Palm_Tree_1"), vox.worldCentreOfObject, Quaternion.identity);
         System.Random rand = new System.Random(vox.layer * vox.columnID + vox.columnID);
-        ass.GetComponent<MapAsset>().type = Type.MAIN;
+        GameObject model = null;
+        GameObject ass = (GameObject)Instantiate(Resources.Load<UnityEngine.Object>("Prefabs/Map/MapAssets/MainAsset"), vox.worldCentreOfObject, Quaternion.identity);
+        if (tp.Equals(Type.MAIN))
+        {
+            UnityEngine.Object[] assets = Resources.LoadAll<GameObject>("Prefabs/Map/MapAssets/" + folder);
+            int idx = rand.Next(0, assets.Length);
+            model = (GameObject)Instantiate(assets[idx], vox.worldCentreOfObject, Quaternion.identity);
+        }
+        if (tp.Equals(Type.ALTAR))
+        {
+            model = (GameObject)Instantiate(Resources.Load<GameObject>("Prefabs/Map/MapAssets/Altar"), vox.worldCentreOfObject, Quaternion.identity);
+        }
+        if (tp.Equals(Type.CRITTERSPANWER))
+        {
+            model = (GameObject)Instantiate(Resources.Load<GameObject>("Prefabs/Map/MapAssets/CritterSpawner"), vox.worldCentreOfObject, Quaternion.identity);
+        }
+        ass.GetComponent<MapAsset>().type = tp;
         ass.GetComponent<MapAsset>().united = false;
+        ass.GetComponent<MapAsset>().voxSide = side;
 
-        int idx = rand.Next(0, assets.Length);
+
         //Debug.Log("loading asset idx " + idx+ "from asset list of length: " + assets.Length);
-        GameObject model = (GameObject)Instantiate(assets[idx], vox.worldCentreOfObject, Quaternion.identity);
         model.GetComponent<AssetModelUniter>().layer = vox.layer;
         model.GetComponent<AssetModelUniter>().colID = vox.columnID;
         model.transform.parent = ass.transform;
@@ -150,13 +162,13 @@ public class MapAsset : NetworkBehaviour
 
         setTransform();
 
-        if (voxel.mainAsset != null && voxel.mainAsset != this && type.Equals(Type.MAIN))
+        if (voxel.mainAsset != null && voxel.mainAsset != this && (type.Equals(Type.MAIN) || type.Equals(Type.ALTAR)))
         {
             //Debug.Log("removing duplicate tree");
             NetworkServer.Destroy(gameObject);
             return;
         }
-        if (type.Equals(Type.MAIN)) {
+        if (type.Equals(Type.MAIN) || type.Equals(Type.ALTAR)) {
             voxel.mainAsset = this;
         }
         //changeParent(voxel.gameObject.transform);
@@ -174,19 +186,20 @@ public class MapAsset : NetworkBehaviour
         {
             //Debug.Log("main asset final pos: " + transform.position );
         }
+        
     }
 
     bool transformed = false;
     public void setTransform()
     {
-        if (!united && type.Equals(Type.MAIN)) {
-            //Debug.Log("not united yet - cant transform");
+        if (!united && (type.Equals(Type.MAIN)|| type.Equals(Type.ALTAR))) {
+            //Debug.Log("not united yet - cant transform " + type.ToString());
             return;
         }
 
         if (transformed)
         {
-            //Debug.Log("resetting map transform again type: " + type.ToString() + " united: "  + united + "id: " + layer + " ; " + colID);
+            //if (type.Equals(Type.ALTAR)) Debug.Log("resetting map transform again type: " + type.ToString() + " united: "  + united + "id: " + layer + " ; " + colID);
             return;
         }
 
@@ -214,14 +227,32 @@ public class MapAsset : NetworkBehaviour
         Vector3 forward = getFoward(up);
         Vector3 right = Vector3.Cross(forward, up).normalized;
         System.Random rand = new System.Random(voxel.layer * voxel.columnID + voxel.columnID + seedVariable);
-        if (voxel.layer > 0 || type.Equals(Type.GRASS))
+        bool moveAlongFace = (type.Equals(Type.MAIN) && voxel.layer > 0) || type.Equals(Type.GRASS);
+        if (moveAlongFace)
         {
             //Debug.Log("varying grass pos. pos before:  " + transform.position);
             float mag =0.055f* MapManager.mapSize / (float)Math.Pow(2,MapManager.splits);
             transform.position += forward * (float)(rand.NextDouble() - 0.5f) * mag + right * (float)(rand.NextDouble() - 0.5f) * mag ;
             //Debug.Log("pos after: " + transform.position);
         }
-        float size = (float)(rand.NextDouble() * 0.6f + 0.4);//supposed to be height*wdth
+
+        bool varySize = type.Equals(Type.MAIN) || type.Equals(Type.GRASS);
+        float size;
+        if (varySize)
+        {
+             size = (float)(rand.NextDouble() * 0.6f + 0.4);//supposed to be height*wdth
+        }
+        else {
+            size = 0.6f;
+        }
+
+        if (type.Equals(Type.MAIN) && layer ==0) {
+            transform.position += -transform.localScale.y * transform.position * 0.003f * voxSide;
+        }
+        if (type.Equals(Type.CRITTERSPANWER)) {
+            transform.position += -transform.localScale.y * transform.position * 0.001f * voxSide;
+        }
+
 
         float width = 2f * size + (float)(rand.NextDouble() * widthVariation + widthVariation * 0.5f);
         float height = size + (float)(rand.NextDouble() * heightVariation + heightVariation * 0.5f) + 0.2f;
@@ -229,9 +260,15 @@ public class MapAsset : NetworkBehaviour
             transform.localScale.x * width,
             transform.localScale.y * height,
             transform.localScale.z * width);
-        transform.Rotate(new Vector3((float)(rand.NextDouble() * rotateVariation + rotateVariation * 0.5f), (float)(rand.NextDouble() * rotateVariation + rotateVariation * 0.5f), (float)(rand.NextDouble() * rotateVariation + rotateVariation * 0.5f)));
+        if (!(type.Equals(Type.ALTAR) || type.Equals(Type.CRITTERSPANWER))) {
+            transform.Rotate(new Vector3((float)(rand.NextDouble() * rotateVariation + rotateVariation * 0.5f), (float)(rand.NextDouble() * rotateVariation + rotateVariation * 0.5f), (float)(rand.NextDouble() * rotateVariation + rotateVariation * 0.5f)));
+        }
         transformed = true;
         //Debug.Log("resized local asset to: " + (new Vector3( transform.localScale.x * width,transform.localScale.y * height,transform.localScale.z * width)));
+        if (type.Equals(Type.ALTAR)) {
+            //Debug.Log("altar setting transform");
+            transform.GetChild(0).gameObject.GetComponent<Altar>().spawnCollectable();
+        }
     }
 
     public void changeParent(Transform tran)

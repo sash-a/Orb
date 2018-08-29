@@ -148,7 +148,7 @@ public class VoxelContainer : Voxel
                 //subVoxelScript.info += "sub i=" + i;
                 subVoxelScript.shatterLevel = majorVoxel.shatterLevel + 1;
                 subVoxelScript.isBottom = i > 2 && i <= 5 || (i == 7 && !majorVoxel.isBottom) || (i == 6 && majorVoxel.isBottom);
-                subVoxelScript.isBottom = subVoxelScript.isBottom;
+                //subVoxelScript.isBottom = subVoxelScript.isBottom;
                 subVoxelScript.subVoxelID = majorVoxel.subVoxelID + "," + i;
                 subVoxelScript.info += "id: " + (subVoxelScript.subVoxelID);
                 subVoxelScript.hasEnergy = majorVoxel.hasEnergy;

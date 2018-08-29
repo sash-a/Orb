@@ -4,6 +4,14 @@ using UnityEngine;
 
 public class Arrow : MonoBehaviour
 {
+
+    Quaternion boltOrientation;
+
+    private void Update()
+    {
+        //boltOrientation = transform.rotation;
+    }
+
     void OnCollisionEnter(Collision collider)
     {
         // Debug.Log("Hit");
@@ -12,15 +20,10 @@ public class Arrow : MonoBehaviour
         rb.velocity = Vector3.zero;
         rb.isKinematic = true;
         GetComponent<Gravity>().enabled = false;
-        //transform.GetComponent<Rigidbody>().mass = 0;
-        //Vector3 offset = new Vector3(0, 0, 1); // replace with your desired offset vector
-
-        //while(transform.gameObject != null)
-        //{
-        //    transform.position = collider.transform.position + offset;
-        //}
-
-
+        //transform.rotation = boltOrientation;
+        transform.Translate(0, 0, 1);
+ 
+        //get direction in update and set direction to that when colliding
 
     }
 }

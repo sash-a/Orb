@@ -10,6 +10,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float runMultiplier;
     private PlayerActions actions;
 
+    //Animation
+    public Animator animator;
+    private bool isMoving = false;
+    private bool isWalking = false;
+    private bool isRunning = false;
+    
+
     void Start()
     {
         actions = GetComponent<PlayerActions>();
@@ -30,7 +37,7 @@ public class PlayerController : MonoBehaviour
         var velocity = (xMov + yMov).normalized * speed;
 
         actions.move(Input.GetKey(KeyCode.LeftShift) ? velocity * runMultiplier : velocity);
-
+        
         // Rotation
         var yRot = new Vector3(0, Input.GetAxis("Mouse X"), 0) * lookSens;
         float xRot = Input.GetAxis("Mouse Y") * lookSens;
@@ -40,7 +47,34 @@ public class PlayerController : MonoBehaviour
         if (Input.GetButtonDown("Jump"))
             actions.jump(jumpForce);
 
-       
+        //Animation:
+        if (velocity != Vector3.zero)
+        {
+            isMoving = true;
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                isRunning = true;
+                isWalking = false;
+            }
+            else
+            {
+                isRunning = false;
+                isWalking = true;
+            }
+        }
+        else
+        {
+            isMoving = false;
+            isWalking = false;
+        }
+        animator.SetBool("isMoving", isMoving);
+        animator.SetBool("isWalking", isWalking);
+        animator.SetBool("isRunning", isRunning);
+        animator.SetFloat("xMove", Input.GetAxis("Horizontal"));
+        animator.SetFloat("yMove", Input.GetAxis("Vertical"));
+
+        //Debug.Log("xMov: " + Input.GetAxis("Horizontal") + " yMov: " + Input.GetAxis("Vertical"));
+
     }
 
     IEnumerator hackPos()
@@ -49,4 +83,5 @@ public class PlayerController : MonoBehaviour
         transform.position = new Vector3(0, 0, 0);
         GetComponent<Rigidbody>().velocity = Vector3.zero;
     }
+
 }

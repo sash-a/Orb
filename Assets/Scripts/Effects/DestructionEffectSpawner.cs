@@ -16,7 +16,7 @@ public class DestructionEffectSpawner : NetworkBehaviour
     /// <param name="maxVoxels">Minimum number of voxels to spawn in the effect</param>
     public void play(Vector3 pos, Voxel voxel, int minVoxels = 12, int maxVoxels = 25)
     {
-        Debug.Log("Playing destruction effect");
+//        Debug.Log("Playing destruction effect");
 
         //CmdSpawnVoxels(pos, minVoxels, maxVoxels, voxel.layer);
     }

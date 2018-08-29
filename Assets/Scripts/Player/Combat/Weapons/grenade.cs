@@ -16,7 +16,6 @@ public class grenade : AAttackBehaviour
     bool hasExploded = false;
 
     public GameObject explosionEffect;
-    public GameObject VoxelDestroyEffect;
 
     // Use this for initialization
     void Start()
@@ -43,15 +42,7 @@ public class grenade : AAttackBehaviour
         NetworkServer.Spawn(explosion);
     }
 
-    //[Command]
-    //private void CmdVoxelDestructionEffect(Vector3 position, Vector3 normal)
-    //{
-    //    GameObject VoxelParticle = Instantiate(VoxelDestroyEffect, position,
-    //                            Quaternion.LookRotation(normal));
-    //    NetworkServer.Spawn(VoxelParticle);
-    //}
-
-    //explodes
+    //EXPLOSION
     [Client]
     public override void attack()
     {

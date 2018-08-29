@@ -21,6 +21,8 @@ public class CaveBody : CaveComponent
         //ebug.Log("after: " + digger.master is CaveEntrance);
         center = Vector3.zero;
         CaveManager.manager.caves.Add(this);
+        digger.setScale(8);
+
     }
 
 

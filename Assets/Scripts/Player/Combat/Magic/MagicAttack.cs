@@ -9,10 +9,10 @@ public class MagicAttack : AAttackBehaviour
     private bool isAttacking;
 
     // Digger tool
-    private bool isDigging;
+    [SyncVar(hook = "onDig")] private bool isDigging;
 
     // Damage
-    private bool isDamaging;
+    [SyncVar(hook = "onDamage")] private bool isDamaging;
 
     // Shield
     private Shield currentShield; // The current instance of shield=
@@ -44,6 +44,8 @@ public class MagicAttack : AAttackBehaviour
 
     void Start()
     {
+        if (!isLocalPlayer) return;
+      
         resourceManager = GetComponent<ResourceManager>();
         energyBlockEffectSpawner = GetComponent<EnergyBlockEffectSpawner>();
         destructionEffectSpawner = GetComponent<DestructionEffectSpawner>();
@@ -58,11 +60,13 @@ public class MagicAttack : AAttackBehaviour
 
         // Stopping all effects
         attackEffect.Stop();
+
         diggerEffect.Stop();
     }
 
     void Update()
     {
+        if (!isLocalPlayer) return;
         // Checks when attack related keys are pressed
         base.Update();
 
@@ -168,6 +172,7 @@ public class MagicAttack : AAttackBehaviour
         }
         else if (attackStats.isDigger)
         {
+            CmdSetBool(ref isDigging, true);
             isDigging = true;
             diggerEffect.Play();
         }
@@ -195,6 +200,7 @@ public class MagicAttack : AAttackBehaviour
         }
         else if (attackStats.isDigger)
         {
+            CmdSetBool(ref isDigging, false);
             isDigging = false;
             diggerEffect.Stop();
         }
@@ -359,14 +365,12 @@ public class MagicAttack : AAttackBehaviour
     /// <summary>
     /// Makes the shield a child of the local player on all clients
     /// </summary>
-    /// <param name="shieldInst">The game object to be the child</param>
-    /// <param name="parent">The game object to be the parent</param>
     [ClientRpc]
     private void RpcSetUpShieldUI(string casterID, string shieldID)
     {
         GameManager.getObject(shieldID).GetComponent<Shield>().setCaster
         (
-            GameManager.getObject(casterID), 
+            GameManager.getObject(casterID),
             attackStats.shieldHealth
         );
         GameManager.getObject(shieldID).transform.parent = GameManager.getObject(casterID).transform;
@@ -458,4 +462,49 @@ public class MagicAttack : AAttackBehaviour
     {
         shieldUp = false;
     }
+
+    /*
+     * Playing partilce effects on all clients
+     */
+    void onDamage(bool playing)
+    {
+        isDamaging = playing;
+        
+        Debug.Log("onDmg" + isDamaging);
+
+        if (isDamaging)
+            attackEffect.Play();
+        else
+            attackEffect.Stop();
+    }
+
+    void onDig(bool playing)
+    {
+
+        isDigging = playing;
+        Debug.Log("on dig " + isDigging);
+
+        
+        if (isDigging)
+            diggerEffect.Play();
+        else
+            diggerEffect.Stop();
+    }
+
+    void CmdSetBool(ref bool svar, bool val)
+    {
+        svar = val;
+    }
+
+//    [Command]
+//    void CmdOrientEffect(ParticleSystem particles)
+//    {
+//        RpcPlayEffect(particles);
+//    }
+//
+//    [ClientRpc]
+//    void RpcOrientEffect(ParticleSystem particles)
+//    {
+//        particles.Play();
+//    }
 }

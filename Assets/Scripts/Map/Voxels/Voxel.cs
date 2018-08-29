@@ -43,6 +43,7 @@ public class Voxel : NetworkBehaviour
 
     public bool hasEnergy;
     public bool isCaveFloor;
+    public bool isCaveCeiling;
     public bool isMelted;
 
     private void Start()
@@ -86,9 +87,18 @@ public class Voxel : NetworkBehaviour
         setColumnID(columnID);
         gameObject.layer = LayerMask.NameToLayer("Voxels");
 
-        if (shatterLevel < 2) {
-            GetComponent<NetHealth>().setInitialHealth(0) ;
-         }
+        if (shatterLevel < 2)
+        {
+            GetComponent<NetHealth>().setInitialHealth(0);
+        }
+        else {
+            if (hasEnergy) {
+                GetComponent<NetHealth>().setInitialHealth(3);
+            }
+            else {
+                GetComponent<NetHealth>().setInitialHealth(10);
+            }
+        }
 
 
         if (!(gameObject.name.Contains("sub") || gameObject.name.Contains("Sub")))
@@ -216,19 +226,20 @@ public class Voxel : NetworkBehaviour
                 isCaveFloor = true;
                 if (shatterLevel > 0)
                 {
-                    Debug.Log("subvoxel has inherited being a cave floor");
+                    //Debug.Log("subvoxel has inherited being a cave floor");
                 }
                 else {
-                    Debug.Log("voxel is cave floor");
+                    //Debug.Log("voxel is cave floor");
                 }
                 StartCoroutine(setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveGrass")));
             }
             else
             {
-                if (MapManager.manager.caveCeilings.Contains(this))
+                if (isCaveCeiling || MapManager.manager.caveCeilings.Contains(this))
                 {
-                    Debug.Log("voxel is cave ceiling");
-                    StartCoroutine(setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveGrass")));
+                    isCaveCeiling = true;
+                    //Debug.Log("voxel is cave ceiling");
+                    StartCoroutine(setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveMoss")));
                 }
                 else
                 {
@@ -253,13 +264,13 @@ public class Voxel : NetworkBehaviour
     /// <summary>
     /// Adds an asset to this voxel so that when the voxel is destroyed so is the asset
     /// </summary>
-    internal void addMainAsset(int side)
+    internal void addMainAsset(int side, MapAsset.Type type)
     {
         scale = Math.Pow(scaleRatio, Math.Abs(layer));
         worldCentreOfObject = centreOfObject * (float)scale * MapManager.mapSize;
         if (mainAsset == null)
         {
-            mainAsset = MapAsset.createAsset(this, side, MapAsset.Type.MAIN);
+            mainAsset = MapAsset.createAsset(this, side,type);
         }
     }
 
@@ -349,7 +360,7 @@ public class Voxel : NetworkBehaviour
     {
         if (diff != -1 && diff != 1)
         {
-            Debug.LogError("must pick 1 or -1 (up or down) for finding which main side");
+            Debug.LogError("must pick 1 or -1 (up or down) for finding which main side value given: " + diff);
             return null;
         }
 
@@ -687,11 +698,11 @@ public class Voxel : NetworkBehaviour
     internal void smoothBlockInPlace()
     {
         //implement order independant simplified smoothing
-        if (!MapManager.useSmoothingInGame&&MapManager.manager.mapDoneLocally)
+        if ((!MapManager.useSmoothingInGame &&MapManager.manager.mapDoneLocally) || (!MapManager.useSmoothingInGen && !MapManager.manager.mapDoneLocally))
         {
             return;
         }
-
+        //Debug.Log("smoothing block");
 
         if (MapManager.manager.isDeleted(layer + 1, columnID) || MapManager.manager.isDeleted(layer - 1, columnID))
         {

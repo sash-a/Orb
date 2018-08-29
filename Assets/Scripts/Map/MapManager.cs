@@ -11,7 +11,7 @@ using Prototype.NetworkLobby;
 public class MapManager : NetworkBehaviour
 {
     public static bool useSmoothingInGame = false;
-    public static bool useSmoothingInGen = true;
+    public static bool useSmoothingInGen = false;
 
     public static bool use1factorSmoothing = true;
     public static bool use2factorSmoothing = true;
@@ -200,9 +200,9 @@ public class MapManager : NetworkBehaviour
         {
             foreach (Voxel vox in voxels[i].Values)
             {
-                if (vox.layer > 4 && doesVoxelExist(i, vox.columnID))
+                if (doesVoxelExist(i, vox.columnID))
                 {
-                    if (isDeleted(i - 1, vox.columnID))
+                    if (isDeleted(i - 1, vox.columnID) && vox.layer > 4)
                     {
                         //Debug.Log("found cave floor vox");
                         caveFloors.Add(vox);
@@ -210,12 +210,13 @@ public class MapManager : NetworkBehaviour
                         vox.isCaveFloor = true;
                         StartCoroutine(vox.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveGrass")));
                     }
-                    if (isDeleted(i + 1, vox.columnID))
+                    if (isDeleted(i + 1, vox.columnID) && vox.layer > 0)
                     {
                         //Debug.Log("found cave ceiling vox");
                         caveCeilings.Add(vox);
                         vox.hasEnergy = false;
-                        StartCoroutine(vox.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveGrass")));
+                        vox.isCaveCeiling = true;
+                        StartCoroutine(vox.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveMoss")));
                     }
                 }
             }

@@ -16,9 +16,7 @@ public class WeaponAttack : AAttackBehaviour
     public ParticleSystem DiggingBeam;
 
     public GameObject hitEffect;
-    public GameObject VoxelDestroyEffect;
     public GameObject explosionEffect;
-    public GameObject voxelFragmentSpawner;
 
     public int selectedWeapon = 0;
     public int equippedWeapon = 0;
@@ -35,6 +33,7 @@ public class WeaponAttack : AAttackBehaviour
     //Special Weapon specific:
     public GameObject Ex_boltSpawn;
     public GameObject boltPrefab;
+    public float boltForce = 200;
 
     void Start()
     {
@@ -64,9 +63,9 @@ public class WeaponAttack : AAttackBehaviour
 
         equippedWeapons.Add(diggingTool);
         equippedWeapons.Add(pistol);
-        equippedWeapons.Add(assault);
-        equippedWeapons.Add(shotgun);
-        equippedWeapons.Add(sniper);
+        //equippedWeapons.Add(assault);
+        //equippedWeapons.Add(shotgun);
+        //equippedWeapons.Add(sniper);
         equippedWeapons.Add(Ex_crossbow);
         //equippedWeapons.Add(grenade);
     }
@@ -165,16 +164,8 @@ public class WeaponAttack : AAttackBehaviour
         GameObject Ex_bolt =
             Instantiate(boltPrefab, Ex_boltSpawn.transform.position, Ex_boltSpawn.transform.rotation);
         Rigidbody rb = Ex_bolt.GetComponent<Rigidbody>();
-        rb.AddForce(cam.transform.forward * 100, ForceMode.VelocityChange);
+        rb.AddForce(cam.transform.forward * boltForce, ForceMode.VelocityChange);
         NetworkServer.Spawn(Ex_bolt);
-    }
-
-    [Command]
-    private void CmdVoxelDestructionEffect(Vector3 position, Vector3 normal)
-    {
-        GameObject VoxelParticle = Instantiate(VoxelDestroyEffect, position,
-            Quaternion.LookRotation(normal));
-        NetworkServer.Spawn(VoxelParticle);
     }
 
     [Command]
@@ -232,7 +223,10 @@ public class WeaponAttack : AAttackBehaviour
                 }
                 else //if not a player
                 {
-                    CmdObjectHitEffect(hit.point, hit.normal);
+                    if (weapons[selectedWeapon].isSpecial != true)
+                    {
+                        CmdObjectHitEffect(hit.point, hit.normal);
+                    }   
                 }
 
 
@@ -243,13 +237,7 @@ public class WeaponAttack : AAttackBehaviour
 
                     if (hit.collider.GetComponent<NetHealth>().getHealth() <= 0)
                     {
-                        //CmdVoxelDestructionEffect(hit.point, hit.normal);
-
-                        //fetches material of voxel it hits
-                        Material mat = hit.transform.GetComponent<Renderer>().material;
-                        //Creates instance of fragment spawner and call its spawn method
-//                        GameObject voxelFragSpawner = Instantiate(voxelFragmentSpawner, hit.point, Quaternion.identity);
-//                        voxelFragSpawner.GetComponent<VoxelDestructionEffect>().spawnVoxelFragment(hit.point, mat);
+                        //Play voxel destruction effect    
                     }
 
 
