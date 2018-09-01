@@ -43,6 +43,7 @@ public class GunnerUI : PlayerUI
 
     // Other classes UIs
     public GameObject magicianUI;
+    public GameObject weaponWheel;
 
     #endregion
 
@@ -79,13 +80,11 @@ public class GunnerUI : PlayerUI
         setShield(resourceManager.getGunnerShieldPercent());
         setEnergy((int) (resourceManager.getEnergy() / resourceManager.getMaxEnergy()));
         showEquipped();
+        displayWeaponWheel();
 
         if (weapons.weapons[weapons.selectedWeapon].name == "digging tool")
         {
-            setAmmo
-            (
-                true
-            );
+            setAmmo(true);
         }
         else
         {
@@ -98,6 +97,15 @@ public class GunnerUI : PlayerUI
         }
     }
 
+    void displayWeaponWheel()
+    {
+        if (Input.GetKeyDown(KeyCode.Q))
+            weaponWheel.SetActive(true);
+
+        if (Input.GetKeyUp(KeyCode.Q))
+            weaponWheel.SetActive(false);
+    }
+    
     void showEquipped()
     {
         if (weapons.equippedWeapon == 0)

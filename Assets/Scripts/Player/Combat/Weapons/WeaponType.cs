@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 [System.Serializable] // Allows unity to show in inspector
 public class WeaponType
@@ -21,13 +22,14 @@ public class WeaponType
     int numGrenades;
 
     //ammo
-    int primaryAmmo;
-    int magazineAmmo;
-    int maxAmmo;
     public Ammo ammunition;
 
     //Special specific
     public bool isSpecial;
+    
+    // UI stuff
+    public Button upgradeButton;
+    public Button ammoButton;
 
     //digging tool constructor 
     public WeaponType(string name, float damage, float envDamage, float range, float fireRate, ParticleSystem digBeam)

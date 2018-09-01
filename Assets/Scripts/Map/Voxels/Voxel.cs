@@ -44,6 +44,7 @@ public class Voxel : NetworkBehaviour
     public bool hasEnergy;
     public bool isCaveFloor;
     public bool isCaveCeiling;
+    public bool isCaveBorder;
     public bool isMelted;
 
     private void Start()
@@ -214,7 +215,8 @@ public class Voxel : NetworkBehaviour
 
 
     public void setTexture()
-    {
+    {if (isCaveBorder) return;
+        if (MapManager.manager.caveWalls.Contains(this)) return;
         if (hasEnergy)
         {
             StartCoroutine(setTexture(Resources.Load<Material>("Materials/Earth/LowPolyEnergy")));
@@ -290,12 +292,18 @@ public class Voxel : NetworkBehaviour
         if (filter == null || filter.mesh.vertices.Length < 6)
         {
             Debug.LogError("error with mesh filter on set texture");
-            yield return new WaitForSecondsRealtime(1);
+            yield return new WaitForSecondsRealtime(2);
             filter = GetComponent<MeshFilter>();
         }
 
-        var norm = Vector3.Cross(filter.mesh.vertices[0] - filter.mesh.vertices[1],
-            filter.mesh.vertices[2] - filter.mesh.vertices[1]);
+        Vector3 norm;
+        try
+        {
+             norm = Vector3.Cross(filter.mesh.vertices[0] - filter.mesh.vertices[1], filter.mesh.vertices[2] - filter.mesh.vertices[1]).normalized;
+        }
+        catch {
+            norm = -transform.position.normalized;
+        }
         var angle = Vector3.Angle(norm, centreOfObject);
         if (angle > 90) angle = 180 - angle;
 
@@ -311,6 +319,7 @@ public class Voxel : NetworkBehaviour
 
         matt.SetColor("_Color", colour); //this feild HAS to be "_Color" otherwise call is ignored
         gameObject.GetComponent<MeshRenderer>().material = matt;
+
     }
 
     [Command]

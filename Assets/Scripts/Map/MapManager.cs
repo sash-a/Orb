@@ -11,7 +11,7 @@ using Prototype.NetworkLobby;
 public class MapManager : NetworkBehaviour
 {
     public static bool useSmoothingInGame = false;
-    public static bool useSmoothingInGen = false;
+    public static bool useSmoothingInGen = true;
 
     public static bool use1factorSmoothing = true;
     public static bool use2factorSmoothing = true;
@@ -79,6 +79,8 @@ public class MapManager : NetworkBehaviour
         portals = new HashSet<Portal>();
         caveFloors = new HashSet<Voxel>();
         caveCeilings = new HashSet<Voxel>();
+        caveWalls = new HashSet<Voxel>();
+
     }
 
     private void Update()
@@ -163,7 +165,7 @@ public class MapManager : NetworkBehaviour
         if (noCaves > 0 && isServer)
         {
             //Debug.Log("digging caves");
-            CaveManager.digCaves();
+            CaveManager.digTierZeroCaves();
         }
         else
         {
@@ -186,15 +188,35 @@ public class MapManager : NetworkBehaviour
         Debug.Log("Map finished");
         mapDoneLocally = true;
         SmoothVoxels();
+        placeCavePortalsArtefacts();
         //finishAssets();
         //LobbyManager.s_Singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
         //        NetworkManager.singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
         localPlayer.transform.position = new Vector3(0, -30, 0);
-        gatherCaveVoxels();
         GetComponent<MapAssetManager>().genAssets();
     }
 
-    private void gatherCaveVoxels()
+    private void placeCavePortalsArtefacts()
+    {
+        foreach (Voxel vox in caveWalls)
+        {
+            foreach (int nei in neighboursMap[vox.columnID])
+            {
+                if (doesVoxelExist(vox.layer+1, nei))
+                {
+                    Voxel neighbour = voxels[vox.layer+1][nei];
+                    if (caveFloors.Contains(neighbour))
+                    {
+                        Debug.Log("found cave border");
+                        neighbour.isCaveBorder = true;
+                        StartCoroutine(neighbour.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveBorder")));
+                    }
+                }
+            }
+        }
+    }
+
+    public void gatherCaveVoxels()
     {
         for (int i = 0; i < mapLayers; i++)
         {
@@ -202,9 +224,11 @@ public class MapManager : NetworkBehaviour
             {
                 if (doesVoxelExist(i, vox.columnID))
                 {
-                    if (isDeleted(i - 1, vox.columnID) && vox.layer > 4)
+                    bool wall = true;
+                    if (isDeleted(i - 1, vox.columnID) && vox.layer > 0)
                     {
                         //Debug.Log("found cave floor vox");
+                        wall = false;
                         caveFloors.Add(vox);
                         vox.hasEnergy = false;
                         vox.isCaveFloor = true;
@@ -212,11 +236,17 @@ public class MapManager : NetworkBehaviour
                     }
                     if (isDeleted(i + 1, vox.columnID) && vox.layer > 0)
                     {
-                        //Debug.Log("found cave ceiling vox");
+                        //Debug.Log("found cave ceiling vox");                        
+                        wall = false;
                         caveCeilings.Add(vox);
                         vox.hasEnergy = false;
                         vox.isCaveCeiling = true;
                         StartCoroutine(vox.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveMoss")));
+                    }
+                    if (wall && vox.layer > 1)
+                    {
+                        caveWalls.Add(vox);
+                        StartCoroutine(vox.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveWalls")));
                     }
                 }
             }
@@ -611,7 +641,26 @@ public class MapManager : NetworkBehaviour
         for (int i = 1; i <= shatterLevel; i++)
         {
             VoxelContainer vc = v.gameObject.GetComponent<VoxelContainer>();
-            v = (Voxel)vc.subVoxels[int.Parse(subID.Split(',')[i])]; // TODO try catch, this isn't working every time
+            int id = -1;
+            try
+            {
+                id = int.Parse(subID.Split(',')[i]);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.Message);
+                Debug.LogError("trying to get subvoxel at " + subID + " failed at shatterlevel " + i);
+            }
+            try
+            {
+                v = (Voxel)vc.subVoxels[id]; // TODO try catch, this isn't working every time
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.Message);
+                Debug.LogError("trying to get subvoxel at " + subID + " failed at shatterlevel " + i + " id = " + id + " num subvoxels = " + vc.subVoxels.Count);
+            }
+
         }
 
         return v;

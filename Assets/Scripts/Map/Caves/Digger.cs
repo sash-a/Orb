@@ -19,6 +19,7 @@ public class Digger : NetworkBehaviour
     public Vector3 nextDest;
     public int layer;
     public int colID;
+    public int tier;
     public Vector3 travelDir;
     public Vector3 right;//right remains constant along a path - is used to rotate around as digger moves through sphere
 
@@ -64,8 +65,12 @@ public class Digger : NetworkBehaviour
             //if ( other.gameObject.GetComponent<Voxel>().layer>0)
             if ((test != null) || other.gameObject.GetComponent<Voxel>().layer > 1)
             {//only cave entrances can destroy surface level voxels
-                var hit = other.gameObject;
-                hitObject(hit);
+                Voxel v = other.gameObject.GetComponent<Voxel>();
+                if ((MapManager.manager.caveWalls ==null || MapManager.manager.caveFloors == null || MapManager.manager.caveCeilings == null) ||( !(MapManager.manager.caveWalls.Contains(v) || MapManager.manager.caveFloors.Contains(v) || MapManager.manager.caveCeilings.Contains(v))) || master is CaveTunnel)
+                {//cave body cannot destroy existing cave components but tunnels can
+                    var hit = other.gameObject;
+                    hitObject(hit);
+                }
             }
         }
     }
@@ -145,7 +150,8 @@ public class Digger : NetworkBehaviour
 
         int refLayer = layer;
         //if (layer > 0) { refLayer-=1; }
-        if (changedLayer) {//travel to new layer in same colomn to make tunnel taller
+        if (changedLayer)
+        {//travel to new layer in same colomn to make tunnel taller
             neighbourCount = -1;
         }
         else
@@ -153,7 +159,7 @@ public class Digger : NetworkBehaviour
             colID = bestID;
         }
 
-        return 3* MapManager.manager.getPositionOf(refLayer, colID) - 2*MapManager.manager.getPositionOf(refLayer+1, colID);
+        return 3 * MapManager.manager.getPositionOf(refLayer, colID) - 2 * MapManager.manager.getPositionOf(refLayer + 1, colID);
     }
 
     public void setScale(float s)

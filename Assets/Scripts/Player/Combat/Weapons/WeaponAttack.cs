@@ -35,6 +35,11 @@ public class WeaponAttack : AAttackBehaviour
     public GameObject boltPrefab;
     public float boltForce = 200;
 
+    //Animation
+    public Animator animator;
+    private bool isCarryingPistol = true;
+
+
     void Start()
     {
         resourceManager = GetComponent<ResourceManager>();
@@ -59,15 +64,16 @@ public class WeaponAttack : AAttackBehaviour
         weapons.Add(shotgun);
         weapons.Add(sniper);
         weapons.Add(Ex_crossbow);
+
+        //Needs to be added last for its method to work
         weapons.Add(grenade);
 
         equippedWeapons.Add(diggingTool);
         equippedWeapons.Add(pistol);
         //equippedWeapons.Add(assault);
         //equippedWeapons.Add(shotgun);
-        //equippedWeapons.Add(sniper);
-        equippedWeapons.Add(Ex_crossbow);
-        //equippedWeapons.Add(grenade);
+        equippedWeapons.Add(sniper);
+        //equippedWeapons.Add(Ex_crossbow);
     }
 
     private void Update()
@@ -91,7 +97,7 @@ public class WeaponAttack : AAttackBehaviour
 
         var scroll = Input.GetAxis("Mouse ScrollWheel");
         //scroll up changes weapons
-        if (scroll > 0f && isLocalPlayer) //need to prevent weapon switching when aiming!
+        if (scroll < 0f && isLocalPlayer) //need to prevent weapon switching when aiming!
         {
             if (equippedWeapon >= equippedWeapons.Count - 1)
             {
@@ -104,11 +110,11 @@ public class WeaponAttack : AAttackBehaviour
         }
 
         //scroll down changes weapons
-        if (scroll < 0f && isLocalPlayer)
+        if (scroll > 0f && isLocalPlayer)
         {
             if (equippedWeapon <= 0)
             {
-                equippedWeapon = weapons.Count - 1;
+                equippedWeapon = equippedWeapons.Count - 1;
             }
             else
             {
@@ -119,9 +125,10 @@ public class WeaponAttack : AAttackBehaviour
         //Find the correct selected weapon in weapons (causing errors?)
         for (int i = 0; i < weapons.Count; i++)
         {
-            if (weapons[i] == equippedWeapons[equippedWeapon])
+            if (weapons[i].name == equippedWeapons[equippedWeapon].name)
             {
                 selectedWeapon = i;
+                break;
             }
         }
 
@@ -146,6 +153,23 @@ public class WeaponAttack : AAttackBehaviour
                 resourceManager.useGrenade(1, weapons[weapons.Count - 1].ammunition);
             }
         }
+
+        PistolToRifleAnimation();
+
+    }
+
+    void PistolToRifleAnimation()
+    {
+        if (weapons[selectedWeapon].name == "digging tool" || weapons[selectedWeapon].name == "pistol")
+        {
+            isCarryingPistol = true;
+        }
+        else
+        {
+            isCarryingPistol = false;
+        }
+
+        animator.SetBool("isCarryingPistol", isCarryingPistol);
     }
 
     [Command]

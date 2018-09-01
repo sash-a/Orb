@@ -75,6 +75,8 @@ public abstract class AAttackBehaviour : NetworkBehaviour
     [Command]
     public void CmdVoxelDamaged(GameObject go, float damage)
     {
+        if (go == null) return;
+
         var health = go.GetComponent<NetHealth>();
         if (health == null)
         {

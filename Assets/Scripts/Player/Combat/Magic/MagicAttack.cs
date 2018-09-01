@@ -9,30 +9,31 @@ public class MagicAttack : AAttackBehaviour
     [SyncVar] private bool isAttacking;
 
     // Digger tool
-    /*[SyncVar(hook = "onDig")] */
     [SyncVar] private bool isDigging;
 
     // Damage
-    /*[SyncVar(hook = "onDamage")]*/
     [SyncVar] private bool isDamaging;
 
     // Shield
     private Shield currentShield; // The current instance of shield=
     [SerializeField] private GameObject shield;
-    [SerializeField] private bool shieldUp; // True if the player is currently using a shield
+    private bool shieldUp; // True if the player is currently using a shield
 
     // Telekenesis
     private bool isTelekening;
     [SerializeField] private GameObject telekenObjectPos;
-    [SerializeField] private GameObject currentTelekeneticVoxel;
+    private GameObject currentTelekeneticVoxel;
 
     // Force push
-    [SerializeField] private bool canCastPush; // True once player can recast forcePush
+    private bool canCastPush; // True once player can recast forcePush
     [SerializeField] private float force;
 
     // Effects
-    [SerializeField] private ParticleSystem attackEffect;
-    [SerializeField] private ParticleSystem diggerEffect;
+    [SerializeField] private ParticleSystem damageFX;
+    [SerializeField] private ParticleSystem damageHandFX;
+    
+    [SerializeField] private ParticleSystem diggerFX;
+    [SerializeField] private ParticleSystem diggerHandFX;
     private EnergyBlockEffectSpawner energyBlockEffectSpawner;
     private DestructionEffectSpawner destructionEffectSpawner;
 
@@ -61,9 +62,9 @@ public class MagicAttack : AAttackBehaviour
         attackStats.changeToDigger();
 
         // Stopping all effects
-        attackEffect.Stop();
+        damageFX.Stop();
 
-        diggerEffect.Stop();
+        diggerFX.Stop();
     }
 
     void Update()
@@ -77,14 +78,14 @@ public class MagicAttack : AAttackBehaviour
 
             if (isDigging)
             {
-                diggerEffect.transform.LookAt(hit.point);
+                diggerFX.transform.LookAt(hit.point);
             }
 
             if (isDamaging)
             {
-                attackEffect.transform.LookAt(hit.point);
-                var angles = attackEffect.transform.rotation.eulerAngles;
-                attackEffect.transform.rotation = Quaternion.Euler(angles.x + 90, angles.y, angles.z + 180);
+                damageFX.transform.LookAt(hit.point);
+                var angles = damageFX.transform.rotation.eulerAngles;
+                damageFX.transform.rotation = Quaternion.Euler(angles.x + 90, angles.y, angles.z + 180);
             }
         }
 
@@ -135,9 +136,9 @@ public class MagicAttack : AAttackBehaviour
                 isTelekening = true;
                 CmdVoxelTeleken(voxel.columnID, voxel.layer, voxel.subVoxelID);
                 // Just run telekenisis locally network transform will sync movements
-                var tele = currentTelekeneticVoxel.GetComponent<Telekinesis>();
-                tele.enabled = true;
-                tele.setUp(telekenObjectPos.transform, Telekinesis.VOXEL, GetComponent<Identifier>().id);
+//                var tele = currentTelekeneticVoxel.GetComponent<Telekinesis>();
+//                tele.enabled = true;
+//                tele.setUp(telekenObjectPos.transform, Telekinesis.VOXEL, GetComponent<Identifier>().id);
             }
             else
             {
@@ -256,11 +257,38 @@ public class MagicAttack : AAttackBehaviour
         }
     }
 
+    /// <summary>
+    /// Changes the weapon selected bool and starts or stops the relevant hand FX
+    /// </summary>
     private void changeWeapon()
     {
-        if (currentWeapon == 0) attackStats.changeToDigger();
-        else if (currentWeapon == 1) attackStats.changeToDamage();
-        else if (currentWeapon == 2) attackStats.changeToTeleken();
+        if (currentWeapon == 0)
+        {
+            if (damageHandFX.isPlaying)
+                playHandDamageFX(false);
+
+            playHandDigFX(true);
+            
+            attackStats.changeToDigger();
+        }
+        else if (currentWeapon == 1)
+        {
+            if (diggerHandFX.isPlaying)
+                playHandDigFX(false);
+            
+            playHandDamageFX(true);
+            
+            attackStats.changeToDamage();
+        }
+        else if (currentWeapon == 2)
+        {
+            if (diggerHandFX.isPlaying)
+                playHandDigFX(false);
+            
+            if (damageHandFX.isPlaying)
+                playHandDamageFX(false);
+            attackStats.changeToTeleken();
+        }
     }
 
     #endregion
@@ -468,6 +496,10 @@ public class MagicAttack : AAttackBehaviour
 
         // Creating the voxels below
         voxel.showNeighbours(false);
+
+        var tele = currentTelekeneticVoxel.GetComponent<Telekinesis>();
+        tele.enabled = true;
+        tele.setUp(telekenObjectPos.transform, Telekinesis.VOXEL, GetComponent<Identifier>().id);
     }
 
     [Command]
@@ -498,11 +530,11 @@ public class MagicAttack : AAttackBehaviour
 
         if (digging)
         {
-            diggerEffect.Play();
+            diggerFX.Play();
             return;
         }
 
-        diggerEffect.Stop();
+        diggerFX.Stop();
     }
 
     [Command]
@@ -533,11 +565,11 @@ public class MagicAttack : AAttackBehaviour
 
         if (damaging)
         {
-            attackEffect.Play();
+            damageFX.Play();
             return;
         }
 
-        attackEffect.Stop();
+        damageFX.Stop();
     }
 
     [Command]
@@ -555,6 +587,71 @@ public class MagicAttack : AAttackBehaviour
         playDamageEffect(damaging);
     }
 
+    #endregion
+
+    #region playHandEffects
+
+    // Damage
+    void playHandDamageFX(bool damaging)
+    {
+        if (isLocalPlayer)
+            CmdHandDamageFX(damaging);
+
+        if (damaging)
+        {
+            damageHandFX.Play();
+            return;
+        }
+
+        damageHandFX.Stop();
+    }
+
+    [Command]
+    void CmdHandDamageFX(bool damaging)
+    {
+        RpcDamageEffect(damaging);
+    }
+
+    [ClientRpc]
+    void RpcHandDamageFX(bool damaging)
+    {
+        if (isLocalPlayer)
+            return;
+
+        playHandDamageFX(damaging);
+    }
+
+    
+    // Digging
+    void playHandDigFX(bool damaging)
+    {
+        if (isLocalPlayer)
+            CmdHandDamageFX(damaging);
+
+        if (damaging)
+        {
+            diggerHandFX.Play();
+            return;
+        }
+
+        diggerHandFX.Stop();
+    }
+
+    [Command]
+    void CmdHandDigFX(bool damaging)
+    {
+        RpcDamageEffect(damaging);
+    }
+
+    [ClientRpc]
+    void RpcHandDigFX(bool damaging)
+    {
+        if (isLocalPlayer)
+            return;
+
+        playHandDigFX(damaging);
+    }
+    
     #endregion
 
     #endregion

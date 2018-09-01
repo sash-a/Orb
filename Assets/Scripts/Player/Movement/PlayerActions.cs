@@ -63,7 +63,8 @@ public class PlayerActions : NetworkBehaviour
 
     private void checkCollectables()
     {
-        if (MapManager.manager.collectables == null) return;
+        if (MapManager.manager == null) return;
+        if (MapManager.manager.mapDoneLocally &&MapManager.manager.collectables == null) return;
         int count = 0;
         foreach (PickUpItem item in MapManager.manager.collectables) {
             count++;

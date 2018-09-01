@@ -14,10 +14,12 @@ public class PlayerController : MonoBehaviour
     public Animator animator;
     private bool isMoving = false;
     //NB variables for walking/running Blend animations
-    private float xMove;
-    private float yMove;
+    private float xMoveOld = 0;
+    private float yMoveOld = 0;
+    private float xMove = 0;
+    private float yMove = 0;
+    private float interpSpeed = 0.25f;
     
-
     void Start()
     {
         actions = GetComponent<PlayerActions>();
@@ -56,45 +58,26 @@ public class PlayerController : MonoBehaviour
     void MovementAnimation(Vector3 velocity)
     {
         //Animation:
-        xMove = Input.GetAxis("Horizontal");
         yMove = Input.GetAxis("Vertical");
+        xMove = Input.GetAxis("Horizontal");
 
-        if (velocity != Vector3.zero)
+        if (Input.GetKey(KeyCode.LeftShift))
         {
-            isMoving = true;
-            if (Input.GetKey(KeyCode.LeftShift))
-            {
-                //When running xMove a yMove are equal to 2 or -2 (equal to 1 or -1 when walking)
-                if (Input.GetAxis("Horizontal") > 0) //RIGHT
-                {
-                    xMove += 1.0f;
-                }
-                else if (Input.GetAxis("Horizontal") < 0) //LEFT
-                {
-                    xMove -= 1.0f;
-                }
-
-                if (Input.GetAxis("Vertical") > 0) //FORWARD
-                {
-                    yMove += 1.0f;
-                }
-                else
-                {
-                    yMove -= 1.0f;
-                }
-                
-            }
-        }
-        else
-        {
-            isMoving = false;
+            yMove *= 2;
+            xMove *= 2;
         }
 
-        //Jumping: set MoveY = 3?
+        yMoveOld = yMoveOld + (yMove - yMoveOld) * (interpSpeed /( Mathf.Round(yMove) ==0 ? 1 :(float)Mathf.Abs(Mathf.Round(yMove))));
+        xMoveOld = xMoveOld + (xMove - xMoveOld) * (interpSpeed / (Mathf.Round(xMove) == 0 ? 1 : (float)Mathf.Abs(Mathf.Round(xMove))));
+
+        if (Input.GetButtonDown("Jump"))
+        {
+            animator.SetTrigger("jump");
+        }
 
         animator.SetBool("isMoving", isMoving);
-        animator.SetFloat("xMove", xMove);
-        animator.SetFloat("yMove", yMove);
+        animator.SetFloat("xMove", xMoveOld);
+        animator.SetFloat("yMove", yMoveOld);
     }
 
     IEnumerator hackPos()

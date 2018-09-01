@@ -6,8 +6,11 @@ public class CaveBody : CaveComponent
 {
 
     int caveSize;
+    public int tier;
     bool hasWeepHole;//a weephole is a drop style entrance - a hole in the ceiling
     public Vector3 center;
+    public int centerColumnID;
+    public int centerDepth;
 
     int length = 10;
 
@@ -20,7 +23,7 @@ public class CaveBody : CaveComponent
         digger.master = this;
         //ebug.Log("after: " + digger.master is CaveEntrance);
         center = Vector3.zero;
-        CaveManager.manager.caves.Add(this);
+        CaveManager.caves.Add(this);
         digger.setScale(8);
 
     }
@@ -53,6 +56,8 @@ public class CaveBody : CaveComponent
         {//shrink
             if (center == Vector3.zero) {
                 center = digger.transform.position;
+                centerColumnID = digger.colID;
+                centerDepth = digger.layer;
             }
             if (digger.transform.localScale.magnitude > Digger.minSize)
             {

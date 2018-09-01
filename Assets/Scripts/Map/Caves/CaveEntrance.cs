@@ -15,7 +15,6 @@ public class CaveEntrance : CaveComponent
 
     public CaveEntrance() : base(){
         destDepth = 6;
-
     }
 
     public CaveEntrance(int depth) : this(){
@@ -63,10 +62,8 @@ public class CaveEntrance : CaveComponent
 
             if (travelCounter <= 0)
             {
-                digger.layer -= 2;
-                CaveBody body = new CaveBody(digger);
-                //Debug.Log("digger finished digging entrance - entrance length: " + Vector3.Distance(MapManager.manager.getPositionOf(0, columnID), digger.transform.position));
-            }
+                createCaveBody();
+             }
             else {
                 travelCounter--;
                 digger.gradient = 0;
@@ -74,19 +71,20 @@ public class CaveEntrance : CaveComponent
         }
     }
 
+   
+
     internal void createEntranceAt(int colID, Vector3 dir)
     {
         columnID = colID;
 
-        CaveManager.manager.entrances.Add(this);
+        CaveManager.entrances.Add(this);
 
         GameObject digObj = CaveManager.getNewDigger();
         digObj.transform.localScale = new Vector3(1, 1, 1);
         digger = digObj.GetComponent<Digger>();
         digger.init(this);
-        CaveManager.diggers.Add(digger);
         digger.colID = colID;
-
+        digger.tier = 0;
         digger.layer = 0;
         digger.neighbourCount = 0;
         digger.transform.position = Vector3.zero;

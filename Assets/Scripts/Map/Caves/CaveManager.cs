@@ -6,30 +6,35 @@ using UnityEngine.Networking;
 
 public class CaveManager : NetworkBehaviour
 {
-
+    static int caveTiers = 2;
+    static int tiersLeft;
 
     public static HashSet<Digger> diggers;
     static int shatters;
 
     public static UnityEngine.Object diggerPrefab;
 
-    public HashSet<CaveBody> caves;
-    public HashSet<CaveEntrance> entrances;
+    public static HashSet<CaveBody> caves;
+    public static HashSet<CaveEntrance> entrances;
+    public static HashSet<CaveTunnel> tunnels;
+
 
     static System.Random rand;
 
     public static CaveManager manager;
+
 
     // Use this for initialization
     void Start()
     {
         //Debug.Log("trying to start cave manager");
         if (!isServer) { return; }
-
+        tiersLeft = caveTiers;
         //Debug.Log("starting cave manager");
         caves = new HashSet<CaveBody>();
         entrances = new HashSet<CaveEntrance>();
         diggers = new HashSet<Digger>();
+        tunnels = new HashSet<CaveTunnel>();
         diggerPrefab = Resources.Load("Prefabs/Map/Digger");
         manager = this;
         //Debug.Log("found digger : " + diggerPrefab);
@@ -37,10 +42,12 @@ public class CaveManager : NetworkBehaviour
 
     internal static GameObject getNewDigger()
     {
-        return (GameObject)Instantiate(diggerPrefab, new Vector3(0, 0, 0), Quaternion.LookRotation(new Vector3(0, 0, 1)));
+        GameObject dig = (GameObject)Instantiate(diggerPrefab, new Vector3(0, 0, 0), Quaternion.LookRotation(new Vector3(0, 0, 1)));
+        diggers.Add(dig.GetComponent<Digger>());
+        return dig;
     }
 
-    public static void digCaves()
+    public static void digTierZeroCaves()
     {
         float estimatedEntranceDistance = 0.5f * MapManager.mapSize / (float)Math.Pow(2, MapManager.splits);
 
@@ -59,7 +66,7 @@ public class CaveManager : NetworkBehaviour
             while (!farEnough && remainingTries > 0)
             {
                 farEnough = true;
-                foreach (CaveEntrance ent in manager.entrances)
+                foreach (CaveEntrance ent in entrances)
                 {//checks if proposed position of new cave entrance is too close to any existing cave entrance or an estimated position of a cave body
                     if (Vector3.Distance(MapManager.manager.getPositionOf(0, colID), MapManager.manager.getPositionOf(0, ent.columnID)) < 160 ||
                         Vector3.Distance(MapManager.manager.getPositionOf(0, colID), MapManager.manager.getPositionOf(0, ent.columnID) + ent.direction.normalized * estimatedEntranceDistance * 0.7f) < 130
@@ -74,7 +81,7 @@ public class CaveManager : NetworkBehaviour
                     Vector3 dir = Vector3.zero;
 
                     int count = 0;
-                    foreach (CaveEntrance ent in manager.entrances)
+                    foreach (CaveEntrance ent in entrances)
                     {//points the dir of the new cave entrance away from nearby entrances and cave bodies
                         Vector3 estimatedCavePosition = MapManager.manager.getPositionOf(0, ent.columnID) + ent.direction.normalized * estimatedEntranceDistance * 0.7f;
                         float dist = Vector3.Distance(MapManager.manager.getPositionOf(0, colID), estimatedCavePosition);
@@ -86,8 +93,8 @@ public class CaveManager : NetworkBehaviour
                     dir = planariseDir(colID, dir);
                     //dir is now a direction which is pointing away from all other
 
-                    
-                    foreach (CaveEntrance ent in manager.entrances)
+
+                    foreach (CaveEntrance ent in entrances)
                     {
                         double dist = Vector3.Distance(MapManager.manager.getPositionOf(0, colID), MapManager.manager.getPositionOf(0, ent.columnID));
                         if (Vector3.Distance(MapManager.manager.getPositionOf(0, ent.columnID), MapManager.manager.getPositionOf(0, colID) + dir.normalized * estimatedEntranceDistance) < 110)
@@ -95,7 +102,7 @@ public class CaveManager : NetworkBehaviour
                             farEnough = false;
                         }
                     }
-                    
+
                     //dir = planariseDir(colID, dir);
                     if (farEnough)
                     {
@@ -136,18 +143,58 @@ public class CaveManager : NetworkBehaviour
         Destroy(d.gameObject);
         if (diggers.Count <= 0)
         {
+            tiersLeft--;
+            MapManager.manager.gatherCaveVoxels();
+            Debug.Log("finished cave tier " + (caveTiers - tiersLeft - 1));
+            if (tiersLeft <= 0)
+            {
+                finishDigging();
+            }
+            else {//keep digging
+                digNextTier();
+            }
             //MapManager.SmoothVoxels();
-            if (MapManager.useHills)
-            {
-                MapManager.manager.deviateHeights();
-            }
-            else
-            {
-                Debug.Log("finisheing map - dug caves - not making hills");
-                MapManager.manager.finishMap();
-            }
-            manager.StartCoroutine(manager.RestoreShatters());
+
         }
+    }
+
+    private static void digNextTier()
+    {
+        foreach (CaveBody body in caves) {
+            if (body.tier == caveTiers - tiersLeft - 1) {//if cave body is from tier above
+                int num = UnityEngine.Random.Range(1, 3);
+                //int num = 2;
+                CaveTunnel tunnel = null;
+                for (int i = 0; i < num; i++)
+                {
+                    if (i == 1)
+                    {
+                        CaveTunnel tunnel2 = new CaveTunnel();
+                        tunnel2.tunnelDepth = 9;
+                        tunnel2.tunnelFrom(body,-tunnel.direction);
+                    }
+                    else {
+                        tunnel = new CaveTunnel();
+                        tunnel.tunnelFrom(body);
+                    }
+
+                }
+            }
+        }
+    }
+
+    private static void finishDigging()
+    {
+        if (MapManager.useHills)
+        {
+            MapManager.manager.deviateHeights();
+        }
+        else
+        {
+            Debug.Log("finisheing map - dug caves - not making hills");
+            MapManager.manager.finishMap();
+        }
+        manager.StartCoroutine(manager.RestoreShatters());
     }
 
     IEnumerator RestoreShatters()

@@ -52,10 +52,18 @@ public class PlayerSetup : NetworkBehaviour
             if (type.typePrefix == Identifier.gunnerType)
             {
                 var ui = playerUIInstance.GetComponentInChildren<GunnerUI>();
+                var weaponWheel = ui.weaponWheel.GetComponent<WeaponWheel>();
+
+                // UI
                 ui.setUp(gameObject);
                 ui.magicianUI.SetActive(false);
                 ui.gameObject.SetActive(true);
                 type.UI = ui;
+
+                // Weapon wheel
+                weaponWheel.weapons = GetComponent<WeaponAttack>();
+                weaponWheel.playerHealth = GetComponent<NetHealth>();
+                weaponWheel.rm = GetComponent<ResourceManager>();
             }
             else if (type.typePrefix == Identifier.magicianType)
             {
@@ -67,7 +75,6 @@ public class PlayerSetup : NetworkBehaviour
             }
             
             // Disable local player graphics
-            setLayer(playerGraphics, LayerMask.NameToLayer(dontDrawLayerName));
         }
     }
 
