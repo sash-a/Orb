@@ -21,11 +21,28 @@ public class PlayerActions : NetworkBehaviour
     bool needsHop;
     Vector3 lastFramePos;
 
+    private void nearPickupItem(PickUpItem item)
+    {
+        if (item.itemClass == PickUpItem.Class.MAGICIAN)
+        {
+            if (item.itemType == PickUpItem.ItemType.DAMAGE_ARTIFACT)
+            {
+                //do something
+                item.pickedUp();//destroys item game object
+            }
+        }
+        else
+        {
+
+        }
+    }
+
 
     void Start()
     {
         initVars();
-        if (!isLocalPlayer) {
+        if (!isLocalPlayer)
+        {
             cam.GetComponent<AudioListener>().enabled = false;
         }
     }
@@ -64,16 +81,21 @@ public class PlayerActions : NetworkBehaviour
     private void checkCollectables()
     {
         if (MapManager.manager == null) return;
-        if (MapManager.manager.mapDoneLocally &&MapManager.manager.collectables == null) return;
+        if (MapManager.manager.mapDoneLocally && MapManager.manager.collectables == null) return;
         int count = 0;
-        foreach (PickUpItem item in MapManager.manager.collectables) {
+        foreach (PickUpItem item in MapManager.manager.collectables)
+        {
             count++;
-            if (Vector3.Distance(transform.position, item.gameObject.transform.position) < 20) {
-//                Debug.Log("approached collectable");
+            if (Vector3.Distance(transform.position, item.gameObject.transform.position) < 20)
+            {
+                nearPickupItem(item);
+                //Debug.Log("approached collectable");
             }
         }
         //Debug.Log("checked " + count + " collectables");
     }
+
+
 
     // TODO this should be move to a utility/player properites class
     public Vector3 getFoward()

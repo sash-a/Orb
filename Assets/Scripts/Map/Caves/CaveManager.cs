@@ -52,7 +52,7 @@ public class CaveManager : NetworkBehaviour
     {
         Dictionary<Voxel, Voxel> portalCandidates = new Dictionary<Voxel, Voxel>();//first is the floor vox second is the base of the wall vox
         int requiredHeight = 4;//how high the wall infront of the floor vox has to be to be a candiate for a portal
-        int requiredDistance = 64;//a portal is not allowed to be further than this from a cave body to prevent in tunnel portals
+        int requiredDistance = 60;//a portal is not allowed to be further than this from a cave body to prevent in tunnel portals
         foreach (Voxel vox in caveWalls)
         {
             foreach (int nei in MapManager.manager.neighboursMap[vox.columnID])
@@ -87,7 +87,7 @@ public class CaveManager : NetworkBehaviour
                             }
                             if (valid && closeEnough)
                             {
-                                //Debug.Log("found portal candidate");
+                                Debug.Log("found portal candidate");
                                 StartCoroutine(neighbour.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveBorder")));
                             }
                         }

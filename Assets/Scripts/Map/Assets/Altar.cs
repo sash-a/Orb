@@ -27,7 +27,19 @@ public class Altar : MonoBehaviour {
         GameObject collect =(GameObject) Instantiate(Resources.Load<UnityEngine.Object>(folder), transform.position, transform.rotation);
         collect.transform.position += transform.up*transform.parent.localScale.y;
         collect.transform.parent = transform;
-        MapManager.manager.collectables.Add(collect.GetComponent<PickUpItem>());
+        PickUpItem item = collect.GetComponent<PickUpItem>();
+        MapManager.manager.collectables.Add(item);
+
+        if (type.Equals(Type.ARTIFACT))
+        {
+            item.itemClass = PickUpItem.Class.MAGICIAN;
+            item.itemType = (PickUpItem.ItemType)(UnityEngine.Random.Range(PickUpItem.numGuns, PickUpItem.numGuns + PickUpItem.numArtifacts));
+        }
+        else
+        {
+            item.itemClass = PickUpItem.Class.GUNNER;
+            item.itemType = (PickUpItem.ItemType)(UnityEngine.Random.Range(0, PickUpItem.numGuns));
+        }
     }
 
     // Update is called once per frame
