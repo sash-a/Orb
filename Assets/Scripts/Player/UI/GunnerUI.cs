@@ -78,7 +78,7 @@ public class GunnerUI : PlayerUI
     {
         setHealth(health.getHealthPercent());
         setShield(resourceManager.getGunnerShieldPercent());
-        setEnergy((int) (resourceManager.getEnergy() / resourceManager.getMaxEnergy()));
+        setEnergy((int) resourceManager.getEnergy());
         showEquipped();
         displayWeaponWheel();
 
@@ -105,7 +105,7 @@ public class GunnerUI : PlayerUI
         if (Input.GetKeyUp(KeyCode.Q))
             weaponWheel.SetActive(false);
     }
-    
+
     void showEquipped()
     {
         if (weapons.equippedWeapon == 0)
@@ -153,6 +153,5 @@ public class GunnerUI : PlayerUI
         {
             ammoCount.text = clip + "|" + total;
         }
-
     }
 }

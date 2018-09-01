@@ -1388,6 +1388,7 @@ GameObject:
   - component: {fileID: 114223272623771756}
   - component: {fileID: 114406981523820792}
   - component: {fileID: 114204149103748308}
+  - component: {fileID: 114280457617170028}
   m_Layer: 0
   m_Name: GunnerWithModel
   m_TagString: Player
@@ -3763,6 +3764,19 @@ MonoBehaviour:
   maxEnergy: 100
   gunnerShield: 0
   maxGunnerShield: 100
+--- !u!114 &114280457617170028
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1779332119490236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c90dcef250a90f48a714b623efdafb2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  energyBlock: {fileID: 1774814971724218, guid: 4bd82bce5ca91e149858c451085b6d3d,
+    type: 2}
 --- !u!114 &114281825091383018
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3885,6 +3899,7 @@ MonoBehaviour:
   DiggingBeam: {fileID: 198094581842403686}
   hitEffect: {fileID: 1642744248461048, guid: 9367bcf7b4699b541b9a4316055d1581, type: 2}
   explosionEffect: {fileID: 100010, guid: 031d08f52af1daa4f929b85221519426, type: 2}
+  energyBlockEffectSpawner: {fileID: 0}
   selectedWeapon: 0
   equippedWeapon: 0
   weapons: []

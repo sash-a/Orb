@@ -69,7 +69,7 @@ public class PlayerActions : NetworkBehaviour
         foreach (PickUpItem item in MapManager.manager.collectables) {
             count++;
             if (Vector3.Distance(transform.position, item.gameObject.transform.position) < 20) {
-                Debug.Log("approached collectable");
+//                Debug.Log("approached collectable");
             }
         }
         //Debug.Log("checked " + count + " collectables");

@@ -113,7 +113,7 @@ public class MagicianUI : PlayerUI
 
     void setEnergy(float amount, float maxEnergy)
     {
-        energyCount.text = amount + "";
+        energyCount.text = (int) amount + "";
         energyBar.localScale = new Vector3(1f, amount / maxEnergy, 1f);
     }
 

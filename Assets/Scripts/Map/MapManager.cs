@@ -207,7 +207,7 @@ public class MapManager : NetworkBehaviour
                     Voxel neighbour = voxels[vox.layer+1][nei];
                     if (caveFloors.Contains(neighbour))
                     {
-                        Debug.Log("found cave border");
+//                        Debug.Log("found cave border");
                         neighbour.isCaveBorder = true;
                         StartCoroutine(neighbour.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveBorder")));
                     }

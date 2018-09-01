@@ -11,6 +11,7 @@ public class EnergyBlockEffect : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        Debug.Log("Spawning energy voxel");
     }
 
     void Update()
@@ -23,12 +24,14 @@ public class EnergyBlockEffect : MonoBehaviour
         if (other.gameObject.name == target.name)
         {
             // Get energy
+            Debug.Log("Get energy");
             if (other.gameObject.GetComponent<Identifier>().typePrefix == Identifier.magicianType)
             {
                 other.gameObject.GetComponent<MagicAttack>().getResourceManager().gainEnery(1); 
             }
             else
             {
+                Debug.Log("Gunner");
                 other.gameObject.GetComponent<WeaponAttack>().getResourceManager().gainEnery(1);
             }
             
