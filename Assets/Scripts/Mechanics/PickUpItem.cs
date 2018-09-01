@@ -31,6 +31,7 @@ public class PickUpItem : MonoBehaviour {
     public void pickedUp()
     {
         //play some effect or something
+        MapManager.manager.collectables.Remove(this);
         Destroy(gameObject);
     }
 }

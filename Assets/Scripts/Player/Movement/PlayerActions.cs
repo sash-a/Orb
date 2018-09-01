@@ -28,7 +28,7 @@ public class PlayerActions : NetworkBehaviour
             if (item.itemType == PickUpItem.ItemType.DAMAGE_ARTIFACT)
             {
                 //do something
-                item.pickedUp();//destroys item game object
+                //item.pickedUp();//destroys item game object
             }
         }
         else
