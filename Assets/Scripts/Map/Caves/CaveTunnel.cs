@@ -47,7 +47,7 @@ public class CaveTunnel : CaveComponent {
         digger.init(this);
         digger.colID = body.centerColumnID;
         digger.tier = body.tier+1;
-        digger.layer = body.centerDepth-1;
+        digger.layer = body.centerDepth+2;
         destDepth = body.centerDepth + tunnelDepth;
         digger.neighbourCount = 0;
         digger.transform.position = Vector3.zero;

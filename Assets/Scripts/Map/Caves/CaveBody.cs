@@ -70,7 +70,7 @@ public class CaveBody : CaveComponent
             digger.neighbourCount = 0;
             //Debug.Log("digger finished digging body ; shatters = " + MapManager.shatters);
 
-            CaveManager.removeDigger(digger);
+            CaveManager.manager.removeDigger(digger);
 
         }
 

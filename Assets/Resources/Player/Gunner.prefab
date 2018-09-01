@@ -1739,8 +1739,8 @@ Rigidbody:
   m_GameObject: {fileID: 1307754806501666}
   serializedVersion: 2
   m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
+  m_Drag: 100
+  m_AngularDrag: 100
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
@@ -2018,6 +2018,8 @@ MonoBehaviour:
   - {fileID: 20803478320712878}
   - {fileID: 81407980404004548}
   - {fileID: 114507493242949658}
+  dontDrawLayerName: DontDraw
+  playerGraphics: {fileID: 0}
   playerUIPrefab: {fileID: 1081867322794722, guid: ec18c0c23bffc8f4ba07e7c2649e4d21,
     type: 2}
 --- !u!114 &114499987355072960
@@ -2159,11 +2161,7 @@ MonoBehaviour:
   SniperMuzzleFlash: {fileID: 198004005122454960}
   DiggingBeam: {fileID: 198286510246114790}
   hitEffect: {fileID: 1642744248461048, guid: 9367bcf7b4699b541b9a4316055d1581, type: 2}
-  VoxelDestroyEffect: {fileID: 1404482007908908, guid: beb6e44ae8b90074cbc88fa9111cadc0,
-    type: 2}
   explosionEffect: {fileID: 100010, guid: 031d08f52af1daa4f929b85221519426, type: 2}
-  voxelFragmentSpawner: {fileID: 1974862690467920, guid: b611b26d4ce30174e8f3d587c1e6fe49,
-    type: 2}
   selectedWeapon: 0
   equippedWeapon: 0
   weapons: []
@@ -2174,6 +2172,8 @@ MonoBehaviour:
   throwForce: 40
   Ex_boltSpawn: {fileID: 1209933003301188}
   boltPrefab: {fileID: 1001148595587118, guid: 85c4b470996871045a81fd44d25e75d0, type: 2}
+  boltForce: 200
+  animator: {fileID: 0}
 --- !u!114 &114751384060897940
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2254,8 +2254,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 12
   lookSens: 5
-  jumpForce: 1400
+  jumpForce: 2400
   runMultiplier: 1.7
+  animator: {fileID: 0}
 --- !u!124 &124348477620371322
 Behaviour:
   m_ObjectHideFlags: 1

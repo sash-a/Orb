@@ -47,7 +47,7 @@ public class MapAssetManager : NetworkBehaviour
             {
                 if (!MapManager.manager.isDeleted(vox.layer, vox.columnID) && MapManager.manager.doesVoxelExist(vox.layer, vox.columnID))
                 {
-                    if (MapManager.manager.caveFloors.Contains(vox))//||layer==0
+                    if (CaveManager.manager.caveFloors.Contains(vox))//||layer==0
                     {
                         if (vox.layer > 5)
                         {
@@ -58,7 +58,7 @@ public class MapAssetManager : NetworkBehaviour
                             }
                         }
                     }
-                    if (MapManager.manager.caveCeilings.Contains(vox))//||layer==0
+                    if (CaveManager.manager.caveCeilings.Contains(vox))//||layer==0
                     {
                         count++;
                         if (UnityEngine.Random.Range(0f, 1f) < 0.6f)
@@ -110,7 +110,7 @@ public class MapAssetManager : NetworkBehaviour
                     }
                     else
                     {
-                        if (MapManager.manager.caveFloors.Contains(vox))
+                        if (CaveManager.manager.caveFloors.Contains(vox))
                         {
                             vox.addMainAsset(-1, MapAsset.Type.MAIN);
                         }
@@ -134,7 +134,7 @@ public class MapAssetManager : NetworkBehaviour
             {
                 if (!MapManager.manager.isDeleted(vox.layer, vox.columnID) && MapManager.manager.doesVoxelExist(vox.layer, vox.columnID))
                 {
-                    if (MapManager.manager.caveFloors.Contains(vox))//||layer==0
+                    if (CaveManager.manager.caveFloors.Contains(vox))//||layer==0
                     {
 
                         try

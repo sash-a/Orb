@@ -66,7 +66,7 @@ public class Digger : NetworkBehaviour
             if ((test != null) || other.gameObject.GetComponent<Voxel>().layer > 1)
             {//only cave entrances can destroy surface level voxels
                 Voxel v = other.gameObject.GetComponent<Voxel>();
-                if ((MapManager.manager.caveWalls ==null || MapManager.manager.caveFloors == null || MapManager.manager.caveCeilings == null) ||( !(MapManager.manager.caveWalls.Contains(v) || MapManager.manager.caveFloors.Contains(v) || MapManager.manager.caveCeilings.Contains(v))) || master is CaveTunnel)
+                if ((CaveManager.manager.caveWalls ==null || CaveManager.manager.caveFloors == null || CaveManager.manager.caveCeilings == null) ||( !(CaveManager.manager.caveWalls.Contains(v) || CaveManager.manager.caveFloors.Contains(v) || CaveManager.manager.caveCeilings.Contains(v))) || master is CaveTunnel)
                 {//cave body cannot destroy existing cave components but tunnels can
                     var hit = other.gameObject;
                     hitObject(hit);

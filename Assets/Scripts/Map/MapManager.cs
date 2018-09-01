@@ -34,9 +34,7 @@ public class MapManager : NetworkBehaviour
 
     public HashSet<int> spawnedVoxels;
     public Dictionary<int, Dictionary<int, Voxel>> voxels; // indexed like voxels[layer][column]
-    public HashSet<Voxel> caveWalls;
-    public HashSet<Voxel> caveFloors;
-    public HashSet<Voxel> caveCeilings;
+
 
 
     public Dictionary<int, Vector3> voxelPositions; // the object centers of the layer=0 voxels
@@ -77,9 +75,7 @@ public class MapManager : NetworkBehaviour
         neighboursMap = new Dictionary<int, HashSet<int>>();
         loadNeighboursMap();
         portals = new HashSet<Portal>();
-        caveFloors = new HashSet<Voxel>();
-        caveCeilings = new HashSet<Voxel>();
-        caveWalls = new HashSet<Voxel>();
+
 
     }
 
@@ -184,89 +180,18 @@ public class MapManager : NetworkBehaviour
 
     public void finishMap()
     {
-        BuildLog.writeLog("Map finished");
-        Debug.Log("Map finished");
         mapDoneLocally = true;
         SmoothVoxels();
-        placeCavePortalsArtefacts();
+        CaveManager.manager.placeCavePortalsArtefacts();
         //finishAssets();
         //LobbyManager.s_Singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
         //        NetworkManager.singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
         localPlayer.transform.position = new Vector3(0, -30, 0);
         GetComponent<MapAssetManager>().genAssets();
+        BuildLog.writeLog("Map finished");
+        Debug.Log("Map finished");
     }
 
-    private void placeCavePortalsArtefacts()
-    {
-        foreach (Voxel vox in caveWalls)
-        {
-            foreach (int nei in neighboursMap[vox.columnID])
-            {
-                if (doesVoxelExist(vox.layer+1, nei))
-                {
-                    Voxel neighbour = voxels[vox.layer+1][nei];
-                    if (caveFloors.Contains(neighbour))
-                    {
-//                        Debug.Log("found cave border");
-                        neighbour.isCaveBorder = true;
-                        StartCoroutine(neighbour.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveBorder")));
-                    }
-                }
-            }
-        }
-    }
-
-    public void gatherCaveVoxels()
-    {
-        for (int i = 0; i < mapLayers; i++)
-        {
-            foreach (Voxel vox in voxels[i].Values)
-            {
-                if (doesVoxelExist(i, vox.columnID))
-                {
-                    bool wall = true;
-                    if (isDeleted(i - 1, vox.columnID) && vox.layer > 0)
-                    {
-                        //Debug.Log("found cave floor vox");
-                        wall = false;
-                        caveFloors.Add(vox);
-                        vox.hasEnergy = false;
-                        vox.isCaveFloor = true;
-                        StartCoroutine(vox.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveGrass")));
-                    }
-                    if (isDeleted(i + 1, vox.columnID) && vox.layer > 0)
-                    {
-                        //Debug.Log("found cave ceiling vox");                        
-                        wall = false;
-                        caveCeilings.Add(vox);
-                        vox.hasEnergy = false;
-                        vox.isCaveCeiling = true;
-                        StartCoroutine(vox.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveMoss")));
-                    }
-                    if (wall && vox.layer > 1)
-                    {
-                        caveWalls.Add(vox);
-                        StartCoroutine(vox.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveWalls")));
-                    }
-                }
-            }
-        }
-    }
-    /*
-    private void finishAssets()
-    {
-        for (int i = 0; i < mapLayers; i++)
-        {
-            foreach (Voxel vox in voxels[i].Values)
-            {
-                if (vox.mainAsset != null)
-                {
-                    vox.mainAsset.setParent();
-                }
-            }
-        }
-    }
-    */
 
     private void loadNeighboursMap()
     {

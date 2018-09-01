@@ -576,8 +576,8 @@ Rigidbody:
   m_GameObject: {fileID: 1307754806501666}
   serializedVersion: 2
   m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
+  m_Drag: 100
+  m_AngularDrag: 100
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
@@ -714,8 +714,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 14
   lookSens: 5
-  jumpForce: 1500
+  jumpForce: 2400
   runMultiplier: 1.7
+  animator: {fileID: 0}
 --- !u!114 &114202960830645816
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -778,6 +779,8 @@ MonoBehaviour:
   - {fileID: 114969685266583862}
   - {fileID: 20403653169428444}
   - {fileID: 81191184256931970}
+  dontDrawLayerName: DontDraw
+  playerGraphics: {fileID: 0}
   playerUIPrefab: {fileID: 1081867322794722, guid: ec18c0c23bffc8f4ba07e7c2649e4d21,
     type: 2}
 --- !u!114 &114467067170117506
@@ -1848,13 +1851,12 @@ MonoBehaviour:
     telekenMana: 20
     telekenRange: 100
   shield: {fileID: 1247925137036356, guid: 6dfdb12675b98d94791c722206d2f34c, type: 2}
-  shieldUp: 0
   telekenObjectPos: {fileID: 1497520791924924}
-  currentTelekeneticVoxel: {fileID: 0}
-  canCastPush: 0
   force: NaN
-  attackEffect: {fileID: 198747131405500660}
-  diggerEffect: {fileID: 198189769006651364}
+  damageFX: {fileID: 0}
+  damageHandFX: {fileID: 0}
+  diggerFX: {fileID: 0}
+  diggerHandFX: {fileID: 0}
   currentWeapon: 0
 --- !u!124 &124836616443880968
 Behaviour:

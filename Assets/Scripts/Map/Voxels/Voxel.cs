@@ -115,7 +115,7 @@ public class Voxel : NetworkBehaviour
                 isBottom = false;
                 gameObject.name = "TriVoxel";
                 hasEnergy = layer > 3 && rand.NextDouble() < 0.1f;
-                isCaveFloor = MapManager.manager.caveCeilings.Contains(this);
+                isCaveFloor = CaveManager.manager.caveCeilings.Contains(this);
 
                 setTexture();
 
@@ -216,14 +216,14 @@ public class Voxel : NetworkBehaviour
 
     public void setTexture()
     {if (isCaveBorder) return;
-        if (MapManager.manager.caveWalls.Contains(this)) return;
+        if (CaveManager.manager.caveWalls.Contains(this)) return;
         if (hasEnergy)
         {
             StartCoroutine(setTexture(Resources.Load<Material>("Materials/Earth/LowPolyEnergy")));
         }
         else
         {
-            if (isCaveFloor || MapManager.manager.caveFloors.Contains(this))
+            if (isCaveFloor || CaveManager.manager.caveFloors.Contains(this))
             {
                 isCaveFloor = true;
                 if (shatterLevel > 0)
@@ -237,7 +237,7 @@ public class Voxel : NetworkBehaviour
             }
             else
             {
-                if (isCaveCeiling || MapManager.manager.caveCeilings.Contains(this))
+                if (isCaveCeiling || CaveManager.manager.caveCeilings.Contains(this))
                 {
                     isCaveCeiling = true;
                     //Debug.Log("voxel is cave ceiling");

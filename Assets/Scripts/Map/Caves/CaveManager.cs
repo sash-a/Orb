@@ -18,10 +18,13 @@ public class CaveManager : NetworkBehaviour
     public static HashSet<CaveEntrance> entrances;
     public static HashSet<CaveTunnel> tunnels;
 
-
     static System.Random rand;
 
     public static CaveManager manager;
+
+    public HashSet<Voxel> caveWalls;
+    public HashSet<Voxel> caveFloors;
+    public HashSet<Voxel> caveCeilings;
 
 
     // Use this for initialization
@@ -37,8 +40,100 @@ public class CaveManager : NetworkBehaviour
         tunnels = new HashSet<CaveTunnel>();
         diggerPrefab = Resources.Load("Prefabs/Map/Digger");
         manager = this;
+
+        caveFloors = new HashSet<Voxel>();
+        caveCeilings = new HashSet<Voxel>();
+        caveWalls = new HashSet<Voxel>();
         //Debug.Log("found digger : " + diggerPrefab);
     }
+
+
+    public void placeCavePortalsArtefacts()
+    {
+        Dictionary<Voxel, Voxel> portalCandidates = new Dictionary<Voxel, Voxel>();//first is the floor vox second is the base of the wall vox
+        int requiredHeight = 4;//how high the wall infront of the floor vox has to be to be a candiate for a portal
+        int requiredDistance = 64;//a portal is not allowed to be further than this from a cave body to prevent in tunnel portals
+        foreach (Voxel vox in caveWalls)
+        {
+            foreach (int nei in MapManager.manager.neighboursMap[vox.columnID])
+            {
+                if (MapManager.manager.doesVoxelExist(vox.layer + 1, nei))
+                {
+                    Voxel neighbour = MapManager.manager.voxels[vox.layer + 1][nei];
+                    if (caveFloors.Contains(neighbour))
+                    {
+                        //Debug.Log("found cave border");
+                        neighbour.isCaveBorder = true;
+                        bool valid = true;
+                        for (int i = 0; i < requiredHeight; i++)
+                        {
+                            if (!(MapManager.manager.doesVoxelExist(vox.layer - i, vox.columnID) && caveWalls.Contains(MapManager.manager.voxels[vox.layer - i][vox.columnID]))) {
+                                //the voxel i above vox is not a wall
+                                valid = false;
+                            }
+                        }
+                        if (valid)
+                        {
+                            bool closeEnough = false;
+                            foreach (CaveBody body in caves)
+                            {
+                                double dist = Vector3.Distance(body.center, vox.worldCentreOfObject);
+                                //Debug.Log("comparing " + body.center + " and  " + vox.worldCentreOfObject + " dist: " + dist);
+
+                                if (dist < requiredDistance)
+                                {
+                                    closeEnough = true;
+                                }
+                            }
+                            if (valid && closeEnough)
+                            {
+                                //Debug.Log("found portal candidate");
+                                StartCoroutine(neighbour.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveBorder")));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void gatherCaveVoxels()
+    {
+        for (int i = 0; i <MapManager. mapLayers; i++)
+        {
+            foreach (Voxel vox in MapManager.manager.voxels[i].Values)
+            {
+                if (MapManager.manager.doesVoxelExist(i, vox.columnID))
+                {
+                    bool wall = true;
+                    if (MapManager.manager.isDeleted(i - 1, vox.columnID) && vox.layer > 0)
+                    {
+                        //Debug.Log("found cave floor vox");
+                        wall = false;
+                        caveFloors.Add(vox);
+                        vox.hasEnergy = false;
+                        vox.isCaveFloor = true;
+                        StartCoroutine(vox.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveGrass")));
+                    }
+                    if (MapManager.manager.isDeleted(i + 1, vox.columnID) && vox.layer > 0)
+                    {
+                        //Debug.Log("found cave ceiling vox");                        
+                        wall = false;
+                        caveCeilings.Add(vox);
+                        vox.hasEnergy = false;
+                        vox.isCaveCeiling = true;
+                        StartCoroutine(vox.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveMoss")));
+                    }
+                    if (wall && vox.layer > 1)
+                    {
+                        caveWalls.Add(vox);
+                        StartCoroutine(vox.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveWalls")));
+                    }
+                }
+            }
+        }
+    }
+
 
     internal static GameObject getNewDigger()
     {
@@ -137,15 +232,15 @@ public class CaveManager : NetworkBehaviour
 
 
 
-    public static void removeDigger(Digger d)
+    public void removeDigger(Digger d)
     {
         diggers.Remove(d);
         Destroy(d.gameObject);
         if (diggers.Count <= 0)
         {
             tiersLeft--;
-            MapManager.manager.gatherCaveVoxels();
-            Debug.Log("finished cave tier " + (caveTiers - tiersLeft - 1));
+            gatherCaveVoxels();
+            //Debug.Log("finished cave tier " + (caveTiers - tiersLeft - 1));
             if (tiersLeft <= 0)
             {
                 finishDigging();

@@ -16,7 +16,7 @@ public class Shield : NetworkBehaviour
     {
         base.OnStartClient();
         // TODO is this never called doesn't seem to be registering
-        Debug.Log("Registering shield");
+        //Debug.Log("Registering shield");
         GameManager.register(GetComponent<NetworkIdentity>().netId.ToString(), GetComponent<Identifier>());
     }
 
