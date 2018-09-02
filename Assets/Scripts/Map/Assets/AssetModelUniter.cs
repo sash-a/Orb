@@ -37,10 +37,30 @@ public class AssetModelUniter : NetworkBehaviour
             //Debug.Log("reunited main asset id: " + layer + " ; " + colID);
             StartCoroutine(MapManager.manager.voxels[layer][colID].mainAsset.waitNSet());
             //MapManager.manager.voxels[layer][colID].mainAsset.setParent();
+            
+            Vector3 forward = getFoward();
+            if (!forward.Equals(Vector3.zero) && !transform.position.Equals(Vector3.zero))
+            {
+                //rb.MoveRotation(Quaternion.LookRotation(forward, -transform.position.normalized));
+                transform.rotation = Quaternion.LookRotation(forward, -transform.position.normalized);
+            }
         }
         catch {
             Debug.LogError("Asset model belonging to dud voxel");
             Destroy(gameObject);
         }
+    }
+    
+    public Vector3 getFoward()
+    {
+        var up = -transform.position.normalized;
+        var foward = Vector3.Cross(up, transform.right);
+
+        if (Vector3.Dot(foward, transform.forward) < 0)
+        {
+            foward *= -1;
+        }
+
+        return foward;
     }
 }
