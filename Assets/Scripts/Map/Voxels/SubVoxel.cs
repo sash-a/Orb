@@ -34,7 +34,7 @@ public class SubVoxel : NetworkBehaviour
 
             GetComponent<MeshFilter>().mesh.RecalculateNormals();
 
-            spawnedVox.setTexture();
+            spawnedVox.delegateTexture();
             GetComponent<MeshCollider>().sharedMesh = GetComponent<MeshFilter>().mesh;
             GetComponent<MeshCollider>().convex = false;
 

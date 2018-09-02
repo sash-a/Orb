@@ -50,6 +50,7 @@ public class NetworkMapGen : NetworkBehaviour
             GameObject inst = Instantiate(voxelDict[colID].gameObject);
             inst.GetComponent<Voxel>().setColumnID(colID);
             inst.name = "Voxel" + colID;
+            
 
             NetworkServer.Spawn(inst);
         }
@@ -59,7 +60,7 @@ public class NetworkMapGen : NetworkBehaviour
     }
 
     /// <summary>
-    /// Checks if all voxels have spawned client side
+    /// Checks if all voxels have spawned client and server side
     /// </summary>
     public override void OnStartClient()
     {
@@ -76,26 +77,34 @@ public class NetworkMapGen : NetworkBehaviour
     IEnumerator CountSpawnedVoxels()
     {
         bool loaded = false;
-        int maxTries = 10;
+        int maxTries = 35;
+        float waitTime = 1.5f;
+        int count = 0;
 
-        while (!loaded && maxTries > 0)
+        while (!loaded && count < maxTries)
         {
-            yield return new WaitForSeconds(1);
-            loaded = MapManager.manager.spawnedVoxels.Count == 768 * Math.Pow(2, MapManager.splits);
-            maxTries--;
+            yield return new WaitForSeconds(waitTime);
+            loaded = MapManager.manager.spawnedVoxels.Count == 768 * Math.Pow(2, MapManager.splits) && (MapManager.manager.doneDigging || isServer); 
+            count++;
         }
 
         if (loaded)
         {
-            //Debug.Log("Client voxels spawned correctly");
-            MapManager.manager.voxelsLoaded(); // Calling client side only
+            Debug.Log("(server="+isServer+") voxels spawned correctly ; waited : " + (count*waitTime) + " seconds ");
+            if (isServer)
+            {
+                StartCoroutine(MapManager.manager.allSurfaceVoxelsLoadedServerSide());
+            }
+            else {
+                StartCoroutine(MapManager.manager.allVoxelsLoadedClientSide());
+            }
             MapManager.SmoothVoxels();
         }
         else
         {
-            Debug.LogError("waited 5 seconds and not all voxels have been spawned - only found " +
+            Debug.LogError("waited " + (maxTries* waitTime) + " seconds and not all voxels have been spawned - only found " +
                            MapManager.manager.spawnedVoxels.Count + " unique column id's; should be: " +
-                           768 * Math.Pow(2, MapManager.splits));
+                           768 * Math.Pow(2, MapManager.splits) + " manager done digging?: " + MapManager.manager.doneDigging);
         }
     }
 

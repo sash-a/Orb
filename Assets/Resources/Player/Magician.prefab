@@ -576,7 +576,7 @@ Rigidbody:
   m_GameObject: {fileID: 1307754806501666}
   serializedVersion: 2
   m_Mass: 1
-  m_Drag: 100
+  m_Drag: 1.5
   m_AngularDrag: 100
   m_UseGravity: 0
   m_IsKinematic: 0
@@ -1850,6 +1850,7 @@ MonoBehaviour:
     shieldHealth: 100
     telekenMana: 20
     telekenRange: 100
+  rightHand: {fileID: 0}
   shield: {fileID: 1247925137036356, guid: 6dfdb12675b98d94791c722206d2f34c, type: 2}
   telekenObjectPos: {fileID: 1497520791924924}
   force: NaN

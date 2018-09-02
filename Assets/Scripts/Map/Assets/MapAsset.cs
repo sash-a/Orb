@@ -38,7 +38,7 @@ public class MapAsset : NetworkBehaviour
         {
             //Debug.Log("setting asset to voxel");
             MapManager.manager.voxels[layer][colID].mainAsset = this;
-            united = false;
+            united = isServer;//server side assets are united by default
         }
 
         rb = GetComponent<Rigidbody>();
@@ -57,7 +57,10 @@ public class MapAsset : NetworkBehaviour
         catch { }
         //Debug.Log("starting map asset at: " + transform.position);
         gameObject.tag = "MapAsset";
-        StartCoroutine(waitNSet());
+        if (isServer)//if client - the asset uniter will indicate when it is time to prepare this asset
+        {
+            StartCoroutine(waitNSet());
+        }
     }
 
     public static MapAsset createAsset(Voxel vox, int side, Type tp)
@@ -193,13 +196,13 @@ public class MapAsset : NetworkBehaviour
     public void setTransform()
     {
         if (!united && (type.Equals(Type.MAIN)|| type.Equals(Type.ALTAR))) {
-            //Debug.Log("not united yet - cant transform " + type.ToString());
+            Debug.Log("not united yet - cant transform " + type.ToString());
             return;
         }
 
         if (transformed)
         {
-            //if (type.Equals(Type.ALTAR)) Debug.Log("resetting map transform again type: " + type.ToString() + " united: "  + united + "id: " + layer + " ; " + colID);
+            Debug.Log("resetting map transform again type: " + type.ToString() + " united: "  + united + "id: " + layer + " ; " + colID);
             return;
         }
 

@@ -18,7 +18,7 @@ public class PlayerActions : NetworkBehaviour
     private Rigidbody rb;
 
     private bool isJumping;
-    bool needsHop;
+
 
     private void nearPickupItem(PickUpItem item)
     {
@@ -51,7 +51,6 @@ public class PlayerActions : NetworkBehaviour
         rb = GetComponent<Rigidbody>();
 
         isJumping = false;
-        needsHop = false;
     }
 
     void FixedUpdate()

@@ -13,19 +13,15 @@ public class AssetModelUniter : NetworkBehaviour
     // Use this for initialization
     void Start()
     {
-
-        StartCoroutine(waitNSet());
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
+        if (!isServer)//asset uniter is to reunite the transform of the main asset wrapper and its model on the client side
+        {
+            StartCoroutine(waitNSet());
+        }
     }
 
     public IEnumerator waitNSet()
     {
-        yield return new WaitForSecondsRealtime(1f);
+        yield return new WaitForSecondsRealtime(1.5f);
 
         setPartent();
     }
@@ -34,12 +30,13 @@ public class AssetModelUniter : NetworkBehaviour
     {
         try
         {
-            if (MapManager.manager.voxels[layer][colID].mainAsset == null) Debug.LogError("trying to reunite asset on client side - but voxel hsa no asset");
+            if (MapManager.manager.voxels[layer][colID].mainAsset == null) Debug.LogError("trying to reunite asset on client side - but voxel has no asset");
             transform.parent = MapManager.manager.voxels[layer][colID].mainAsset.transform;
             transform.localPosition = Vector3.zero; 
             MapManager.manager.voxels[layer][colID].mainAsset.united = true;
             //Debug.Log("reunited main asset id: " + layer + " ; " + colID);
-            MapManager.manager.voxels[layer][colID].mainAsset.setParent();
+            StartCoroutine(MapManager.manager.voxels[layer][colID].mainAsset.waitNSet());
+            //MapManager.manager.voxels[layer][colID].mainAsset.setParent();
         }
         catch {
             Debug.LogError("Asset model belonging to dud voxel");

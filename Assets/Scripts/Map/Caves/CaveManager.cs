@@ -31,7 +31,6 @@ public class CaveManager : NetworkBehaviour
     void Start()
     {
         //Debug.Log("trying to start cave manager");
-        if (!isServer) { return; }
         tiersLeft = caveTiers;
         //Debug.Log("starting cave manager");
         caves = new HashSet<CaveBody>();
@@ -85,9 +84,9 @@ public class CaveManager : NetworkBehaviour
                                     closeEnough = true;
                                 }
                             }
-                            if (valid && closeEnough)
+                            if (valid && closeEnough && vox.layer>3)
                             {
-                                Debug.Log("found portal candidate");
+                                //Debug.Log("found portal candidate");
                                 StartCoroutine(neighbour.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveBorder")));
                             }
                         }
@@ -103,9 +102,17 @@ public class CaveManager : NetworkBehaviour
         {
             foreach (Voxel vox in MapManager.manager.voxels[i].Values)
             {
+                if (vox.columnID == 0) {
+                    Debug.Log("found vox at colID=0");
+                    //var myKey = MapManager.manager.voxels[i].FirstOrDefault(x => x.Value == vox).Key;
+                    //vox.columnID = MapManager.manager.voxels[i].
+                }
                 if (MapManager.manager.doesVoxelExist(i, vox.columnID))
                 {
                     bool wall = true;
+                    if (vox.layer != i) {
+                        Debug.Log("i= " + i + " vox layer = " + vox.layer);
+                    }
                     if (MapManager.manager.isDeleted(i - 1, vox.columnID) && vox.layer > 0)
                     {
                         //Debug.Log("found cave floor vox");
@@ -150,7 +157,7 @@ public class CaveManager : NetworkBehaviour
         //Debug.Log("cave manager digging caves");
         shatters = MapManager.manager.shatters;
         MapManager.manager.shatters = 0;
-        for (int i = 0; i < MapManager.noCaves; i++)
+        for (int i = 0; i < MapManager.noSurfaceCaves; i++)
         {
             CaveEntrance entrance = new CaveEntrance();
             int colID = rand.Next(0, MapManager.manager.voxels[0].Count - 1);
@@ -280,6 +287,7 @@ public class CaveManager : NetworkBehaviour
 
     private static void finishDigging()
     {
+        MapManager.manager.doneDigging = true;
         if (MapManager.useHills)
         {
             MapManager.manager.deviateHeights();
@@ -287,7 +295,7 @@ public class CaveManager : NetworkBehaviour
         else
         {
             Debug.Log("finisheing map - dug caves - not making hills");
-            MapManager.manager.finishMap();
+            MapManager.manager.finishMapLocally();
         }
         manager.StartCoroutine(manager.RestoreShatters());
     }

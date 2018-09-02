@@ -33,8 +33,14 @@ public class Shield : NetworkBehaviour
        
         var netHealth = GetComponent<NetHealth>();
         netHealth.setInitialHealth(maxHealth);
-        ((MagicianUI) caster.UI).onShieldUp(netHealth); // server error on cast
-        Debug.Log(GetComponent<NetHealth>().getHealth() + "/" + GetComponent<NetHealth>().maxHealth);
+        if (caster.UI != null)
+        {
+            ((MagicianUI)caster.UI).onShieldUp(netHealth); // server error on cast
+            Debug.Log(GetComponent<NetHealth>().getHealth() + "/" + GetComponent<NetHealth>().maxHealth);
+        }
+        else {
+            Debug.LogError("null UI component ");
+        }
     }
 
 

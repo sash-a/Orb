@@ -10,6 +10,8 @@ using Prototype.NetworkLobby;
 
 public class MapManager : NetworkBehaviour
 {
+    [SyncVar] public bool doneDigging;
+
     public static bool useSmoothingInGame = false;
     public static bool useSmoothingInGen = true;
 
@@ -19,7 +21,7 @@ public class MapManager : NetworkBehaviour
 
     [SyncVar] public int shatters = 2; //make zero to turn off shattering
     public static bool useHills = true;
-    public static int noCaves = 5;
+    public static int noSurfaceCaves = 5;
     public static bool useMapAssets = true;
     public static bool usePortals = false;
 
@@ -57,6 +59,7 @@ public class MapManager : NetworkBehaviour
     /// </summary>
     public void start()
     {
+        doneDigging = noSurfaceCaves == 0;
         mapDoneLocally = false;
         manager = this;
 
@@ -122,20 +125,19 @@ public class MapManager : NetworkBehaviour
             // In the event that a voxel from each column has been spawned - but there are extra voxels undrground
             // which have not yet been spawned - the system waits an additional realtime second for the remaining
             // voxels to arrive
-            //            StartCoroutine(NetworkMapGen.mapGen.InitVoxels());
+                        //StartCoroutine(NetworkMapGen.mapGen.InitVoxels());
         }
     }
 
 
-    public void voxelsLoaded()
-    {
-        //Debug.Log("voxels loaded - found " + spawnedVoxels.Count + " initialised  voxels");
-        StartCoroutine(allVoxelsLoaded());
-    }
+ 
 
-    IEnumerator allVoxelsLoaded()
+   public IEnumerator allSurfaceVoxelsLoadedServerSide()
     {
-        yield return new WaitForSeconds(1f);
+        if (!isServer) {
+            Debug.LogError("trying to do server map opperations on client side");
+        }
+        yield return new WaitForSeconds(1.4f);
 
 
         foreach (Voxel vox in voxels[0].Values)
@@ -149,8 +151,8 @@ public class MapManager : NetworkBehaviour
             }
             catch (ArgumentException a)
             {
-                Debug.LogError(a);
-                Debug.Log("already added this voxel to voxel positions? colID = " + vox.columnID + " old center: " + voxelPositions[vox.columnID] + " new center: " + vox.centreOfObject);
+                //Debug.LogError(a);
+                Debug.LogError("already added this voxel to voxel positions? colID = " + vox.columnID + " old center: " + voxelPositions[vox.columnID] + " new center: " + vox.centreOfObject);
             }
 
             // This was uneccasarry and was causing errors with new lobby system (names are still trivoxel
@@ -158,7 +160,7 @@ public class MapManager : NetworkBehaviour
         }
 
 
-        if (noCaves > 0 && isServer)
+        if (noSurfaceCaves > 0)
         {
             //Debug.Log("digging caves");
             CaveManager.digTierZeroCaves();
@@ -173,12 +175,54 @@ public class MapManager : NetworkBehaviour
             else
             {
                 //Debug.Log("finishing map - no caves no hills");
-                finishMap();
+                finishMapLocally();
             }
         }
     }
 
-    public void finishMap()
+
+
+    public IEnumerator allVoxelsLoadedClientSide()
+    {
+        if (isServer)
+        {
+            Debug.LogError("trying to do client map opperations on server side");
+        }
+        yield return new WaitForSeconds(4f);
+
+
+        foreach (Voxel vox in voxels[0].Values)
+        {
+            vox.checkNeighbourCount();
+            //Debug.Log("adding position for voxel 0, " + vox.columnID);
+            try
+            {
+                voxelPositions.Add(vox.columnID, vox.centreOfObject);
+            }
+            catch (ArgumentException a)
+            {
+                Debug.LogError(a);
+                Debug.Log("already added this voxel to voxel positions? colID = " + vox.columnID + " old center: " + voxelPositions[vox.columnID] + " new center: " + vox.centreOfObject);
+            }
+        }
+
+
+            if (useHills)
+            {
+                //Debug.Log("creating hills");
+                deviateHeights();
+            }
+            else
+            {
+                //Debug.Log("finishing map - no caves no hills");
+                finishMapLocally();
+            }
+
+        CaveManager.manager.gatherCaveVoxels();
+        
+    }
+
+    public void finishMapLocally()
     {
         mapDoneLocally = true;
         SmoothVoxels();
@@ -189,7 +233,7 @@ public class MapManager : NetworkBehaviour
         localPlayer.transform.position = new Vector3(0, -30, 0);
         GetComponent<MapAssetManager>().genAssets();
         BuildLog.writeLog("Map finished");
-        Debug.Log("Map finished");
+        Debug.Log("Map finished locally on server = " + isServer);
     }
 
 
@@ -324,7 +368,7 @@ public class MapManager : NetworkBehaviour
         }
 
         //Debug.Log("finisheing map - dug caves - deviated height");
-        finishMap();
+        finishMapLocally();
     }
 
     public void deviateSingleVoxel(Voxel vox)
@@ -357,7 +401,7 @@ public class MapManager : NetworkBehaviour
         filter.mesh.RecalculateNormals();
         filter.mesh.RecalculateBounds();
         filter.mesh.RecalculateTangents();
-        vox.setTexture();
+        vox.delegateTexture();
         if (vox.mainAsset != null)
         {
             Vector3[] facePoints = vox.getMainFaceAtLayer(vox.mainAsset.voxSide);

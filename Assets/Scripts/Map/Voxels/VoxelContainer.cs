@@ -153,6 +153,8 @@ public class VoxelContainer : Voxel
                 subVoxelScript.info += "id: " + (subVoxelScript.subVoxelID);
                 subVoxelScript.hasEnergy = majorVoxel.hasEnergy;
                 subVoxelScript.isCaveFloor = majorVoxel.isCaveFloor;
+                subVoxelScript.isCaveBorder = majorVoxel.isCaveBorder;
+                subVoxelScript.isCaveCeiling = majorVoxel.isCaveCeiling;
 
 
                 subVoxelScript.filter = subMesh;

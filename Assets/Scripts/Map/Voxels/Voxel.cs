@@ -115,9 +115,14 @@ public class Voxel : NetworkBehaviour
                 isBottom = false;
                 gameObject.name = "TriVoxel";
                 hasEnergy = layer > 3 && rand.NextDouble() < 0.1f;
-                isCaveFloor = CaveManager.manager.caveCeilings.Contains(this);
+                if (CaveManager.manager != null && CaveManager.manager.caveCeilings != null)
+                {
+                    isCaveFloor = CaveManager.manager.caveFloors.Contains(this);
+                    //isCaveBorder = CaveManager.manager.cav.Contains(this);
+                    isCaveCeiling = CaveManager.manager.caveCeilings.Contains(this);
+                }
 
-                setTexture();
+                delegateTexture();
 
                 MapManager.manager.voxelSpawned(columnID);
 
@@ -155,7 +160,7 @@ public class Voxel : NetworkBehaviour
         else
         {
             //is subvoxel
-            setTexture();
+            delegateTexture();
             gameObject.name = "SubVoxel";
         }
     }
@@ -214,9 +219,8 @@ public class Voxel : NetworkBehaviour
     //public bool inChunk
 
 
-    public void setTexture()
-    {if (isCaveBorder) return;
-        if (CaveManager.manager.caveWalls.Contains(this)) return;
+    public void delegateTexture()
+    {
         if (hasEnergy)
         {
             StartCoroutine(setTexture(Resources.Load<Material>("Materials/Earth/LowPolyEnergy")));
@@ -842,7 +846,7 @@ public class Voxel : NetworkBehaviour
 
                                     updateCollider();
                                     hasEnergy = false;
-                                    setTexture();
+                                    delegateTexture();
                                 }
                                 else
                                 {
@@ -899,7 +903,7 @@ public class Voxel : NetworkBehaviour
                                 deletePoint(closestID);
                                 info += "|using 2fac smoothing|";
                                 hasEnergy = false;
-                                setTexture();
+                                delegateTexture();
                             }
 
 
@@ -919,7 +923,7 @@ public class Voxel : NetworkBehaviour
                             shrink(5, 0.5f);
                             info += "|using 3fac smoothing|";
                             hasEnergy = false;
-                            setTexture();
+                            delegateTexture();
                         }
 
                         if (MapManager.manager.isDeleted(layer - 1, columnID))
@@ -930,7 +934,7 @@ public class Voxel : NetworkBehaviour
                             shrink(2, 0.5f);
                             info += "|using 3fac smoothing|";
                             hasEnergy = false;
-                            setTexture();
+                            delegateTexture();
                         }
                     }
                 }

@@ -1739,7 +1739,7 @@ Rigidbody:
   m_GameObject: {fileID: 1307754806501666}
   serializedVersion: 2
   m_Mass: 1
-  m_Drag: 100
+  m_Drag: 1.5
   m_AngularDrag: 100
   m_UseGravity: 0
   m_IsKinematic: 0
@@ -2162,9 +2162,38 @@ MonoBehaviour:
   DiggingBeam: {fileID: 198286510246114790}
   hitEffect: {fileID: 1642744248461048, guid: 9367bcf7b4699b541b9a4316055d1581, type: 2}
   explosionEffect: {fileID: 100010, guid: 031d08f52af1daa4f929b85221519426, type: 2}
+  energyBlockEffectSpawner: {fileID: 0}
   selectedWeapon: 0
   equippedWeapon: 0
   weapons: []
+  grenade:
+    shootPos: {fileID: 0}
+    name: 
+    damage: 0
+    envDamage: 0
+    range: 0
+    fireRate: 0
+    nextTimeToFire: 0
+    muzzleFlash: {fileID: 0}
+    digBeam: {fileID: 0}
+    isExplosive: 0
+    ammunition:
+      primaryAmmo: 0
+      magazineAmmo: 0
+      maxAmmo: 0
+      magSize: 0
+      numGrenades: 0
+      maxNumGrenades: 0
+      cost: 0
+      ammoPerPurchase: 0
+    isSpecial: 0
+    upgradeButton: {fileID: 0}
+    ammoButton: {fileID: 0}
+    level: 0
+    maxLevel: 0
+    modifier: 0
+    upgradeCost: 0
+    baseCost: 0
   equippedWeapons: []
   grenadeSpawn: {fileID: 1211541915279614}
   grenadePrefab: {fileID: 1482330286129388, guid: 9f8ade568ae7c2940bf057e6e620e02e,
@@ -2174,6 +2203,7 @@ MonoBehaviour:
   boltPrefab: {fileID: 1001148595587118, guid: 85c4b470996871045a81fd44d25e75d0, type: 2}
   boltForce: 200
   animator: {fileID: 0}
+  weaponWheel: {fileID: 0}
 --- !u!114 &114751384060897940
 MonoBehaviour:
   m_ObjectHideFlags: 1
