@@ -8,7 +8,6 @@ public class Gravity : MonoBehaviour
 
     private static float acceleration = 4000f;//4000
 
-    // Update is called once per frame
     void Start()
     {
         if (gameObject.GetComponent<Rigidbody>() == null)
@@ -21,18 +20,18 @@ public class Gravity : MonoBehaviour
 
     Vector3 oldPos;
     int age = 0;
-    void Update()
+    void FixedUpdate()
     {
         age++;
-        if (!(gameObject.name.Contains("oxel")))
+        if (!gameObject.CompareTag("TriVoxel"))
         {
-            rb.AddForce(transform.position.normalized * acceleration * Time.deltaTime);
+            rb.AddForce(transform.position.normalized * acceleration * Time.fixedDeltaTime, ForceMode.Acceleration);
         }
         else
         {
             try
             {
-                rb.AddForce(gameObject.GetComponent<Voxel>().centreOfObject.normalized * acceleration * Time.deltaTime);
+                rb.AddForce(gameObject.GetComponent<Voxel>().centreOfObject.normalized * acceleration * Time.fixedDeltaTime);
             }
             catch
             {

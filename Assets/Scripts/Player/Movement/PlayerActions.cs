@@ -19,7 +19,6 @@ public class PlayerActions : NetworkBehaviour
 
     private bool isJumping;
     bool needsHop;
-    Vector3 lastFramePos;
 
     private void nearPickupItem(PickUpItem item)
     {
@@ -33,7 +32,6 @@ public class PlayerActions : NetworkBehaviour
         }
         else
         {
-
         }
     }
 
@@ -54,7 +52,6 @@ public class PlayerActions : NetworkBehaviour
 
         isJumping = false;
         needsHop = false;
-        lastFramePos = transform.position;
     }
 
     void FixedUpdate()
@@ -75,7 +72,6 @@ public class PlayerActions : NetworkBehaviour
             transform.position = new Vector3(0, -10, 0);
             rb.velocity = Vector3.zero;
         }
-
     }
 
     private void checkCollectables()
@@ -89,12 +85,9 @@ public class PlayerActions : NetworkBehaviour
             if (Vector3.Distance(transform.position, item.gameObject.transform.position) < 20)
             {
                 nearPickupItem(item);
-                //Debug.Log("approached collectable");
             }
         }
-        //Debug.Log("checked " + count + " collectables");
     }
-
 
 
     // TODO this should be move to a utility/player properites class
@@ -118,21 +111,7 @@ public class PlayerActions : NetworkBehaviour
 
     public void doMovement()
     {
-        if (velocity.magnitude > 0)
-        {
-            rb.MovePosition(rb.position + velocity * Time.fixedDeltaTime);
-            //if has been stopped from moving
-            if (needsHop &&
-                Vector3.Distance(lastFramePos, transform.position) < (velocity * Time.fixedDeltaTime).magnitude * 0.5f
-                && Vector3.Dot(velocity.normalized, transform.forward) > 0.7) // was mostly moving forward
-            {
-                //Debug.Log("\t\tstopped from moving forwards");
-                rb.MovePosition(transform.position - transform.forward * 0.1f);
-                rb.AddForce(-transform.position.normalized * 2f, ForceMode.VelocityChange);
-            }
-        }
-
-        lastFramePos = transform.position;
+        rb.MovePosition(rb.position + velocity * Time.fixedDeltaTime);
     }
 
     public void rotate(Vector3 _rotation, float _camRot)
@@ -163,24 +142,5 @@ public class PlayerActions : NetworkBehaviour
     void OnCollisionEnter(Collision other)
     {
         isJumping = other.gameObject.name.Contains("Voxel");
-        if (other.gameObject.name.Equals("TriVoxel"))
-        {
-            Voxel vox = other.gameObject.GetComponent<Voxel>();
-            if (MapManager.manager.isDeleted(vox.layer - 2, vox.columnID) || MapManager.manager.isDeleted(vox.layer - 1, vox.columnID))
-            // &&  vox.deletedPoints.Count==0)//difficult to tell if infront it has deleted points
-            {
-                Vector3 diff = transform.position - vox.worldCentreOfObject;
-                float upness = Vector3.Dot(transform.position.normalized, diff.normalized);
-
-                if (Mathf.Abs(upness) < 0.2)
-                {
-                    needsHop = true;
-                }
-            }
-            else
-            {
-                needsHop = false;
-            }
-        }
     }
 }

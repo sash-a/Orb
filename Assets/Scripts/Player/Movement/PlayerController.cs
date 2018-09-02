@@ -34,7 +34,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        // movement
+        // Movement
         var xMov = Input.GetAxis("Horizontal") * transform.right;
         var yMov = Input.GetAxis("Vertical") * transform.forward;
         var velocity = (xMov + yMov).normalized * speed;

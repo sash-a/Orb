@@ -30,7 +30,7 @@ GameObject:
   - component: {fileID: 114521561779804708}
   m_Layer: 0
   m_Name: SubVoxel
-  m_TagString: Untagged
+  m_TagString: TriVoxel
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -285,8 +285,12 @@ MonoBehaviour:
   worldCentreOfObject: {x: 0, y: 0, z: 0}
   filter: {fileID: 0}
   info: 
-  asset: {fileID: 0}
+  mainAsset: {fileID: 0}
   hasEnergy: 0
+  isCaveFloor: 0
+  isCaveCeiling: 0
+  isCaveBorder: 0
+  isMelted: 0
 --- !u!114 &114240635960361912
 MonoBehaviour:
   m_ObjectHideFlags: 1
