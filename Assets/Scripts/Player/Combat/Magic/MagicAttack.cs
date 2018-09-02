@@ -5,6 +5,7 @@ using UnityEngine.Networking;
 public class MagicAttack : AAttackBehaviour
 {
     [SerializeField] private MagicType attackStats;
+    [SerializeField] private Transform rightHand;
 
     [SyncVar] private bool isAttacking;
 
@@ -31,7 +32,7 @@ public class MagicAttack : AAttackBehaviour
     // Effects
     [SerializeField] private ParticleSystem damageFX;
     [SerializeField] private ParticleSystem damageHandFX;
-    
+
     [SerializeField] private ParticleSystem diggerFX;
     [SerializeField] private ParticleSystem diggerHandFX;
     private EnergyBlockEffectSpawner energyBlockEffectSpawner;
@@ -123,22 +124,26 @@ public class MagicAttack : AAttackBehaviour
         }
         else if (attackStats.isTelekenetic)
         {
-            RaycastHit hit;
-            if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, attackStats.telekenRange,
-                mask))
+            // Shoot ray from the camera to center of screen
+            RaycastHit hitFromCam;
+            if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hitFromCam,
+                attackStats.telekenRange, mask))
                 return;
 
-            if (!hit.collider.CompareTag(VOXEL_TAG)) return;
+            if (!hitFromCam.collider.CompareTag(VOXEL_TAG)) return;
 
-            var voxel = hit.collider.gameObject.GetComponent<Voxel>();
+            // Shoot ray from hand to hit position
+            RaycastHit hitFromHand;
+            if (Physics.Linecast(rightHand.position, hitFromCam.point, out hitFromHand, mask))
+            {
+                Debug.Log("hit: " + hitFromHand.collider.name);
+            }
+
+            var voxel = hitFromHand.collider.gameObject.GetComponent<Voxel>();
             if (voxel.shatterLevel >= 1) // need to change this to accomodate the teleken artifact
             {
                 isTelekening = true;
                 CmdVoxelTeleken(voxel.columnID, voxel.layer, voxel.subVoxelID);
-                // Just run telekenisis locally network transform will sync movements
-//                var tele = currentTelekeneticVoxel.GetComponent<Telekinesis>();
-//                tele.enabled = true;
-//                tele.setUp(telekenObjectPos.transform, Telekinesis.VOXEL, GetComponent<Identifier>().id);
             }
             else
             {
@@ -265,28 +270,27 @@ public class MagicAttack : AAttackBehaviour
         if (currentWeapon == 0)
         {
             if (damageHandFX.isPlaying)
-                playHandDamageFX(false);
+                damageHandFX.Stop();
 
-            playHandDigFX(true);
-            
+            diggerHandFX.Play();
             attackStats.changeToDigger();
         }
         else if (currentWeapon == 1)
         {
             if (diggerHandFX.isPlaying)
-                playHandDigFX(false);
-            
-            playHandDamageFX(true);
-            
+                diggerHandFX.Stop();
+
+            damageHandFX.Play();
+
             attackStats.changeToDamage();
         }
         else if (currentWeapon == 2)
         {
             if (diggerHandFX.isPlaying)
-                playHandDigFX(false);
-            
+                diggerFX.Stop();
+
             if (damageHandFX.isPlaying)
-                playHandDamageFX(false);
+                damageHandFX.Stop();
             attackStats.changeToTeleken();
         }
     }
@@ -319,22 +323,27 @@ public class MagicAttack : AAttackBehaviour
     /// Orients the digger effect and damages relevent objects while mouse 1 held down
     /// </summary>
     [Client]
-    void dig(RaycastHit hit)
+    void dig(RaycastHit hitFromCam)
     {
         // Checking range, need high distance in raycast to orient effect
-        if (Mathf.Abs(Vector3.Distance(hit.point, transform.position)) > attackStats.diggerRange) return;
+        if (Mathf.Abs(Vector3.Distance(hitFromCam.point, transform.position)) > attackStats.diggerRange) return;
 
-        if (hit.collider.gameObject.CompareTag(VOXEL_TAG))
+        // Shoot ray from hand to hit position
+        RaycastHit hitFromHand;
+        if (!Physics.Linecast(rightHand.position, hitFromCam.point, out hitFromHand, mask))
+            return; // this should never return
+
+        if (hitFromHand.collider.gameObject.CompareTag(VOXEL_TAG))
         {
-            var voxel = hit.collider.gameObject.GetComponent<Voxel>();
+            var voxel = hitFromHand.collider.gameObject.GetComponent<Voxel>();
 
             // If voxel is about to die
             if (!voxel.hasEnergy &&
                 voxel.GetComponent<NetHealth>().getHealth() <= attackStats.diggerEnvDamage * Time.deltaTime)
-                destructionEffectSpawner.play(hit.point, voxel);
+                destructionEffectSpawner.play(hitFromHand.point, voxel);
 
 
-            CmdVoxelDamaged(hit.collider.gameObject, attackStats.diggerEnvDamage * Time.deltaTime);
+            CmdVoxelDamaged(hitFromHand.collider.gameObject, attackStats.diggerEnvDamage * Time.deltaTime);
 
             // Spawn energy blocks
             if (voxel.hasEnergy)
@@ -343,9 +352,9 @@ public class MagicAttack : AAttackBehaviour
                 energyBlockEffectSpawner.spawnBlock();
             }
         }
-        else if (hit.collider.CompareTag(PLAYER_TAG) || hit.collider.CompareTag("Shield"))
+        else if (hitFromHand.collider.CompareTag(PLAYER_TAG) || hitFromHand.collider.CompareTag("Shield"))
         {
-            CmdVoxelDamaged(hit.collider.gameObject, attackStats.diggerDamage * Time.deltaTime);
+            CmdVoxelDamaged(hitFromHand.collider.gameObject, attackStats.diggerDamage * Time.deltaTime);
         }
     }
 
@@ -353,27 +362,36 @@ public class MagicAttack : AAttackBehaviour
     /// Controls which voxel gets damaged each frame and the orientation of the effect
     /// </summary>
     [Client]
-    void damage(RaycastHit hit)
+    void damage(RaycastHit hitFromCam)
     {
         // Checking range, need high distance in raycast to orient effect
-        if (Mathf.Abs(Vector3.Distance(hit.point, transform.position)) > attackStats.attackRange) return;
+        if (Mathf.Abs(Vector3.Distance(hitFromCam.point, transform.position)) > attackStats.attackRange) return;
 
-        if (hit.collider.CompareTag(PLAYER_TAG))
+        // Shoot ray from hand to hit position
+        RaycastHit hitFromHand;
+        if (!Physics.Linecast(rightHand.position, hitFromCam.point, out hitFromHand, mask))
+            return; // This should never return
+
+        if (hitFromHand.collider.CompareTag(PLAYER_TAG))
         {
-            var character = hit.collider.gameObject.GetComponent<Identifier>().typePrefix;
+            var character = hitFromHand.collider.gameObject.GetComponent<Identifier>().typePrefix;
             if (character == Identifier.magicianType) // Heal
             {
-                CmdPlayerAttacked(hit.collider.name, -attackStats.heal * Time.deltaTime);
+                CmdPlayerAttacked(hitFromHand.collider.name, -attackStats.heal * Time.deltaTime);
             }
             else // Damage
             {
-                CmdPlayerAttacked(hit.collider.name, attackStats.attackDamage * Time.deltaTime);
+                CmdPlayerAttacked(hitFromHand.collider.name, attackStats.attackDamage * Time.deltaTime);
             }
         }
-        else if (hit.collider.CompareTag(VOXEL_TAG))
-            CmdVoxelDamaged(hit.collider.gameObject, attackStats.attackEnvDamage * Time.deltaTime);
-        else if (hit.collider.CompareTag("Shield"))
-            CmdShieldHit(hit.collider.gameObject, attackStats.attackShieldDamage * Time.deltaTime);
+        else if (hitFromHand.collider.CompareTag(VOXEL_TAG))
+        {
+            CmdVoxelDamaged(hitFromHand.collider.gameObject, attackStats.attackEnvDamage * Time.deltaTime);
+        }
+        else if (hitFromHand.collider.CompareTag("Shield"))
+        {
+            CmdShieldHit(hitFromHand.collider.gameObject, attackStats.attackShieldDamage * Time.deltaTime);
+        }
     }
 
     #region shield
@@ -587,71 +605,6 @@ public class MagicAttack : AAttackBehaviour
         playDamageEffect(damaging);
     }
 
-    #endregion
-
-    #region playHandEffects
-
-    // Damage
-    void playHandDamageFX(bool damaging)
-    {
-        if (isLocalPlayer)
-            CmdHandDamageFX(damaging);
-
-        if (damaging)
-        {
-            damageHandFX.Play();
-            return;
-        }
-
-        damageHandFX.Stop();
-    }
-
-    [Command]
-    void CmdHandDamageFX(bool damaging)
-    {
-        RpcDamageEffect(damaging);
-    }
-
-    [ClientRpc]
-    void RpcHandDamageFX(bool damaging)
-    {
-        if (isLocalPlayer)
-            return;
-
-        playHandDamageFX(damaging);
-    }
-
-    
-    // Digging
-    void playHandDigFX(bool damaging)
-    {
-        if (isLocalPlayer)
-            CmdHandDamageFX(damaging);
-
-        if (damaging)
-        {
-            diggerHandFX.Play();
-            return;
-        }
-
-        diggerHandFX.Stop();
-    }
-
-    [Command]
-    void CmdHandDigFX(bool damaging)
-    {
-        RpcDamageEffect(damaging);
-    }
-
-    [ClientRpc]
-    void RpcHandDigFX(bool damaging)
-    {
-        if (isLocalPlayer)
-            return;
-
-        playHandDigFX(damaging);
-    }
-    
     #endregion
 
     #endregion

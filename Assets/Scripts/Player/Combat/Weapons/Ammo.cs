@@ -8,20 +8,20 @@ public class Ammo
     //have given default values but will likely be different:
 
     //total current ammo for gun
-    private int primaryAmmo = 300;
+    [SerializeField] private int primaryAmmo = 300;
 
     //current ammo in magazine
-    private int magazineAmmo = 30;
+    [SerializeField] private int magazineAmmo = 30;
 
     //total amount of ammo that can be carried for a gun (relevant to primary)
-    private int maxAmmo = 1000;
+    [SerializeField] private int maxAmmo = 1000;
 
     //total amount of bullets a magazine carries (relevant to magazine)
-    private int magSize = 30;
+    [SerializeField] private int magSize = 30;
 
     //grenades
-    private int numGrenades = 3;
-    private int maxNumGrenades = 5;
+    [SerializeField] private int numGrenades = 3;
+    [SerializeField] private int maxNumGrenades = 5;
 
     // Pricing
     public int cost;

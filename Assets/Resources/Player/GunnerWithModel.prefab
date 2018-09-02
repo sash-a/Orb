@@ -236,7 +236,7 @@ GameObject:
   m_IsActive: 1
 --- !u!1 &1152568004159054
 GameObject:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 5
@@ -1521,6 +1521,22 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1 &1928932021232000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 4692860898333062}
+  - component: {fileID: 114158762346196602}
+  m_Layer: 0
+  m_Name: CameraPivotPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &1938087231731822
 GameObject:
   m_ObjectHideFlags: 1
@@ -1728,7 +1744,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1938087231731822}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.094, y: 0.05, z: -0.002}
+  m_LocalPosition: {x: -0.0873, y: 0.05, z: -0.002}
   m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_Children:
   - {fileID: 4416843076014812}
@@ -1824,13 +1840,13 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1152568004159054}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.1, y: 7.5, z: -6}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 2.23, y: -0.47, z: -4.85}
   m_LocalScale: {x: 5, y: 5, z: 5}
   m_Children:
   - {fileID: 4415243153627280}
   - {fileID: 224061960077094450}
-  m_Father: {fileID: 4244637701543086}
+  m_Father: {fileID: 4692860898333062}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4193776293197636
@@ -1884,7 +1900,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 4185892770116456}
+  - {fileID: 4692860898333062}
   - {fileID: 4567144097241884}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -2041,7 +2057,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1258363824605114}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.0156, y: 0.097, z: 0.753}
+  m_LocalPosition: {x: 0.0156, y: 0.133, z: 0.706}
   m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_Children:
   - {fileID: 4536262846110004}
@@ -2596,6 +2612,20 @@ Transform:
   - {fileID: 4529503822090048}
   m_Father: {fileID: 4381120993338212}
   m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &4692860898333062
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1928932021232000}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2, y: 7.705, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 4185892770116456}
+  m_Father: {fileID: 4244637701543086}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4695909603303984
 Transform:
@@ -3724,6 +3754,23 @@ MonoBehaviour:
   m_SnapThreshold: 5
   m_InterpolateRotation: 10
   m_InterpolateMovement: 1
+--- !u!114 &114158762346196602
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1928932021232000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94b04ec3bda6b7747aa53936ef3b0ae2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clipMoveTime: 0.05
+  returnTime: 0.4
+  sphereCastRadius: 0.1
+  visualiseInEditor: 0
+  closestDistance: 0.5
+  dontClipTag: Player
 --- !u!114 &114200123416573494
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3902,7 +3949,197 @@ MonoBehaviour:
   energyBlockEffectSpawner: {fileID: 0}
   selectedWeapon: 0
   equippedWeapon: 0
-  weapons: []
+  weapons:
+  - shootPos: {fileID: 4287410330843642}
+    name: digging tool
+    damage: 1
+    envDamage: 15
+    range: 20
+    fireRate: 30
+    nextTimeToFire: 0
+    muzzleFlash: {fileID: 0}
+    digBeam: {fileID: 198094581842403686}
+    isExplosive: 0
+    ammunition:
+      primaryAmmo: 0
+      magazineAmmo: 0
+      maxAmmo: 0
+      magSize: 0
+      numGrenades: 0
+      maxNumGrenades: 0
+      cost: 0
+      ammoPerPurchase: 0
+    isSpecial: 0
+    upgradeButton: {fileID: 0}
+    ammoButton: {fileID: 0}
+    level: 0
+    maxLevel: 0
+    modifier: 0
+    upgradeCost: 0
+    baseCost: 0
+  - shootPos: {fileID: 4107546691609194}
+    name: pistolpistol
+    damage: 5
+    envDamage: 5
+    range: 60
+    fireRate: 5
+    nextTimeToFire: 0
+    muzzleFlash: {fileID: 198919756087669810}
+    digBeam: {fileID: 0}
+    isExplosive: 0
+    ammunition:
+      primaryAmmo: 20
+      magazineAmmo: 12
+      maxAmmo: 300
+      magSize: 12
+      numGrenades: 0
+      maxNumGrenades: 0
+      cost: 5
+      ammoPerPurchase: 12
+    isSpecial: 0
+    upgradeButton: {fileID: 0}
+    ammoButton: {fileID: 0}
+    level: 0
+    maxLevel: 5
+    modifier: 1.2
+    upgradeCost: 10
+    baseCost: 20
+  - shootPos: {fileID: 4372791469633016}
+    name: assault rifle
+    damage: 3
+    envDamage: 3
+    range: 70
+    fireRate: 8
+    nextTimeToFire: 0
+    muzzleFlash: {fileID: 198156763116903948}
+    digBeam: {fileID: 0}
+    isExplosive: 0
+    ammunition:
+      primaryAmmo: 30000
+      magazineAmmo: 30
+      maxAmmo: 500
+      magSize: 30
+      numGrenades: 0
+      maxNumGrenades: 0
+      cost: 10
+      ammoPerPurchase: 30
+    isSpecial: 0
+    upgradeButton: {fileID: 0}
+    ammoButton: {fileID: 0}
+    level: 0
+    maxLevel: 5
+    modifier: 1.2
+    upgradeCost: 25
+    baseCost: 50
+  - shootPos: {fileID: 4109384920274248}
+    name: shotgun
+    damage: 12
+    envDamage: 12
+    range: 30
+    fireRate: 2
+    nextTimeToFire: 0
+    muzzleFlash: {fileID: 198954621228332998}
+    digBeam: {fileID: 0}
+    isExplosive: 0
+    ammunition:
+      primaryAmmo: 1000
+      magazineAmmo: 6
+      maxAmmo: 300
+      magSize: 6
+      numGrenades: 0
+      maxNumGrenades: 0
+      cost: 5
+      ammoPerPurchase: 6
+    isSpecial: 0
+    upgradeButton: {fileID: 0}
+    ammoButton: {fileID: 0}
+    level: 0
+    maxLevel: 5
+    modifier: 1.2
+    upgradeCost: 20
+    baseCost: 35
+  - shootPos: {fileID: 4520976047990618}
+    name: sniper
+    damage: 20
+    envDamage: 20
+    range: 350
+    fireRate: 1
+    nextTimeToFire: 0
+    muzzleFlash: {fileID: 198580269505913200}
+    digBeam: {fileID: 0}
+    isExplosive: 0
+    ammunition:
+      primaryAmmo: 60
+      magazineAmmo: 12
+      maxAmmo: 100
+      magSize: 12
+      numGrenades: 0
+      maxNumGrenades: 0
+      cost: 10
+      ammoPerPurchase: 10
+    isSpecial: 0
+    upgradeButton: {fileID: 0}
+    ammoButton: {fileID: 0}
+    level: 0
+    maxLevel: 5
+    modifier: 1.2
+    upgradeCost: 25
+    baseCost: 50
+  - shootPos: {fileID: 4383348818249674}
+    name: Ex_crossbow
+    damage: 0
+    envDamage: 0
+    range: 20
+    fireRate: 1
+    nextTimeToFire: 0
+    muzzleFlash: {fileID: 0}
+    digBeam: {fileID: 0}
+    isExplosive: 1
+    ammunition:
+      primaryAmmo: 8
+      magazineAmmo: 20
+      maxAmmo: 40
+      magSize: 20
+      numGrenades: 0
+      maxNumGrenades: 0
+      cost: 5
+      ammoPerPurchase: 1
+    isSpecial: 1
+    upgradeButton: {fileID: 0}
+    ammoButton: {fileID: 0}
+    level: 0
+    maxLevel: 0
+    modifier: 0
+    upgradeCost: 0
+    baseCost: 0
+  grenade:
+    shootPos: {fileID: 0}
+    name: 
+    damage: 0
+    envDamage: 0
+    range: 0
+    fireRate: 0
+    nextTimeToFire: 0
+    muzzleFlash: {fileID: 0}
+    digBeam: {fileID: 0}
+    isExplosive: 0
+    ammunition:
+      primaryAmmo: 0
+      magazineAmmo: 0
+      maxAmmo: 0
+      magSize: 0
+      numGrenades: 6
+      maxNumGrenades: 6
+      cost: 5
+      ammoPerPurchase: 1
+    isSpecial: 0
+    upgradeButton: {fileID: 0}
+    ammoButton: {fileID: 0}
+    level: 0
+    maxLevel: 0
+    modifier: 0
+    upgradeCost: 0
+    baseCost: 0
   equippedWeapons: []
   grenadeSpawn: {fileID: 0}
   grenadePrefab: {fileID: 1482330286129388, guid: 9f8ade568ae7c2940bf057e6e620e02e,
@@ -3912,6 +4149,7 @@ MonoBehaviour:
   boltPrefab: {fileID: 1001148595587118, guid: 85c4b470996871045a81fd44d25e75d0, type: 2}
   boltForce: 200
   animator: {fileID: 95862667050278438}
+  weaponWheel: {fileID: 0}
 --- !u!114 &114512659578669254
 MonoBehaviour:
   m_ObjectHideFlags: 1

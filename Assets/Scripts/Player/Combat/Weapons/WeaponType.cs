@@ -19,6 +19,8 @@ public class WeaponType
     
     #region WeaponStats
 
+    public Transform shootPos;
+    
     public string name;
     public float damage;
     public float envDamage;
@@ -57,8 +59,6 @@ public class WeaponType
 
     #endregion
     
-
-
     //digging tool constructor 
     public WeaponType(string name, float damage, float envDamage, float range, float fireRate, ParticleSystem digBeam)
     {
@@ -72,7 +72,7 @@ public class WeaponType
     }
 
     //weapon constructor
-    public WeaponType(string name, float damage, float envDamage, float range, float fireRate, int dd,
+    public WeaponType(string name, float damage, float envDamage, float range, float fireRate, int baseCost,
         int upgradeCost, ParticleSystem muzzleFlash, int prA, int mgA, int mxA, int mgSz, int ammoCost,
         int ammoPerPurchase)
     {
