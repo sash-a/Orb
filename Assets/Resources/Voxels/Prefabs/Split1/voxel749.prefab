@@ -9,22 +9,24 @@ Prefab:
     m_Modifications: []
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 0}
-  m_RootGameObject: {fileID: 1583595601470666}
+  m_RootGameObject: {fileID: 1303352820270196}
   m_IsPrefabParent: 1
---- !u!1 &1583595601470666
+--- !u!1 &1303352820270196
 GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 5
   m_Component:
-  - component: {fileID: 4628390835259528}
-  - component: {fileID: 33316849954686960}
-  - component: {fileID: 114226077724827170}
-  - component: {fileID: 114043408969125036}
-  - component: {fileID: 64740268081114382}
-  - component: {fileID: 23861758921009100}
-  - component: {fileID: 114317821744439888}
+  - component: {fileID: 4231611313983372}
+  - component: {fileID: 114527379954642588}
+  - component: {fileID: 114898932462419116}
+  - component: {fileID: 33185048095300518}
+  - component: {fileID: 64047882917652384}
+  - component: {fileID: 23882868162736624}
+  - component: {fileID: 114695656761224410}
+  - component: {fileID: 114104681148931674}
+  - component: {fileID: 114437264043491518}
   m_Layer: 0
   m_Name: voxel749
   m_TagString: TriVoxel
@@ -32,12 +34,12 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4628390835259528
+--- !u!4 &4231611313983372
 Transform:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1583595601470666}
+  m_GameObject: {fileID: 1303352820270196}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -45,12 +47,12 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!23 &23861758921009100
+--- !u!23 &23882868162736624
 MeshRenderer:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1583595601470666}
+  m_GameObject: {fileID: 1303352820270196}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -80,19 +82,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!33 &33316849954686960
+--- !u!33 &33185048095300518
 MeshFilter:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1583595601470666}
+  m_GameObject: {fileID: 1303352820270196}
   m_Mesh: {fileID: 4300000, guid: 4d1203c4d477efd4c935835749ea5a0c, type: 2}
---- !u!64 &64740268081114382
+--- !u!64 &64047882917652384
 MeshCollider:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1583595601470666}
+  m_GameObject: {fileID: 1303352820270196}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
@@ -101,37 +103,49 @@ MeshCollider:
   m_CookingOptions: 14
   m_SkinWidth: 0.01
   m_Mesh: {fileID: 4300000, guid: 4d1203c4d477efd4c935835749ea5a0c, type: 2}
---- !u!114 &114043408969125036
+--- !u!114 &114104681148931674
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1583595601470666}
-  m_Enabled: 1
+  m_GameObject: {fileID: 1303352820270196}
+  m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fdd6446cce34b294d8d4b57223fb7c14, type: 3}
+  m_Script: {fileID: 11500000, guid: 2df36497b24d6d94d88a60a224929e07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isBottom: 0
-  subVoxelID: 
-  shatterLevel: 0
-  lastHitPosition: {x: 0, y: 0, z: 0}
-  scale: 0
-  columnID: 1258
-  layer: 0
-  obtusePoint: 0
-  centreOfObject: {x: 0.4310573, y: 0.23561122, z: -0.109140925}
-  worldCentreOfObject: {x: 0, y: 0, z: 0}
-  filter: {fileID: 0}
-  info: 
-  asset: {fileID: 0}
-  hasEnergy: 0
---- !u!114 &114226077724827170
+  casterID: 
+  requiredPos: {fileID: 0}
+  rb: {fileID: 0}
+  vox: {fileID: 0}
+  teleEffect: {fileID: 0}
+--- !u!114 &114437264043491518
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1583595601470666}
+  m_GameObject: {fileID: 1303352820270196}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1768714887, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TransformSyncMode: 1
+  m_SendInterval: 0.1
+  m_SyncRotationAxis: 7
+  m_RotationSyncCompression: 0
+  m_SyncSpin: 1
+  m_MovementTheshold: 0.001
+  m_VelocityThreshold: 0.0001
+  m_SnapThreshold: 5
+  m_InterpolateRotation: 10
+  m_InterpolateMovement: 1
+--- !u!114 &114527379954642588
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1303352820270196}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
@@ -158,12 +172,12 @@ MonoBehaviour:
     i15: 86
   m_ServerOnly: 0
   m_LocalPlayerAuthority: 0
---- !u!114 &114317821744439888
+--- !u!114 &114695656761224410
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1583595601470666}
+  m_GameObject: {fileID: 1303352820270196}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c59f2182146b9a1429f85a8a793f9ef5, type: 3}
@@ -171,3 +185,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   health: 0
   maxHealth: 10
+--- !u!114 &114898932462419116
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1303352820270196}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdd6446cce34b294d8d4b57223fb7c14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isBottom: 0
+  subVoxelID: 
+  shatterLevel: 0
+  lastHitPosition: {x: 0, y: 0, z: 0}
+  scale: 0
+  columnID: 1258
+  layer: 0
+  obtusePoint: 0
+  centreOfObject: {x: 0.42956436, y: 0.23479515, z: -0.10876257}
+  worldCentreOfObject: {x: 0, y: 0, z: 0}
+  filter: {fileID: 0}
+  info: 
+  mainAsset: {fileID: 0}
+  hasEnergy: 0
+  isCaveFloor: 0
+  isCaveCeiling: 0
+  isCaveBorder: 0
+  isMelted: 0

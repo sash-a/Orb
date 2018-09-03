@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 
 [RequireComponent(typeof(Rigidbody))]
@@ -18,23 +19,6 @@ public class PlayerActions : NetworkBehaviour
     private Rigidbody rb;
 
     private bool isJumping;
-
-
-    private void nearPickupItem(PickUpItem item)
-    {
-        if (item.itemClass == PickUpItem.Class.MAGICIAN)
-        {
-            if (item.itemType == PickUpItem.ItemType.DAMAGE_ARTIFACT)
-            {
-                //do something
-                //item.pickedUp();//destroys item game object
-            }
-        }
-        else
-        {
-        }
-    }
-
 
     void Start()
     {
@@ -58,13 +42,11 @@ public class PlayerActions : NetworkBehaviour
         Vector3 forward = getFoward();
         if (!forward.Equals(Vector3.zero) && !transform.position.Equals(Vector3.zero))
         {
-            //rb.MoveRotation(Quaternion.LookRotation(forward, -transform.position.normalized));
             transform.rotation = Quaternion.LookRotation(forward, -transform.position.normalized);
         }
 
         doMovement();
         doRotations();
-        checkCollectables();
 
         if (transform.position.magnitude > MapManager.mapSize * 5)
         {
@@ -72,22 +54,6 @@ public class PlayerActions : NetworkBehaviour
             rb.velocity = Vector3.zero;
         }
     }
-
-    private void checkCollectables()
-    {
-        if (MapManager.manager == null) return;
-        if (MapManager.manager.mapDoneLocally && MapManager.manager.collectables == null) return;
-        int count = 0;
-        foreach (PickUpItem item in MapManager.manager.collectables)
-        {
-            count++;
-            if (Vector3.Distance(transform.position, item.gameObject.transform.position) < 20)
-            {
-                nearPickupItem(item);
-            }
-        }
-    }
-
 
     // TODO this should be move to a utility/player properites class
     public Vector3 getFoward()
@@ -140,6 +106,6 @@ public class PlayerActions : NetworkBehaviour
 
     void OnCollisionEnter(Collision other)
     {
-        isJumping = other.gameObject.name.Contains("Voxel");
+        isJumping = other.gameObject.CompareTag("TriVoxel");
     }
 }

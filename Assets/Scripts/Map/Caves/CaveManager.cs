@@ -98,7 +98,8 @@ public class CaveManager : NetworkBehaviour
 
     public void gatherCaveVoxels()
     {
-        for (int i = 0; i <MapManager. mapLayers; i++)
+        Debug.Log("gathering cave voxels locally");
+        for (int i = 0; i <MapManager.mapLayers; i++)
         {
             foreach (Voxel vox in MapManager.manager.voxels[i].Values)
             {
@@ -115,7 +116,7 @@ public class CaveManager : NetworkBehaviour
                     }
                     if (MapManager.manager.isDeleted(i - 1, vox.columnID) && vox.layer > 0)
                     {
-                        //Debug.Log("found cave floor vox");
+                        Debug.Log("found cave floor vox");
                         wall = false;
                         caveFloors.Add(vox);
                         vox.hasEnergy = false;
@@ -124,7 +125,7 @@ public class CaveManager : NetworkBehaviour
                     }
                     if (MapManager.manager.isDeleted(i + 1, vox.columnID) && vox.layer > 0)
                     {
-                        //Debug.Log("found cave ceiling vox");                        
+                        Debug.Log("found cave ceiling vox");                        
                         wall = false;
                         caveCeilings.Add(vox);
                         vox.hasEnergy = false;

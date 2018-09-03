@@ -20,7 +20,7 @@ public class PlayerUI : MonoBehaviour
         }
     }
 
-    void togglePauseMenu()
+    public void togglePauseMenu()
     {
         isPaused = !isPaused;
     }

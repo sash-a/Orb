@@ -233,7 +233,7 @@ public class MapManager : NetworkBehaviour
         localPlayer.transform.position = new Vector3(0, -30, 0);
         GetComponent<MapAssetManager>().genAssets();
         BuildLog.writeLog("Map finished");
-        Debug.Log("Map finished locally on server = " + isServer);
+        Debug.Log("Map finished locally on (server = " + isServer+")");
     }
 
 
@@ -414,6 +414,7 @@ public class MapManager : NetworkBehaviour
     {
         if (useSmoothingInGen)
         {
+            Debug.Log("smoothing voxels locally");
             for (int k = 0; k < 2; k++)
             {
                 for (int i = 0; i < mapLayers; i++)

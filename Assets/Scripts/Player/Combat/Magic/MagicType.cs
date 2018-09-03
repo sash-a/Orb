@@ -71,4 +71,33 @@ public class MagicType
         isForcePush = false;
         isDigger = true;
     }
+
+    public void upgrade(PickUpItem.ItemType artifactType)
+    {
+        manaRegen *= 1.5f;
+
+        if (artifactType == PickUpItem.ItemType.DAMAGE_ARTIFACT)
+        {
+            attackDamage *= 1.8f;
+            attackEnvDamage *= 1.2f;
+            attackRange *= 1.8f; // TODO extend effect!
+            attackMana *= 1.2f;
+
+        }
+        else if (artifactType == PickUpItem.ItemType.HEALER_ARTIFACT)
+        {
+            heal *= 1.8f;
+            shieldMana *= 1.2f;
+            initialShieldMana *= 1.2f;
+            shieldHealth *= 1.8f;
+            // TODO shield type/size!
+        }
+        else if (artifactType == PickUpItem.ItemType.TELEPATH_ARTIFACT)
+        {
+            telekenMana *= 1.2f;
+            telekenRange *= 1.8f;
+            
+            // TODO can hit humans and can teleken bigger blocks!
+        }
+    }
 }

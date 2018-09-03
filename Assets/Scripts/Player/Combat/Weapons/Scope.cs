@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Scope : MonoBehaviour {
 
-    public Animator animator;
+    //public Animator animator;
     private bool scopedIn = false;
 
     public GameObject ScopeOverlay;
@@ -19,11 +19,11 @@ private void Update()
         if(Input.GetButtonDown("Fire2"))
         {
             scopedIn = !scopedIn;
-            animator.SetBool("isScoped", scopedIn);
+            //animator.SetBool("isScoped", scopedIn);
             
             if(scopedIn)
             {
-                StartCoroutine(onScoped());
+               onScoped();
             }
             else
             {
@@ -45,10 +45,10 @@ private void Update()
     }
 
     //coroutine
-    IEnumerator onScoped()
+    void onScoped()
     {
         //will wait certain amount of seconds before calling rest of the code (animation transition time)
-        yield return new WaitForSeconds(.15f);
+        //yield return new WaitForSeconds(.15f);
         //display scope picture
         ScopeOverlay.SetActive(true);
         //disable camera that sees guns (when scoping)

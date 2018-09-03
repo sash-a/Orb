@@ -17,7 +17,7 @@ public class Voxel : NetworkBehaviour
     // decrease constant to move blocks further away from eachother//0.0025 - overlaps slightly ; 0.00249 leaves minute gap
 
     //0.002485 overlaps
-    public static float scaleRatio = (0.00248f * MapManager.mapSize + extrudeLength * MapManager.mapSize / 200) / (0.00248f * MapManager.mapSize);
+    public static float scaleRatio;
     public double scale;
 
     [SyncVar] public int columnID;
@@ -49,6 +49,8 @@ public class Voxel : NetworkBehaviour
 
     private void Start()
     {
+        extrudeLength = 0.014f * (float)(Math.Pow(0.75, (MapManager.splits + 1) / 2));
+        scaleRatio = (0.00248f * MapManager.mapSize + extrudeLength * MapManager.mapSize / 200) / (0.00248f * MapManager.mapSize);
         isMelted = false;
         if (centreOfObject.Equals(Vector3.zero))
         {
@@ -59,6 +61,9 @@ public class Voxel : NetworkBehaviour
         {
             rand = new System.Random(layer * columnID + columnID);
         }
+
+        GetComponent<MeshRenderer>().receiveShadows = false;
+        GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
         gameObject.tag = "TriVoxel";
         MapManager man = MapManager.manager;

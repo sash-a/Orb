@@ -49,7 +49,7 @@ public class VoxelGen
             voxel.AddComponent<NetworkIdentity>();
             voxel.AddComponent<NetHealth>().maxHealth = 10;
             voxel.AddComponent<Telekinesis>().enabled = false; // Enabled if telekenisis is used on voxel
-            
+
             // ----------------- Network transform ------------------------
             var netTrans = voxel.gameObject.AddComponent<NetworkTransform>();
             // netTrans.sendInterval = 16; // this its buggy and sets the threshhold to 0.
@@ -184,11 +184,11 @@ public class VoxelGen
     private Vector3[] getVolumeVertices()
     {
         //Debug.Log(extrudeFrac);
-        Vector3 v4 = v1 - (Voxel.extrudeLength * getExtrudeDir(v1));
-        Vector3 v5 = v2 - (Voxel.extrudeLength * getExtrudeDir(v2));
-        Vector3 v6 = v3 - (Voxel.extrudeLength * getExtrudeDir(v3));
+        Vector3 v4 = v1 - ((float)(Math.Pow(0.75, (MapGen.splits + 1) / 2)) * Voxel.extrudeLength * getExtrudeDir(v1));
+        Vector3 v5 = v2 - ((float)(Math.Pow(0.75, (MapGen.splits + 1) / 2)) * Voxel.extrudeLength * getExtrudeDir(v2));
+        Vector3 v6 = v3 - ((float)(Math.Pow(0.75, (MapGen.splits + 1) / 2)) * Voxel.extrudeLength * getExtrudeDir(v3));
         //voxel.GetComponent<Voxel>().addOuterPoints(v4, v5, v6);
-        return new Vector3[] {v1, v2, v3, v4, v5, v6};
+        return new Vector3[] { v1, v2, v3, v4, v5, v6 };
     }
 
     public static void genVolumeTriangles()

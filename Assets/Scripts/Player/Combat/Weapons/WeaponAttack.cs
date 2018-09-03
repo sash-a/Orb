@@ -10,12 +10,6 @@ using System.Collections.Generic;
 [RequireComponent(typeof(ResourceManager))]
 public class WeaponAttack : AAttackBehaviour
 {
-    public ParticleSystem PistolMuzzleFlash;
-    public ParticleSystem AssaultMuzzleFlash;
-    public ParticleSystem ShotgunMuzzleFlash;
-    public ParticleSystem SniperMuzzleFlash;
-    public ParticleSystem DiggingBeam;
-
     public GameObject hitEffect;
     public GameObject explosionEffect;
     public EnergyBlockEffectSpawner energyBlockEffectSpawner;
@@ -44,6 +38,8 @@ public class WeaponAttack : AAttackBehaviour
     // Animation
     public Animator animator;
     private bool isCarryingPistol = true;
+    private bool isReloading = false;
+    private bool isThrowingGrenade = false;
 
     public WeaponWheel weaponWheel;
 
@@ -51,40 +47,11 @@ public class WeaponAttack : AAttackBehaviour
     {
         resourceManager = GetComponent<ResourceManager>();
         energyBlockEffectSpawner = GetComponent<EnergyBlockEffectSpawner>();
-        //List of all weapons in the game
-//        weapons = new List<WeaponType>();
-        //normal weapons:
-//        WeaponType diggingTool = new WeaponType(WeaponType.DIGGING_TOOL, 1, 15, 20, 30, DiggingBeam);
-//        WeaponType pistol =
-//            new WeaponType(WeaponType.PISTOL, 5, 5, 60, 5, 20, 10, PistolMuzzleFlash, 20, 12, 300, 12, 5, 12);
-//        WeaponType assault = //pA origonally 300
-//            new WeaponType(WeaponType.RIFLE, 3, 3, 70, 8, 40, 20, AssaultMuzzleFlash, 30000, 30, 500, 30, 10, 30);
-//        WeaponType shotgun = //pA origonally 100
-//            new WeaponType(WeaponType.SHOTGUN, 12, 12, 30, 2, 35, 20, ShotgunMuzzleFlash, 1000, 6, 300, 6, 5, 6);
-//        WeaponType sniper =
-//            new WeaponType(WeaponType.SNIPER, 12, 12, 350, 1, 50, 25, SniperMuzzleFlash, 60, 12, 100, 12, 10, 10);
-//
-//        //Special weapons:
-//        WeaponType Ex_crossbow = new WeaponType(WeaponType.EX_CROSSBOW, 60, 1, 8, 20, 40, 20, 5, 1);
-//        //number of current grenades, grenade capacity
-//        WeaponType grenade = new WeaponType(WeaponType.GRENADE, 6, 6, 5, 1);
-        //needs to be added in the exact same order as the prefabs under player camera to work NB!!!
-//        weapons.Add(diggingTool);
-//        weapons.Add(pistol);
-//        weapons.Add(assault);
-//        weapons.Add(shotgun);
-//        weapons.Add(sniper);
-//        weapons.Add(Ex_crossbow);
-
-        //Needs to be added last for its method to work
-//        weapons.Add(grenade);
 
         equippedWeapons.Add(weapons[0]);
         equippedWeapons.Add(weapons[1]);
-        //equippedWeapons.Add(assault);
-        //equippedWeapons.Add(shotgun);
+
         equippedWeapons.Add(weapons[2]);
-        //equippedWeapons.Add(Ex_crossbow);
     }
 
     private void Update()
@@ -143,16 +110,20 @@ public class WeaponAttack : AAttackBehaviour
             }
         }
 
-        if (Input.GetButton("Fire1") && Time.time >= weapons[selectedWeapon].nextTimeToFire)
+        if (Input.GetButton("Fire1") && Time.time >= weapons[selectedWeapon].nextTimeToFire && !isReloading && !isThrowingGrenade)
         {
             weapons[selectedWeapon].nextTimeToFire = Time.time + 1f / weapons[selectedWeapon].fireRate;
             attack();
+            if (!isCarryingPistol) //isCarryingPistol updated in animation method
+            {
+                animator.SetTrigger("rifleShoot");
+            }
         }
 
         if (Input.GetKey(KeyCode.R) && weapons[selectedWeapon].name != WeaponType.DIGGING_TOOL)
         {
             //Debug.Log("Reload!");
-            Reload(weapons[selectedWeapon].ammunition);
+            StartCoroutine(Reload(weapons[selectedWeapon].ammunition));
         }
 
         //NB: This method will only work if grenades is last item in weapons array
@@ -165,10 +136,10 @@ public class WeaponAttack : AAttackBehaviour
             }
         }
 
-        PistolToRifleAnimation();
+       Animation();
     }
 
-    void PistolToRifleAnimation()
+    void Animation()
     {
         if (weapons[selectedWeapon].name == WeaponType.DIGGING_TOOL ||
             weapons[selectedWeapon].name == WeaponType.PISTOL)
@@ -181,16 +152,29 @@ public class WeaponAttack : AAttackBehaviour
         }
 
         animator.SetBool("isCarryingPistol", isCarryingPistol);
+        animator.SetBool("isReloading", isReloading);
+        animator.SetBool("isThrowingGrenade", isThrowingGrenade);
     }
 
     [Command]
     public void CmdthrowGrenade()
     {
+        grenadeAnimation();
+
         GameObject grenade =
             Instantiate(grenadePrefab, grenadeSpawn.transform.position, grenadeSpawn.transform.rotation);
         Rigidbody rb = grenade.GetComponent<Rigidbody>();
         rb.AddForce(cam.transform.forward * throwForce, ForceMode.VelocityChange);
         NetworkServer.Spawn(grenade);
+        
+    }
+
+    IEnumerator grenadeAnimation()
+    {
+        isThrowingGrenade = true;
+        //wait for grenade animation to finish
+        yield return new WaitForSeconds(3.2f);
+        isThrowingGrenade = false;
     }
 
     [Command]
@@ -210,12 +194,18 @@ public class WeaponAttack : AAttackBehaviour
         NetworkServer.Spawn(hitParticle);
     }
 
-    public void Reload(Ammo A)
+    IEnumerator Reload(Ammo A)
     {
         if (A.getMagAmmo() != A.getMagSize() && A.getPrimaryAmmo() != 0)
         {
             resourceManager.reloadMagazine(A.getMagSize() - A.getMagAmmo(), A);
+
+            isReloading = true;
+            //wait length of animation (3.3 seconds)
+            yield return new WaitForSeconds(3.3f);
+            isReloading = false;
         }
+        
     }
 
     [Client]
@@ -242,7 +232,7 @@ public class WeaponAttack : AAttackBehaviour
             if (weapons[selectedWeapon].name != WeaponType.DIGGING_TOOL && !weapons[selectedWeapon].isExplosive)
             {
                 //only works when the particle effect is dragged in directly from the gun's children for some reason 
-                //its because: it can't be prefab needs to specifically be particle effect - will modify this later
+                //its because: it can't be prefab needs to specifically be particle effect
                 weapons[selectedWeapon].muzzleFlash.Play();
 
                 //Relevant to ammo
@@ -253,7 +243,6 @@ public class WeaponAttack : AAttackBehaviour
                 // this isnt working for some reason
                 // weapons[selectedWeapon].digBeam.Play();
             }
-
 
             // Shooting
             // Shooting ray from camera
@@ -298,7 +287,7 @@ public class WeaponAttack : AAttackBehaviour
                     energyBlockEffectSpawner.spawnBlock();
                 }
 
-                // What is this!? (Sasha)
+                // What is this!? (Sasha) <- dont know either, shane coded this (liron)
                 voxel.lastHitRay = new Ray(cam.transform.position, cam.transform.forward);
                 voxel.lastHitPosition = hitFromGun.point;
             }

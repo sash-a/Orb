@@ -42,9 +42,10 @@ public class MagicAttack : AAttackBehaviour
     /// 0 = Digger
     /// 1 = Damage/Heal
     /// 2 = Telekinesis
-    /// 3 = push? (not implemented)
     /// </summary>
     public int currentWeapon;
+
+    [SerializeField] private float pickupDistance;
 
     void Start()
     {
@@ -105,6 +106,13 @@ public class MagicAttack : AAttackBehaviour
 
         // Damaging
         if (isDamaging && resourceManager.hasEnergy()) damage(hit);
+        
+        // Trying to pick up something
+        if (Input.GetButtonDown("Use"))
+        {
+            Debug.Log("Pickup called");
+            pickup();
+        }
     }
 
     [Client]
@@ -531,6 +539,22 @@ public class MagicAttack : AAttackBehaviour
 
     #endregion
 
+    public void pickup()
+    {
+        RaycastHit hit;
+        if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, pickupDistance, mask)) return;
+                
+        PickUpItem item = hit.transform.gameObject.GetComponentInChildren<PickUpItem>(); // Pickup item lives on parent
+        
+        if (item == null) return;
+
+        if (item.itemClass == PickUpItem.Class.MAGICIAN)
+        {
+            // TODO: check if has artifact and downgrade if he does
+            attackStats.upgrade(item.itemType);
+        }
+    }
+    
     #region syncParticleEffects
 
     /*

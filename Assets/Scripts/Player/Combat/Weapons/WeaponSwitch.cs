@@ -3,9 +3,6 @@
 //collab is a cunt
 public class WeaponSwitch : MonoBehaviour {
     
-    //starting weapon
-    //private int selectedWeapon = 0;
-
     public WeaponAttack attack;
 
 	void Start ()

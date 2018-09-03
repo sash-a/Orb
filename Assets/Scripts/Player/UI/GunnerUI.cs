@@ -100,10 +100,16 @@ public class GunnerUI : PlayerUI
     void displayWeaponWheel()
     {
         if (Input.GetKeyDown(KeyCode.Q))
+        {
             weaponWheel.SetActive(true);
+            togglePauseMenu();
+        }
 
         if (Input.GetKeyUp(KeyCode.Q))
+        {
             weaponWheel.SetActive(false);
+            togglePauseMenu();
+        }
     }
 
     void showEquipped()
