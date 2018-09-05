@@ -125,16 +125,17 @@ public class MapManager : NetworkBehaviour
             // In the event that a voxel from each column has been spawned - but there are extra voxels undrground
             // which have not yet been spawned - the system waits an additional realtime second for the remaining
             // voxels to arrive
-                        //StartCoroutine(NetworkMapGen.mapGen.InitVoxels());
+            //StartCoroutine(NetworkMapGen.mapGen.InitVoxels());
         }
     }
 
 
- 
 
-   public IEnumerator allSurfaceVoxelsLoadedServerSide()
+
+    public IEnumerator allSurfaceVoxelsLoadedServerSide()
     {
-        if (!isServer) {
+        if (!isServer)
+        {
             Debug.LogError("trying to do server map opperations on client side");
         }
         yield return new WaitForSeconds(1.4f);
@@ -207,19 +208,19 @@ public class MapManager : NetworkBehaviour
         }
 
 
-            if (useHills)
-            {
-                //Debug.Log("creating hills");
-                deviateHeights();
-            }
-            else
-            {
-                //Debug.Log("finishing map - no caves no hills");
-                finishMapLocally();
-            }
+        if (useHills)
+        {
+            //Debug.Log("creating hills");
+            deviateHeights();
+        }
+        else
+        {
+            //Debug.Log("finishing map - no caves no hills");
+            finishMapLocally();
+        }
 
         CaveManager.manager.gatherCaveVoxels();
-        
+
     }
 
     public void finishMapLocally()
@@ -233,12 +234,15 @@ public class MapManager : NetworkBehaviour
         localPlayer.transform.position = new Vector3(0, -30, 0);
         GetComponent<MapAssetManager>().genAssets();
         BuildLog.writeLog("Map finished");
-        Debug.Log("Map finished locally on (server = " + isServer+")");
+        Debug.Log("Map finished locally on (server = " + isServer + ")");
     }
 
 
     private void loadNeighboursMap()
     {
+        BuildLog.writeLog("loading neighbours map \n");
+
+
         bool found = false;
         string readText = "";
         try
@@ -247,6 +251,7 @@ public class MapManager : NetworkBehaviour
             if (readText != null && readText.Length > 0)
             {
                 found = true;
+                BuildLog.writeLog("found map in usual dir");
             }
         }
         catch
@@ -255,12 +260,30 @@ public class MapManager : NetworkBehaviour
 
         if (!found)
         {
-            BuildLog.writeLog("trying to move back in directory");
+            BuildLog.writeLog("did not find neighbours map in file dir - trying to move back in directory");
             try
             {
                 readText = File.ReadAllText("../Assets/Resources/Voxels/split" + splits + ".neiMap");
                 if (readText != null && readText.Length > 0)
                 {
+                    BuildLog.writeLog("found map by going back in dir");
+                    found = true;
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        if (!found)
+        {
+            BuildLog.writeLog("did not find neighbours map in prev dir - trying build folder");
+            try
+            {
+                readText = File.ReadAllText("split" + splits + ".neiMap");
+                if (readText != null && readText.Length > 0)
+                {
+                    BuildLog.writeLog("found map in build folder");
                     found = true;
                 }
             }
@@ -272,7 +295,7 @@ public class MapManager : NetworkBehaviour
 
         if (found)
         {
-            //load
+            BuildLog.writeLog("reading neighbours map");
             string[] vs = readText.Split('|');
             for (int i = 0; i < vs.Length; i++)
             {
@@ -326,6 +349,7 @@ public class MapManager : NetworkBehaviour
 
     public void deviateHeights()
     {
+        //Debug.Log("creating hills");
         System.Random r = new System.Random(0);
 
 
@@ -357,13 +381,9 @@ public class MapManager : NetworkBehaviour
             foreach (Voxel vox in voxels[j].Values)
             {
                 //System.Random rand = vox.rand;
-                try
-                {
-                    deviateSingleVoxel(vox);
-                }
-                catch
-                {
-                }
+
+                deviateSingleVoxel(vox);
+
             }
         }
 
@@ -373,11 +393,19 @@ public class MapManager : NetworkBehaviour
 
     public void deviateSingleVoxel(Voxel vox)
     {
+        if (vox == null) { return; }
+
+        //Debug.Log("distorting single voxel");
+
         Vector3[] verts = new Vector3[6];
         MeshFilter filter = vox.gameObject.GetComponent<MeshFilter>();
 
+        float maxHeight = -1;
+        float minHeight = float.MaxValue;
+
         for (int v = 0; v < 3; v++)
         {
+            //Debug.Log("looping through verts");
             Vector3 func = filter.mesh.vertices[v].normalized;
 
             float height = 0;
@@ -393,6 +421,21 @@ public class MapManager : NetworkBehaviour
 
             verts[v] = filter.mesh.vertices[v] + func * height;
             verts[v + 3] = filter.mesh.vertices[v + 3] + func * height;
+
+            if (height > maxHeight)
+            {
+                maxHeight = height;
+            }
+            if (height < minHeight)
+            {
+                minHeight = height;
+            }
+        }
+        //Debug.Log("recaulculating voxel stuff");
+        if (vox.mainAsset != null)
+        {
+            Vector3[] facePoints = vox.getMainFaceAtLayer(vox.mainAsset.voxSide);
+            Vector3 oldPos = (facePoints[0] + facePoints[1] + facePoints[2]) / 3f;
         }
 
         filter.mesh.vertices = verts;
@@ -402,11 +445,16 @@ public class MapManager : NetworkBehaviour
         filter.mesh.RecalculateBounds();
         filter.mesh.RecalculateTangents();
         vox.delegateTexture();
+        vox.maxGradient = (maxHeight - minHeight);
+        //Debug.Log("vox with max grad = " + vox.maxGradient);
+
         if (vox.mainAsset != null)
         {
-            Vector3[] facePoints = vox.getMainFaceAtLayer(vox.mainAsset.voxSide);
+            //Debug.Log("deformed vox with main asset");
+            Vector3[]  facePoints = vox.getMainFaceAtLayer(vox.mainAsset.voxSide);
             Vector3 pos = (facePoints[0] + facePoints[1] + facePoints[2]) / 3f;
             vox.mainAsset.CmdMoveTo(pos * (float)(Math.Pow(Voxel.scaleRatio, Math.Abs(vox.layer))) * MapManager.mapSize);
+            //vox.mainAsset.CmdMoveBy((pos-oldPos)* Math.Abs(maxHeight-minHeight)*10000);
         }
     }
 
@@ -414,7 +462,7 @@ public class MapManager : NetworkBehaviour
     {
         if (useSmoothingInGen)
         {
-            Debug.Log("smoothing voxels locally");
+            //Debug.Log("smoothing voxels locally");
             for (int k = 0; k < 2; k++)
             {
                 for (int i = 0; i < mapLayers; i++)
@@ -559,6 +607,7 @@ public class MapManager : NetworkBehaviour
             return;
         }
 
+        Debug.Log("shredding map");
         if (shredNo == 0)
         {
             shredOrigin = new Vector3(0, mapSize * 2, 0);

@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.VR;
 
 [RequireComponent(typeof(Identifier))]
 public class Shield : NetworkBehaviour
@@ -30,17 +29,24 @@ public class Shield : NetworkBehaviour
         caster = id;
         // UI
         if (isServer) return;
-       
+
         var netHealth = GetComponent<NetHealth>();
         netHealth.setInitialHealth(maxHealth);
         if (caster.UI != null)
         {
-            ((MagicianUI)caster.UI).onShieldUp(netHealth); // server error on cast
+            ((MagicianUI) caster.UI).onShieldUp(netHealth); // server error on cast
             Debug.Log(GetComponent<NetHealth>().getHealth() + "/" + GetComponent<NetHealth>().maxHealth);
         }
-        else {
-            Debug.LogError("null UI component ");
+        else
+        {
+            Debug.LogError("null UI component");
         }
+
+        // Move camera
+//        var camPivot = GameManager.getObject(caster.id).GetComponentInChildren<Camera>().transform.parent.transform;
+//        Debug.Log("moving cam " + camPivot.position);
+//        camPivot.position += camPivot.up * 2;
+//        Debug.Log("moved cam " + camPivot.position);
     }
 
 

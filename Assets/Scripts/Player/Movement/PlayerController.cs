@@ -39,7 +39,15 @@ public class PlayerController : MonoBehaviour
         var yMov = Input.GetAxis("Vertical") * transform.forward;
         var velocity = (xMov + yMov).normalized * speed;
 
-        actions.move(Input.GetKey(KeyCode.LeftShift) ? velocity * runMultiplier : velocity);
+        if (!animator.GetBool("isReloading"))
+        {
+            actions.move(Input.GetKey(KeyCode.LeftShift) ? velocity * runMultiplier : velocity);
+        }
+        else
+        {
+            actions.move(Input.GetKey(KeyCode.LeftShift) ? velocity * 1 : velocity);
+        }
+            
         
         // Rotation
         var yRot = new Vector3(0, Input.GetAxis("Mouse X"), 0) * lookSens;
@@ -61,12 +69,15 @@ public class PlayerController : MonoBehaviour
         yMove = Input.GetAxis("Vertical");
         xMove = Input.GetAxis("Horizontal");
 
-        if (Input.GetKey(KeyCode.LeftShift))
+        if (!animator.GetBool("isReloading"))
         {
-            yMove *= 2;
-            xMove *= 2;
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                yMove *= 2;
+                xMove *= 2;
+            }
         }
-
+        
         yMoveOld = yMoveOld + (yMove - yMoveOld) * (interpSpeed /( Mathf.Round(yMove) ==0 ? 1 :(float)Mathf.Abs(Mathf.Round(yMove))));
         xMoveOld = xMoveOld + (xMove - xMoveOld) * (interpSpeed / (Mathf.Round(xMove) == 0 ? 1 : (float)Mathf.Abs(Mathf.Round(xMove))));
 

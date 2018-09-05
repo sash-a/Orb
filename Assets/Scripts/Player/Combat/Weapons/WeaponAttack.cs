@@ -111,7 +111,8 @@ public class WeaponAttack : AAttackBehaviour
             }
         }
 
-        if (Input.GetButton("Fire1") && Time.time >= weapons[selectedWeapon].nextTimeToFire && !isReloading && !isThrowingGrenade)
+        if (Input.GetButton("Fire1") && Time.time >= weapons[selectedWeapon].nextTimeToFire && !isReloading &&
+            !isThrowingGrenade)
         {
             weapons[selectedWeapon].nextTimeToFire = Time.time + 1f / weapons[selectedWeapon].fireRate;
             attack();
@@ -145,7 +146,7 @@ public class WeaponAttack : AAttackBehaviour
             }
         }
 
-       Animation();
+        Animation();
         //Debug.Log(isThrowingGrenade);
     }
 
@@ -176,7 +177,7 @@ public class WeaponAttack : AAttackBehaviour
         rb.AddForce(cam.transform.forward * throwForce, ForceMode.VelocityChange);
         NetworkServer.Spawn(grenade);
     }
-    
+
     IEnumerator wait(float time)
     {
         yield return new WaitForSeconds(time);
@@ -210,7 +211,6 @@ public class WeaponAttack : AAttackBehaviour
             yield return new WaitForSeconds(3.3f);
             isReloading = false;
         }
-        
     }
 
     [Client]
@@ -295,6 +295,11 @@ public class WeaponAttack : AAttackBehaviour
                 // What is this!? (Sasha) <- dont know either, shane coded this (liron)
                 voxel.lastHitRay = new Ray(cam.transform.position, cam.transform.forward);
                 voxel.lastHitPosition = hitFromGun.point;
+            }
+
+            if (hitFromGun.collider.CompareTag("Shield"))
+            {
+                CmdShieldHit(hitFromGun.collider.gameObject, weapons[selectedWeapon].damage);
             }
         }
         else

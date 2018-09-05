@@ -1389,6 +1389,8 @@ GameObject:
   - component: {fileID: 114406981523820792}
   - component: {fileID: 114204149103748308}
   - component: {fileID: 114280457617170028}
+  - component: {fileID: 95345444210390770}
+  - component: {fileID: 114755291329041874}
   m_Layer: 0
   m_Name: GunnerWithModel
   m_TagString: Player
@@ -3661,6 +3663,24 @@ AudioListener:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1152568004159054}
   m_Enabled: 1
+--- !u!95 &95345444210390770
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1779332119490236}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 390f61dc223a2e04587453ba4c84bc90, type: 3}
+  m_Controller: {fileID: 9100000, guid: 9051bf2598aadda4fb95abffb5be5286, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!95 &95425248588541646
 Animator:
   serializedVersion: 3
@@ -4210,6 +4230,25 @@ MonoBehaviour:
   jumpForce: 2000
   runMultiplier: 1.7
   animator: {fileID: 95862667050278438}
+--- !u!114 &114755291329041874
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1779332119490236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1590678366, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Animator: {fileID: 95862667050278438}
+  m_ParameterSendBits: 255
+  param0: 
+  param1: 
+  param2: 
+  param3: 
+  param4: 
+  param5: 
 --- !u!114 &114756227243509672
 MonoBehaviour:
   m_ObjectHideFlags: 1

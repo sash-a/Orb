@@ -28,6 +28,7 @@ public class Voxel : NetworkBehaviour
 
     [SyncVar] public Vector3 centreOfObject; // centre of the object in object space
     [SyncVar] public Vector3 worldCentreOfObject; // the centre of this object as it is in world space
+    public float maxGradient;
 
     public System.Random rand;
     public MeshFilter filter;
@@ -131,28 +132,6 @@ public class Voxel : NetworkBehaviour
 
                 MapManager.manager.voxelSpawned(columnID);
 
-                if (isServer && rand.NextDouble() < 0.2f && MapManager.usePortals)
-                {
-                    bool farEnough = true;
-                    foreach (Portal p in MapManager.manager.portals)
-                    {
-                        if (Vector3.Distance(
-                                p.gameObject.GetComponent<MeshFilter>().mesh.vertices[0] *
-                                p.gameObject.transform.localScale.x, worldCentreOfObject) < 150)
-                        {
-                            //Debug.Log("cant place portal because its too close: " + (Vector3.Distance(p.gameObject.GetComponent<MeshFilter>().mesh.vertices[0] * MapManager.mapSize, worldCentreOfObject)));
-                            farEnough = false;
-                        }
-                    }
-
-                    if (farEnough)
-                    {
-                        GameObject portal =
-                            (GameObject)Instantiate(Resources.Load<UnityEngine.Object>("Prefabs/Map/Portal"));
-                        portal.GetComponent<Portal>().createFromVoxel(this);
-                        NetworkServer.Spawn(portal);
-                    }
-                }
 
                 if (!isServer && MapManager.manager.mapDoneLocally && MapManager.useHills)
                 {
@@ -721,7 +700,7 @@ public class Voxel : NetworkBehaviour
             return;
         }
         //Debug.Log("smoothing block");
-
+        bool smoothed = false;
         if (MapManager.manager.isDeleted(layer + 1, columnID) || MapManager.manager.isDeleted(layer - 1, columnID))
         {
             try
@@ -1151,6 +1130,11 @@ public class Voxel : NetworkBehaviour
         }
 
         updateCollider();
+        if (mainAsset != null)
+        {
+            mainAsset.transform.position += (transform.position).normalized;
+            //mainAsset.CmdMoveBy((transform.position).normalized);
+        }
     }
 
     public void updateCollider()

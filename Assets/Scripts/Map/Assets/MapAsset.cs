@@ -18,7 +18,7 @@ public class MapAsset : NetworkBehaviour
 
     Rigidbody rb;
     GameObject asset;
-    public Voxel voxel;
+     public Voxel voxel;
     [SyncVar] int layer;
     [SyncVar] int colID;
     [SyncVar] public int voxSide;//which side of the voxel this assset is attached to
@@ -33,8 +33,8 @@ public class MapAsset : NetworkBehaviour
 
     void Start()
     {
-        united = !(type.Equals(Type.MAIN) || type.Equals(Type.ALTAR)); 
-        if (type.Equals(Type.MAIN)|| type.Equals(Type.ALTAR))
+        united = !(type.Equals(Type.MAIN) || type.Equals(Type.ALTAR));
+        if (type.Equals(Type.MAIN) || type.Equals(Type.ALTAR))
         {
             //Debug.Log("setting asset to voxel");
             MapManager.manager.voxels[layer][colID].mainAsset = this;
@@ -47,10 +47,10 @@ public class MapAsset : NetworkBehaviour
         try
         {
             //if (!transformed) {
-                if (!forward.Equals(Vector3.zero) && !(-transform.position.normalized).Equals(Vector3.zero))
-                {
-                    rb.MoveRotation(Quaternion.LookRotation(forward, -transform.position.normalized));//stand up straight
-                }
+            if (!forward.Equals(Vector3.zero) && !(-transform.position.normalized).Equals(Vector3.zero))
+            {
+                rb.MoveRotation(Quaternion.LookRotation(forward, -transform.position.normalized));//stand up straight
+            }
             //}
             rb.isKinematic = true;
         }
@@ -69,15 +69,15 @@ public class MapAsset : NetworkBehaviour
         GameObject ass = null;
 
         //ass = Instantiate(Resources.Load<GameObject>("Prefabs/Map/MapAssets/Palm_Tree"), vox.worldCentreOfObject, Quaternion.identity);
-        if (tp.Equals(Type.MAIN)|| tp.Equals(Type.ALTAR) || tp.Equals(Type.CRITTERSPANWER))
+        if (tp.Equals(Type.MAIN) || tp.Equals(Type.ALTAR) || tp.Equals(Type.CRITTERSPANWER))
         {
-            ass = spawnMainAsset(vox, side,tp);
+            ass = spawnMainAsset(vox, side, tp);
         }
         if (tp.Equals(Type.GRASS))
         {
             ass = spawnGrass(vox, side);
         }
-   
+
 
         ass.GetComponent<MapAsset>().voxel = vox;
         ass.GetComponent<MapAsset>().colID = vox.columnID;
@@ -85,7 +85,8 @@ public class MapAsset : NetworkBehaviour
         ass.GetComponent<MapAsset>().voxSide = side;
 
 
-        if (tp.Equals(Type.MAIN) || tp.Equals(Type.ALTAR)) {
+        if (tp.Equals(Type.MAIN) || tp.Equals(Type.ALTAR))
+        {
             NetworkServer.Spawn(ass);
         }
         return ass.GetComponent<MapAsset>();
@@ -171,7 +172,8 @@ public class MapAsset : NetworkBehaviour
             NetworkServer.Destroy(gameObject);
             return;
         }
-        if (type.Equals(Type.MAIN) || type.Equals(Type.ALTAR)) {
+        if (type.Equals(Type.MAIN) || type.Equals(Type.ALTAR))
+        {
             voxel.mainAsset = this;
         }
         //changeParent(voxel.gameObject.transform);
@@ -189,20 +191,21 @@ public class MapAsset : NetworkBehaviour
         {
             //Debug.Log("main asset final pos: " + transform.position );
         }
-        
+
     }
 
     bool transformed = false;
     public void setTransform()
     {
-        if (!united && (type.Equals(Type.MAIN)|| type.Equals(Type.ALTAR))) {
+        if (!united && (type.Equals(Type.MAIN) || type.Equals(Type.ALTAR)))
+        {
             Debug.Log("not united yet - cant transform " + type.ToString());
             return;
         }
 
         if (transformed)
         {
-            Debug.Log("resetting map transform again type: " + type.ToString() + " united: "  + united + "id: " + layer + " ; " + colID);
+            Debug.Log("resetting map transform again type: " + type.ToString() + " united: " + united + "id: " + layer + " ; " + colID);
             return;
         }
 
@@ -210,7 +213,8 @@ public class MapAsset : NetworkBehaviour
         {
             //Debug.Log("transforming grass");
         }
-        else {
+        else
+        {
             //Debug.Log("transforming local non grass asset: " + type.ToString() + " united: " + united + "id: " + layer + " ; " + colID);
         }
 
@@ -218,7 +222,8 @@ public class MapAsset : NetworkBehaviour
         Vector3 pos = (facePoints[0] + facePoints[1] + facePoints[2]) / 3f;
 
         transform.position = pos * (float)(Math.Pow(Voxel.scaleRatio, Math.Abs(layer))) * MapManager.mapSize;
-        if (type.Equals(Type.MAIN)) {
+        if (type.Equals(Type.MAIN))
+        {
             //Debug.Log("moving main asset to: " + transform.position + " children: " + transform.childCount + " united: " + united);
         }
 
@@ -234,8 +239,8 @@ public class MapAsset : NetworkBehaviour
         if (moveAlongFace)
         {
             //Debug.Log("varying grass pos. pos before:  " + transform.position);
-            float mag =0.055f* MapManager.mapSize / (float)Math.Pow(2,MapManager.splits);
-            transform.position += forward * (float)(rand.NextDouble() - 0.5f) * mag + right * (float)(rand.NextDouble() - 0.5f) * mag ;
+            float mag = 0.055f * MapManager.mapSize / (float)Math.Pow(2, MapManager.splits);
+            transform.position += forward * (float)(rand.NextDouble() - 0.5f) * mag + right * (float)(rand.NextDouble() - 0.5f) * mag;
             //Debug.Log("pos after: " + transform.position);
         }
 
@@ -243,16 +248,19 @@ public class MapAsset : NetworkBehaviour
         float size;
         if (varySize)
         {
-             size = (float)(rand.NextDouble() * 0.6f + 0.4);//supposed to be height*wdth
+            size = (float)(rand.NextDouble() * 0.6f + 0.4);//supposed to be height*wdth
         }
-        else {
+        else
+        {
             size = 0.6f;
         }
 
-        if (type.Equals(Type.MAIN) && layer ==0) {
+        if (type.Equals(Type.MAIN) && layer == 0)
+        {
             transform.position += -transform.localScale.y * transform.position * 0.003f * voxSide;
         }
-        if (type.Equals(Type.CRITTERSPANWER)) {
+        if (type.Equals(Type.CRITTERSPANWER))
+        {
             transform.position += -transform.localScale.y * transform.position * 0.001f * voxSide;
         }
 
@@ -263,12 +271,14 @@ public class MapAsset : NetworkBehaviour
             transform.localScale.x * width,
             transform.localScale.y * height,
             transform.localScale.z * width);
-        if (!(type.Equals(Type.ALTAR) || type.Equals(Type.CRITTERSPANWER))) {
+        if (!(type.Equals(Type.ALTAR) || type.Equals(Type.CRITTERSPANWER)))
+        {
             transform.Rotate(new Vector3((float)(rand.NextDouble() * rotateVariation + rotateVariation * 0.5f), (float)(rand.NextDouble() * rotateVariation + rotateVariation * 0.5f), (float)(rand.NextDouble() * rotateVariation + rotateVariation * 0.5f)));
         }
         transformed = true;
         //Debug.Log("resized local asset to: " + (new Vector3( transform.localScale.x * width,transform.localScale.y * height,transform.localScale.z * width)));
-        if (type.Equals(Type.ALTAR)) {
+        if (type.Equals(Type.ALTAR))
+        {
             //Debug.Log("altar setting transform");
             transform.GetChild(0).gameObject.GetComponent<Altar>().spawnCollectable();
         }
@@ -313,7 +323,8 @@ public class MapAsset : NetworkBehaviour
 
     private void Update()
     {
-        if ((voxel == null||voxel.isMelted) && type.Equals(Type.GRASS)) {
+        if ((voxel == null || voxel.isMelted) && type.Equals(Type.GRASS))
+        {
             //Debug.Log("grass had vox removed - falling: " + falling + " ready: " + ready);
         }
 
@@ -322,7 +333,8 @@ public class MapAsset : NetworkBehaviour
             if (rb.isKinematic)
             {
                 rb.isKinematic = false;
-                if (type.Equals(Type.GRASS)) {
+                if (type.Equals(Type.GRASS))
+                {
                     //Debug.Log("assets voxel has been deleted");
                 }
             }
@@ -332,7 +344,8 @@ public class MapAsset : NetworkBehaviour
                 {
                     Destroy(gameObject);
                 }
-                else {
+                else
+                {
                     CmdAddGravity();
                     rb.AddForce(transform.forward, ForceMode.Acceleration);
                 }
@@ -363,11 +376,27 @@ public class MapAsset : NetworkBehaviour
 
     }
 
+    [Command]
+    internal void CmdMoveBy(Vector3 vector3)
+    {
+        Debug.Log("cmd moving by : " + vector3);
+        RpcMoveBy(vector3);
+    }
+
+    [ClientRpc]
+    private void RpcMoveBy(Vector3 pos)
+    {
+        transform.position += pos;
+        Debug.Log("moving by : " + pos);
+    }
+
+    [Command]
     internal void CmdMoveTo(Vector3 pos)
     {
         RpcMoveTo(pos);
     }
 
+    [ClientRpc]
     private void RpcMoveTo(Vector3 pos)
     {
         transform.position = pos;

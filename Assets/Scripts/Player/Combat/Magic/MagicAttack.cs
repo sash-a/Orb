@@ -91,6 +91,9 @@ public class MagicAttack : AAttackBehaviour
             }
         }
 
+        //animations might need to go here
+        //use isAttacking, isTeleken, etc for animation parameteres
+
         if (!isLocalPlayer) return;
         // Checks when attack related keys are pressed
         base.Update();
@@ -101,6 +104,9 @@ public class MagicAttack : AAttackBehaviour
         // Ends the shield if no energy remaining
         if (!resourceManager.hasEnergy() && shieldUp) endSecondaryAttack();
 
+        // End attacks if no energy left
+        if (isAttacking && !resourceManager.hasEnergy()) endAttack();
+        
         // Digging
         if (isDigging && resourceManager.hasEnergy()) dig(hit);
 
@@ -223,7 +229,6 @@ public class MagicAttack : AAttackBehaviour
     {
         if (attackStats.isShield)
         {
-            Debug.LogWarning("Ending secondary attack");
             CmdDestroyShield();
             shieldUp = false;
         }

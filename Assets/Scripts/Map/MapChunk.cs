@@ -47,12 +47,25 @@ public class MapChunk : MonoBehaviour
 
     public void addVoxel(Voxel v)
     {
+        if (v == null) {
+            Debug.LogError("null voxel being added to map chunk " + v);
+            return;
+        }
+
         if (containedVoxels == null)
         {
             containedVoxels = new HashSet<Voxel>();
         }
 
-        //v.GetComponent<NetworkTransform>().enabled = true;
+        NetworkTransform netTrans = v.GetComponent<NetworkTransform>();
+        if (netTrans != null)
+        {
+            netTrans.enabled = true;
+        }
+        else
+        {
+            Debug.LogError("voxel " + v.layer + " ; " + v.columnID + " has no network transform");
+        }
         containedVoxels.Add(v);
         //v.GetComponent<Rigidbody>().isKinematic = true;
         Destroy(v.GetComponent<Rigidbody>());
