@@ -109,7 +109,7 @@ public class WeaponWheel : MonoBehaviour
         if (rm.getEnergy() >= healthCost && playerHealth.getHealth() != playerHealth.maxHealth)
         {
             rm.useEnergy(healthCost);
-            playerHealth.setInitialHealth(playerHealth.maxHealth);
+            playerHealth.heal(playerHealth.maxHealth);
         }
     }
 
@@ -121,7 +121,7 @@ public class WeaponWheel : MonoBehaviour
         if (rm.getEnergy() > armorCost)
         {
             rm.useEnergy(armorCost);
-            // TODO give armor
+            playerHealth.RpcGetArmour(50);
         }
     }
 

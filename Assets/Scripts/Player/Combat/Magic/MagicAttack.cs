@@ -110,7 +110,6 @@ public class MagicAttack : AAttackBehaviour
         // Trying to pick up something
         if (Input.GetButtonDown("Use"))
         {
-            Debug.Log("Pickup called");
             pickup();
         }
     }
@@ -542,16 +541,17 @@ public class MagicAttack : AAttackBehaviour
     public void pickup()
     {
         RaycastHit hit;
-        if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, pickupDistance, mask)) return;
-                
+        if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, pickupDistance, mask))
+            return;
+        
         PickUpItem item = hit.transform.gameObject.GetComponentInChildren<PickUpItem>(); // Pickup item lives on parent
         
         if (item == null) return;
 
         if (item.itemClass == PickUpItem.Class.MAGICIAN)
         {
-            // TODO: check if has artifact and downgrade if he does
             attackStats.upgrade(item.itemType);
+            item.pickedUp();
         }
     }
     

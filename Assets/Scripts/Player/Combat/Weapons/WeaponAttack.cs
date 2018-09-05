@@ -40,6 +40,7 @@ public class WeaponAttack : AAttackBehaviour
     private bool isCarryingPistol = true;
     private bool isReloading = false;
     private bool isThrowingGrenade = false;
+    private bool isShooting = false;
 
     public WeaponWheel weaponWheel;
 
@@ -114,10 +115,11 @@ public class WeaponAttack : AAttackBehaviour
         {
             weapons[selectedWeapon].nextTimeToFire = Time.time + 1f / weapons[selectedWeapon].fireRate;
             attack();
-            if (!isCarryingPistol) //isCarryingPistol updated in animation method
-            {
-                animator.SetTrigger("rifleShoot");
-            }
+            isShooting = true;
+        }
+        else
+        {
+            isShooting = false;
         }
 
         if (Input.GetKey(KeyCode.R) && weapons[selectedWeapon].name != WeaponType.DIGGING_TOOL)
@@ -127,16 +129,24 @@ public class WeaponAttack : AAttackBehaviour
         }
 
         //NB: This method will only work if grenades is last item in weapons array
-        if (Input.GetKeyUp(KeyCode.G))
+        if (Input.GetKeyUp(KeyCode.G) && !isShooting && !isReloading)
         {
             if (grenade.ammunition.getNumGrenades() > 0)
             {
+                //wait for grenade animation to reach apex of throw
+                isThrowingGrenade = true;
+                StartCoroutine(wait(1.50f));
+                //Spawn Grenade
                 CmdthrowGrenade();
                 resourceManager.useGrenade(1, grenade.ammunition);
+                //Wait for rest of animation to finish
+                StartCoroutine(wait(1.80f));
+                isThrowingGrenade = false;
             }
         }
 
        Animation();
+        //Debug.Log(isThrowingGrenade);
     }
 
     void Animation()
@@ -154,27 +164,22 @@ public class WeaponAttack : AAttackBehaviour
         animator.SetBool("isCarryingPistol", isCarryingPistol);
         animator.SetBool("isReloading", isReloading);
         animator.SetBool("isThrowingGrenade", isThrowingGrenade);
+        animator.SetBool("isShooting", isShooting);
     }
 
     [Command]
     public void CmdthrowGrenade()
     {
-        grenadeAnimation();
-
         GameObject grenade =
             Instantiate(grenadePrefab, grenadeSpawn.transform.position, grenadeSpawn.transform.rotation);
         Rigidbody rb = grenade.GetComponent<Rigidbody>();
         rb.AddForce(cam.transform.forward * throwForce, ForceMode.VelocityChange);
         NetworkServer.Spawn(grenade);
-        
     }
-
-    IEnumerator grenadeAnimation()
+    
+    IEnumerator wait(float time)
     {
-        isThrowingGrenade = true;
-        //wait for grenade animation to finish
-        yield return new WaitForSeconds(3.2f);
-        isThrowingGrenade = false;
+        yield return new WaitForSeconds(time);
     }
 
     [Command]

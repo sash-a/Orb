@@ -1,9 +1,13 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Networking;
 
 public class NetHealth : NetworkBehaviour
 {
     [SerializeField] [SyncVar] private float health;
+    [SerializeField] [SyncVar] private float armour;
+
+    [SerializeField] public float maxArmour;
     [SerializeField] public float maxHealth;
 
     [SyncVar] private bool _isDead;
@@ -20,18 +24,42 @@ public class NetHealth : NetworkBehaviour
     void Start()
     {
         _isDead = false;
-        setInitialHealth(maxHealth);
+//        setInitialHealth(maxHealth, maxArmour);
+        health = maxHealth;
     }
 
+    /// <summary>
+    /// Damages/Heals the gameobject this is connected to on all clients
+    /// </summary>
+    /// <param name="amount">Amount of damage/healing to do, pass in a negative to heal</param>
     [ClientRpc]
     public void RpcDamage(float amount)
     {
         if (isDead) return;
 
+        // Healing
+        if (amount < 0)
+        {
+            heal(-amount);
+            return;
+        }
+
+        // Remove damage from armour first
+        if (amount >= armour)
+        {
+            armour = 0;
+            amount -= armour;
+        }
+        else
+        {
+            armour -= amount;
+            return;
+        }
+
         health -= amount;
         if (isServer)
         {
-            if (health <= 0) 
+            if (health <= 0)
                 die();
             else if (health >= maxHealth)
                 health = maxHealth;
@@ -61,14 +89,33 @@ public class NetHealth : NetworkBehaviour
         return health;
     }
 
-    public void setInitialHealth(float maxHealth)
+    public void setInitialHealth(float maxHealth, float maxArmour = 0, float currentArmour = 0)
     {
         this.maxHealth = maxHealth;
         this.health = maxHealth;
+
+        this.armour = currentArmour;
+        this.maxArmour = maxArmour;
     }
 
     public float getHealthPercent()
     {
         return health / maxHealth;
+    }
+    
+    public float getArmourPercent()
+    {
+        return armour / maxArmour;
+    }
+
+//    [ClientRpc]
+    public void RpcGetArmour(float amount)
+    {
+        armour = Math.Min(maxArmour, armour + amount);
+    }
+    
+    public void heal(float amout)
+    {
+        health = Mathf.Min(health + amout, maxHealth);
     }
 }

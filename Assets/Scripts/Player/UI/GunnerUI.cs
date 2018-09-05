@@ -77,7 +77,7 @@ public class GunnerUI : PlayerUI
     void Update()
     {
         setHealth(health.getHealthPercent());
-        setShield(resourceManager.getGunnerShieldPercent());
+        setShield(health.getArmourPercent());
         setEnergy((int) resourceManager.getEnergy());
         showEquipped();
         displayWeaponWheel();

@@ -33,12 +33,13 @@ public class Altar : MonoBehaviour {
         if (type.Equals(Type.ARTIFACT))
         {
             item.itemClass = PickUpItem.Class.MAGICIAN;
-            item.itemType = (PickUpItem.ItemType)(UnityEngine.Random.Range(PickUpItem.numGuns, PickUpItem.numGuns + PickUpItem.numArtifacts));
+            item.itemType = (PickUpItem.ItemType)(UnityEngine.Random.Range(1 + PickUpItem.numGuns, PickUpItem.numGuns + PickUpItem.numArtifacts));
+            item.GetComponent<ModelSelector>().setModel(item.itemType);
         }
         else
         {
             item.itemClass = PickUpItem.Class.GUNNER;
-            item.itemType = (PickUpItem.ItemType)(UnityEngine.Random.Range(0, PickUpItem.numGuns));
+            item.itemType = (PickUpItem.ItemType)(UnityEngine.Random.Range(1, PickUpItem.numGuns));
         }
     }
 

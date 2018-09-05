@@ -3809,8 +3809,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   energy: 100
   maxEnergy: 100
-  gunnerShield: 0
-  maxGunnerShield: 100
 --- !u!114 &114280457617170028
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3906,7 +3904,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c59f2182146b9a1429f85a8a793f9ef5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  health: 0
+  health: 100
+  armour: 50
+  maxArmour: 100
   maxHealth: 100
 --- !u!114 &114384034673574556
 MonoBehaviour:

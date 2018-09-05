@@ -7,9 +7,6 @@ public class ResourceManager : NetworkBehaviour
     [SerializeField] [SyncVar] private float energy = 100;
     [SerializeField] private float maxEnergy = 100;
 
-    [SerializeField] private float gunnerShield = 0;
-    [SerializeField] private float maxGunnerShield = 100;
-
     /// <summary>
     /// Adds energy to the players resource manager
     /// </summary>
@@ -119,20 +116,5 @@ public class ResourceManager : NetworkBehaviour
     public float getMaxEnergy()
     {
         return maxEnergy;
-    }
-
-    public float getShield()
-    {
-        return gunnerShield;
-    }
-
-    public void setGunnerShield(float amount)
-    {
-        gunnerShield = Mathf.Max(0.0f, Mathf.Min(maxGunnerShield, gunnerShield));
-    }
-
-    public float getGunnerShieldPercent()
-    {
-        return gunnerShield / maxGunnerShield;
     }
 }
