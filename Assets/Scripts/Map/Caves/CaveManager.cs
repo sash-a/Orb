@@ -55,13 +55,13 @@ public class CaveManager : NetworkBehaviour
         foreach (Voxel vox in caveWalls)
         {
             //Debug.Log("vox grad = " + (vox.maxGradient * 1000));
-            if (vox.layer > 3 && vox.mainAsset == null && (vox.maxGradient*1000) <=10)
+            if (vox.layer > 3 && vox.mainAsset == null )
             foreach (int nei in MapManager.manager.neighboursMap[vox.columnID])
             {
                 if (MapManager.manager.doesVoxelExist(vox.layer + 1, nei))
                 {
                     Voxel neighbour = MapManager.manager.voxels[vox.layer + 1][nei];
-                    if (caveFloors.Contains(neighbour))
+                    if (caveFloors.Contains(neighbour) &&(neighbour.maxGradient * 1000) <= 15 && !neighbour.smoothed && neighbour.mainAsset==null)
                     {
                         //Debug.Log("found cave border");
                         neighbour.isCaveBorder = true;

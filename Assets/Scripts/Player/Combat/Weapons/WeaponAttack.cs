@@ -47,7 +47,8 @@ public class WeaponAttack : AAttackBehaviour
     void Start()
     {
         resourceManager = GetComponent<ResourceManager>();
-        energyBlockEffectSpawner = GetComponent<EnergyBlockEffectSpawner>();
+        //energyBlockEffectSpawner = GetComponent<EnergyBlockEffectSpawner>();
+
 
         equippedWeapons.Add(weapons[0]);
         equippedWeapons.Add(weapons[1]);
@@ -111,11 +112,15 @@ public class WeaponAttack : AAttackBehaviour
             }
         }
 
-        if (Input.GetButton("Fire1") && Time.time >= weapons[selectedWeapon].nextTimeToFire && !isReloading &&
-            !isThrowingGrenade)
+        if (Input.GetButton("Fire1") && Time.time >= weapons[selectedWeapon].nextTimeToFire && !isReloading && !isThrowingGrenade)
         {
             weapons[selectedWeapon].nextTimeToFire = Time.time + 1f / weapons[selectedWeapon].fireRate;
             attack();
+
+        }
+
+        if (Input.GetButton("Fire1"))
+        {
             isShooting = true;
         }
         else
@@ -136,6 +141,7 @@ public class WeaponAttack : AAttackBehaviour
             {
                 //wait for grenade animation to reach apex of throw
                 isThrowingGrenade = true;
+                Debug.Log(isThrowingGrenade);
                 StartCoroutine(wait(1.50f));
                 //Spawn Grenade
                 CmdthrowGrenade();
@@ -147,7 +153,6 @@ public class WeaponAttack : AAttackBehaviour
         }
 
         Animation();
-        //Debug.Log(isThrowingGrenade);
     }
 
     void Animation()
@@ -211,6 +216,7 @@ public class WeaponAttack : AAttackBehaviour
             yield return new WaitForSeconds(3.3f);
             isReloading = false;
         }
+
     }
 
     [Client]

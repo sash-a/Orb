@@ -39,7 +39,7 @@ public class PlayerController : MonoBehaviour
         var yMov = Input.GetAxis("Vertical") * transform.forward;
         var velocity = (xMov + yMov).normalized * speed;
 
-        if (!animator.GetBool("isReloading"))
+        if (transform.name.Contains("unner") && animator.GetBool("isReloading") && !animator.GetBool("isShooting"))
         {
             actions.move(Input.GetKey(KeyCode.LeftShift) ? velocity * runMultiplier : velocity);
         }
@@ -69,7 +69,7 @@ public class PlayerController : MonoBehaviour
         yMove = Input.GetAxis("Vertical");
         xMove = Input.GetAxis("Horizontal");
 
-        if (!animator.GetBool("isReloading"))
+        if (transform.name.Contains("unner") && !animator.GetBool("isReloading") && !animator.GetBool("isShooting"))
         {
             if (Input.GetKey(KeyCode.LeftShift))
             {

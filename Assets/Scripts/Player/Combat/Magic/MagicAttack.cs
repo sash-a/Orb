@@ -47,6 +47,9 @@ public class MagicAttack : AAttackBehaviour
 
     [SerializeField] private float pickupDistance;
 
+    //Animation:
+    public Animator animator;
+
     void Start()
     {
         if (!isLocalPlayer) return;
@@ -118,6 +121,17 @@ public class MagicAttack : AAttackBehaviour
         {
             pickup();
         }
+
+        //Animation:
+        Animation();
+    }
+
+    void Animation()
+    {
+        animator.SetBool("isAttacking", isAttacking);
+        animator.SetBool("shieldUp", shieldUp);
+        animator.SetBool("isDigging", isDigging);
+        animator.SetBool("isTelekening", isTelekening);
     }
 
     [Client]
@@ -152,7 +166,11 @@ public class MagicAttack : AAttackBehaviour
                 Debug.Log("hit: " + hitFromHand.collider.name);
             }
 
-            var voxel = hitFromHand.collider.gameObject.GetComponent<Voxel>();
+            Voxel voxel = hitFromHand.collider.gameObject.GetComponent<Voxel>();
+            if (voxel == null) {//tried to telekenetisise a non voxel object
+                Debug.LogError("telekenetisised non voxel object");
+                return;
+            }
             if (voxel.shatterLevel >= 1) // need to change this to accomodate the teleken artifact
             {
                 isTelekening = true;
@@ -261,16 +279,19 @@ public class MagicAttack : AAttackBehaviour
         if (Input.GetKey(KeyCode.Alpha1))
         {
             currentWeapon = 0;
+            changeWeapon();
         }
 
         if (Input.GetKey(KeyCode.Alpha2))
         {
             currentWeapon = 1;
+            changeWeapon();
         }
 
         if (Input.GetKey(KeyCode.Alpha3))
         {
             currentWeapon = 2;
+            changeWeapon();
         }
     }
 

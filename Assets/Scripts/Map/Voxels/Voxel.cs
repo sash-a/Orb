@@ -47,6 +47,7 @@ public class Voxel : NetworkBehaviour
     public bool isCaveCeiling;
     public bool isCaveBorder;
     public bool isMelted;
+    public bool smoothed;
 
     private void Start()
     {
@@ -1004,6 +1005,12 @@ public class Voxel : NetworkBehaviour
         if (!deletedPoints.Contains(pID))
         {
             //hasnt deleted this point already
+            smoothed = true;
+            if (mainAsset != null)
+            {
+                mainAsset.transform.position += (transform.position).normalized;
+                //mainAsset.CmdMoveBy((transform.position).normalized);
+            }
             if (filter.mesh.triangles.Length == 24)
             {
                 //info += "|deleting:" + pID + "|";
@@ -1130,11 +1137,7 @@ public class Voxel : NetworkBehaviour
         }
 
         updateCollider();
-        if (mainAsset != null)
-        {
-            mainAsset.transform.position += (transform.position).normalized;
-            //mainAsset.CmdMoveBy((transform.position).normalized);
-        }
+        
     }
 
     public void updateCollider()

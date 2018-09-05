@@ -16,6 +16,8 @@ public class EnergyBlockEffect : MonoBehaviour
 
     void Update()
     {
+        if (rb == null || target == null) return;
+
         rb.MovePosition(transform.position + (target.position - transform.position) * speed * Time.deltaTime);
     }
 

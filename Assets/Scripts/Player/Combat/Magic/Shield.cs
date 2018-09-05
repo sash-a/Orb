@@ -9,6 +9,8 @@ public class Shield : NetworkBehaviour
     void Start()
     {
         if (!isLocalPlayer) assignRemoteLayer();
+
+        transform.localPosition += transform.up * 2;
     }
 
     public override void OnStartClient()

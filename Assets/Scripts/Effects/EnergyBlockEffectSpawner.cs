@@ -22,7 +22,7 @@ public class EnergyBlockEffectSpawner : NetworkBehaviour
 
     public void spawnBlock()
     {
-        int rand = Random.Range(0, 10);
+        int rand = Random.Range(0, 7);
         // Spawns a block 1 in 6 times
         if (rand == 0)
             CmdSpawnBlock();
