@@ -69,6 +69,19 @@
             </e>
           </e>
           <e p="Standard Assets" t="Include">
+            <e p="Cameras" t="Include">
+              <e p="CameraGuidelines.txt" t="Include" />
+              <e p="Scripts" t="Include">
+                <e p="AbstractTargetFollower.cs" t="Include" />
+                <e p="AutoCam.cs" t="Include" />
+                <e p="FreeLookCam.cs" t="Include" />
+                <e p="HandHeldCam.cs" t="Include" />
+                <e p="LookatTarget.cs" t="Include" />
+                <e p="PivotBasedCameraRig.cs" t="Include" />
+                <e p="ProtectCameraFromWallClip.cs" t="Include" />
+                <e p="TargetFieldOfView.cs" t="Include" />
+              </e>
+            </e>
             <e p="CrossPlatformInput" t="Include">
               <e p="CrossPlatformInputGuidelines.txt" t="Include" />
               <e p="Scripts" t="Include">
@@ -168,6 +181,7 @@
             </e>
           </e>
         </e>
+        <e p="ModelSelector.cs" t="Include" />
         <e p="Resources" t="Include">
           <e p="Shaders" t="Include">
             <e p="ShieldFX.shader" t="Include" />
@@ -268,10 +282,10 @@
               <e p="GunnerUI.cs" t="Include" />
               <e p="MagicianUI.cs" t="Include" />
               <e p="PlayerUI.cs" t="Include" />
+              <e p="WeaponWheel.cs" t="Include" />
             </e>
           </e>
         </e>
-        <e p="WeaponWheel.cs" t="Include" />
       </e>
       <e p="Library" t="ExcludeRecursive" />
       <e p="obj" t="ExcludeRecursive" />
