@@ -17,6 +17,9 @@ public class PlayerActions : NetworkBehaviour
     [SerializeField] private Camera cam;
 
     private Rigidbody rb;
+    Gravity grav;
+
+    Vector3 pivotPoint;//the local position of the cam pivot vs the player on start time - before any controls
 
     private bool isJumping;
 
@@ -27,13 +30,24 @@ public class PlayerActions : NetworkBehaviour
         {
             cam.GetComponent<AudioListener>().enabled = false;
         }
+        else {
+            PlayerController player = GetComponent<PlayerController>();
+            if (player != null)
+            {
+                TeamManager.localPlayer = player;
+            }
+            else {
+                Debug.Log("failed to find player controller component from player action script");
+            }
+        }
     }
 
     private void initVars()
     {
+        pivotPoint = cam.transform.parent.localPosition;
         velocity = Vector3.zero;
         rb = GetComponent<Rigidbody>();
-
+        grav = GetComponent<Gravity>();
         isJumping = false;
     }
 
@@ -42,13 +56,13 @@ public class PlayerActions : NetworkBehaviour
         Vector3 forward = getFoward();
         if (!forward.Equals(Vector3.zero) && !transform.position.Equals(Vector3.zero))
         {
-            transform.rotation = Quaternion.LookRotation(forward, -transform.position.normalized);
+            transform.rotation = Quaternion.LookRotation(forward, -grav.getDownDir());
         }
 
         doMovement();
         doRotations();
 
-        if (transform.position.magnitude > MapManager.mapSize * 5)
+        if (transform.position.magnitude > MapManager.mapSize * 5)//if you fall out come back in
         {
             transform.position = new Vector3(0, -10, 0);
             rb.velocity = Vector3.zero;
@@ -58,7 +72,7 @@ public class PlayerActions : NetworkBehaviour
     // TODO this should be move to a utility/player properites class
     public Vector3 getFoward()
     {
-        var up = -transform.position.normalized;
+        var up = -grav.getDownDir();
         var foward = Vector3.Cross(up, transform.right);
 
         if (Vector3.Dot(foward, transform.forward) < 0)
@@ -91,8 +105,16 @@ public class PlayerActions : NetworkBehaviour
         rb.MoveRotation(rb.rotation * Quaternion.Euler(rotation));
         // Rotating cam around the x axis
         currentCamRotX -= camRotationX;
-        currentCamRotX = Mathf.Clamp(currentCamRotX, -camRotLimitX, camRotLimitX);
+        currentCamRotX = Mathf.Clamp(currentCamRotX, -camRotLimitX+15, camRotLimitX - 30);
         cam.transform.localEulerAngles = new Vector3(currentCamRotX, 0, 0);
+
+        //Debug.Log("current: " + currentCamRotX + " limit: +-" + camRotLimitX);
+
+        Transform pivot = cam.transform.parent;
+        //pivot.localPosition = pivotPoint -grav.getDownDir() * currentCamRotX * 0.1f;
+        //pivot.localPosition = pivotPoint - transform.position.normalized * currentCamRotX * 0.1f;
+        pivot.localPosition = pivotPoint - Vector3.down * currentCamRotX * 0.1f;
+
     }
 
     public void jump(float jumpForce)
@@ -100,7 +122,7 @@ public class PlayerActions : NetworkBehaviour
         if (isJumping)
         {
             isJumping = false;
-            rb.AddForce(-transform.position.normalized * jumpForce);
+            rb.AddForce(-grav.getDownDir()* jumpForce);
         }
     }
 

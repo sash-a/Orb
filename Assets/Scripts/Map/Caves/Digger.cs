@@ -30,7 +30,7 @@ public class Digger : NetworkBehaviour
 
     internal void init(CaveComponent m)
     {
-        transform.localScale *= 1.3f;
+        transform.localScale *= 1.5f;
         rand = new System.Random();
         body = GetComponent<Rigidbody>();
         gameObject.SetActive(false);

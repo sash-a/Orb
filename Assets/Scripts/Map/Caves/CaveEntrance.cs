@@ -11,7 +11,7 @@ public class CaveEntrance : CaveComponent
     int destDepth;//the depth the cave entrance ends at
     public int columnID;//the column id of the surface voxel this entrance begins at
 
-    static int entrancesize = 5;
+    static int entrancesize = 7;
 
     public CaveEntrance() : base(){
         destDepth = 6;

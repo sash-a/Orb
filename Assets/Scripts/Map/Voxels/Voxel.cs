@@ -100,11 +100,14 @@ public class Voxel : NetworkBehaviour
         {
             GetComponent<NetHealth>().setInitialHealth(0);
         }
-        else {
-            if (hasEnergy) {
+        else
+        {
+            if (hasEnergy)
+            {
                 GetComponent<NetHealth>().setInitialHealth(3);
             }
-            else {
+            else
+            {
                 GetComponent<NetHealth>().setInitialHealth(10);
             }
         }
@@ -201,6 +204,37 @@ public class Voxel : NetworkBehaviour
         }
     }
 
+    internal void checkTriangleNorms(int triesRemaining)
+    {
+        bool fix = true;
+        for (int i = 0; i < filter.mesh.triangles.Length; i += 3)
+        {
+            Vector3 norm = Vector3.Cross(filter.mesh.vertices[filter.mesh.triangles[i]] - filter.mesh.vertices[filter.mesh.triangles[i + 1]], filter.mesh.vertices[filter.mesh.triangles[i + 1]] - filter.mesh.vertices[filter.mesh.triangles[i + 2]]);
+            Vector3 center = (filter.mesh.vertices[filter.mesh.triangles[i]] + filter.mesh.vertices[filter.mesh.triangles[i + 1]] + filter.mesh.vertices[filter.mesh.triangles[i + 2]]) / 3f;
+            if (Vector3.Dot(norm, (center - centreOfObject)) < 0)
+            {
+                Debug.Log("found triangle face facing wrong way tris = " + i + " , " + (i + 1) + " , " + (i + 2));
+                //norm is facing wrong way
+                int temp = filter.mesh.triangles[i + 1];
+                filter.mesh.triangles[i + 1] = filter.mesh.triangles[i + 2];
+                filter.mesh.triangles[i + 2] = temp;
+                fix = false;
+            }
+        }
+        if (!fix && triesRemaining > 0)
+        {
+            checkTriangleNorms(triesRemaining - 1);
+        }
+        else
+        {
+            if (triesRemaining <= 0)
+            {
+                Debug.LogError("failed to fix inverse voxel mesh");
+                CmdDestroyVoxelNoShatter();
+            }
+        }
+    }
+
     public void setColumnID(int colID)
     {
         columnID = colID;
@@ -231,7 +265,8 @@ public class Voxel : NetworkBehaviour
                 {
                     //Debug.Log("subvoxel has inherited being a cave floor");
                 }
-                else {
+                else
+                {
                     //Debug.Log("voxel is cave floor");
                 }
                 StartCoroutine(setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveGrass")));
@@ -273,7 +308,7 @@ public class Voxel : NetworkBehaviour
         worldCentreOfObject = centreOfObject * (float)scale * MapManager.mapSize;
         if (mainAsset == null)
         {
-            mainAsset = MapAsset.createAsset(this, side,type);
+            mainAsset = MapAsset.createAsset(this, side, type);
         }
     }
 
@@ -282,45 +317,57 @@ public class Voxel : NetworkBehaviour
         var matt = new Material(material);
         var colour = matt.color;
 
-        if (filter == null)
+   
+
+        int triesLeft = 5;
+        while (filter == null && triesLeft > 0)
         {
-            filter = GetComponent<MeshFilter>();
+            try
+            {
+                filter = gameObject.GetComponent<MeshFilter>();
+            }
+            catch { }
+
+            yield return new WaitForSecondsRealtime(1);
+            triesLeft--;
         }
 
         // Setting the colour depending on the steepness of the angle of the voxel
-
-
-        if (filter == null || filter.mesh.vertices.Length < 6)
+        if (triesLeft > 0)
         {
-            Debug.LogError("error with mesh filter on set texture");
-            yield return new WaitForSecondsRealtime(2);
-            filter = GetComponent<MeshFilter>();
+
+            if (filter == null || filter.mesh.vertices.Length < 6)
+            {
+                Debug.LogError("error with mesh filter on set texture");
+                yield return new WaitForSecondsRealtime(2);
+                filter = GetComponent<MeshFilter>();
+            }
+
+            Vector3 norm;
+            try
+            {
+                norm = Vector3.Cross(filter.mesh.vertices[0] - filter.mesh.vertices[1], filter.mesh.vertices[2] - filter.mesh.vertices[1]).normalized;
+            }
+            catch
+            {
+                norm = -transform.position.normalized;
+            }
+            var angle = Vector3.Angle(norm, centreOfObject);
+            if (angle > 90) angle = 180 - angle;
+
+
+            //Debug.Log("found vox with grad = " + angle + " taking colour from: " + colour.r + "," + colour.g + "," + colour.b);
+
+
+            colour.r += 0.3f * (angle / 90);
+            colour.g -= 0.5f * (angle / 90);
+            colour.b -= 0.3f * (angle / 90);
+
+            //Debug.Log("to:  " + colour.r + "," + colour.g + "," + colour.b);
+
+            matt.SetColor("_Color", colour); //this feild HAS to be "_Color" otherwise call is ignored
+            gameObject.GetComponent<MeshRenderer>().material = matt;
         }
-
-        Vector3 norm;
-        try
-        {
-             norm = Vector3.Cross(filter.mesh.vertices[0] - filter.mesh.vertices[1], filter.mesh.vertices[2] - filter.mesh.vertices[1]).normalized;
-        }
-        catch {
-            norm = -transform.position.normalized;
-        }
-        var angle = Vector3.Angle(norm, centreOfObject);
-        if (angle > 90) angle = 180 - angle;
-
-
-        //Debug.Log("found vox with grad = " + angle + " taking colour from: " + colour.r + "," + colour.g + "," + colour.b);
-
-
-        colour.r += 0.3f * (angle / 90);
-        colour.g -= 0.5f * (angle / 90);
-        colour.b -= 0.3f * (angle / 90);
-
-        //Debug.Log("to:  " + colour.r + "," + colour.g + "," + colour.b);
-
-        matt.SetColor("_Color", colour); //this feild HAS to be "_Color" otherwise call is ignored
-        gameObject.GetComponent<MeshRenderer>().material = matt;
-
     }
 
     [Command]
@@ -678,6 +725,7 @@ public class Voxel : NetworkBehaviour
 
             Voxel childScript = childObject.GetComponent<Voxel>();
             childScript.layer = newVoxelLayer;
+            childScript.columnID = columnID;
             childScript.origonalPoints = origonalPoints;
             childScript.cloneMeshFilter();
             childScript.mainAsset = null;
@@ -708,7 +756,7 @@ public class Voxel : NetworkBehaviour
     internal void smoothBlockInPlace()
     {
         //implement order independant simplified smoothing
-        if ((!MapManager.useSmoothingInGame &&MapManager.manager.mapDoneLocally) || (!MapManager.useSmoothingInGen && !MapManager.manager.mapDoneLocally))
+        if ((!MapManager.useSmoothingInGame && MapManager.manager.mapDoneLocally) || (!MapManager.useSmoothingInGen && !MapManager.manager.mapDoneLocally))
         {
             return;
         }
@@ -1149,7 +1197,7 @@ public class Voxel : NetworkBehaviour
         }
 
         updateCollider();
-        
+
     }
 
     public void updateCollider()

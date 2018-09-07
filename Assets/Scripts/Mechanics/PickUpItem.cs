@@ -2,7 +2,6 @@
 
 public class PickUpItem : MonoBehaviour
 {
-    public static int numGuns = 1;
     public static int numArtifacts = 3;
 
     public enum Class
@@ -13,16 +12,17 @@ public class PickUpItem : MonoBehaviour
 
     public Class itemClass;
 
-    public enum ItemType
+    public enum ItemType//list all weapon types after the magic types
     {
         NONE,
-        EXPLOSIVE_CROSSBOW,
         DAMAGE_ARTIFACT,
         HEALER_ARTIFACT,
-        TELEPATH_ARTIFACT
+        TELEPATH_ARTIFACT,
+        EXPLOSIVE_CROSSBOW
     };
 
     public ItemType itemType;
+
 
     public void pickedUp()
     {

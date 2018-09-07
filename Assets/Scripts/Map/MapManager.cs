@@ -53,6 +53,8 @@ public class MapManager : NetworkBehaviour
 
     public HashSet<PickUpItem> collectables;
 
+    public GameObject shreddingShell;
+
 
     /// <summary>
     /// Sets up mapmanager datastructures
@@ -231,10 +233,11 @@ public class MapManager : NetworkBehaviour
         //finishAssets();
         //LobbyManager.s_Singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
         //        NetworkManager.singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
-        localPlayer.transform.position = new Vector3(0, -30, 0);
+        GameEventManager.singleton.passMessage("waitForMapCompletion", "mapCompleted");
+        //localPlayer.transform.position = new Vector3(0, -30, 0);
         GetComponent<MapAssetManager>().genAssets();
         BuildLog.writeLog("Map finished");
-        Debug.Log("Map finished locally on (server = " + isServer + ")");
+        //Debug.Log("Map finished locally on (server = " + isServer + ")");
     }
 
 
@@ -612,6 +615,7 @@ public class MapManager : NetworkBehaviour
     {
         //StartCoroutine(ShredMap());
         ShredMap();
+        RpcUpdateShreddingShell(radius *1.9f,shredOrigin);
     }
 
     void ShredMap()
@@ -619,11 +623,11 @@ public class MapManager : NetworkBehaviour
         //yield return new WaitForSecondsRealtime(0.1f);
 
         if (radius > mapSize * 2.5)
-        {
+        {//reached max shredding
             return;
         }
 
-        Debug.Log("shredding map");
+        //Debug.Log("shredding map");
         if (shredNo == 0)
         {
             shredOrigin = new Vector3(0, mapSize * 2, 0);
@@ -665,6 +669,16 @@ public class MapManager : NetworkBehaviour
         chunk.finishChunk(shredOrigin, radius);
         shredNo++;
         radius += mapSize * 0.2f;
+    }
+
+    [ClientRpc]
+    void RpcUpdateShreddingShell(float radius, Vector3 origin) {
+        if (shreddingShell == null) {
+            shreddingShell = (GameObject)Instantiate<UnityEngine.Object>(Resources.Load("Prefabs/Map/ShreddingShell"));
+            shreddingShell.transform.position = origin;
+        }
+        shreddingShell.transform.localScale = new Vector3(radius, radius, radius);
+
     }
 
     public Voxel getSubVoxelAt(int layer, int columnID, String subID)

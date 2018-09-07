@@ -13,8 +13,8 @@ public class CaveTunnel : CaveComponent {
     CaveComponent destination;
 
     public Vector3 direction;
-    static int tunnelSize = 5;
-    public int tunnelDepth = 6;
+    static int tunnelSize = 7;
+    public int tunnelDepth = 8;
     int destDepth;//the depth the cave entrance ends at
 
 

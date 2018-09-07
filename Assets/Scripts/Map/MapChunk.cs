@@ -124,8 +124,7 @@ public class MapChunk : MonoBehaviour
         }
 
         separateChunk();
-        Debug.Log("suspected  " + suspectedEdges.Count + "/" + containedVoxels.Count +
-                  " voxels of being on edge | actually " + edgeCount + " edges  |  radius: " + radius);
+       // Debug.Log("suspected  " + suspectedEdges.Count + "/" + containedVoxels.Count + " voxels of being on edge | actually " + edgeCount + " edges  |  radius: " + radius);
     }
 
     private void createPillar(Voxel v)

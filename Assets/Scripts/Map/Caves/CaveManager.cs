@@ -135,8 +135,11 @@ public class CaveManager : NetworkBehaviour
         {
             foreach (Voxel vox in MapManager.manager.voxels[i].Values)
             {
+                if (vox.isMelted) {
+                    continue;
+                }
                 if (vox.columnID == 0) {
-                    Debug.Log("found vox at colID=0");
+                    //Debug.Log("found vox at colID=0   layer: " + i);
                     //var myKey = MapManager.manager.voxels[i].FirstOrDefault(x => x.Value == vox).Key;
                     //vox.columnID = MapManager.manager.voxels[i].
                 }
@@ -144,7 +147,7 @@ public class CaveManager : NetworkBehaviour
                 {
                     bool wall = true;
                     if (vox.layer != i) {
-                        Debug.Log("i= " + i + " vox layer = " + vox.layer);
+                        //Debug.Log("i= " + i + " vox layer = " + vox.layer);
                         vox.layer = i;
                     }
                     if (MapManager.manager.isDeleted(i - 1, vox.columnID) && vox.layer > 0)
@@ -306,7 +309,7 @@ public class CaveManager : NetworkBehaviour
                     if (i == 1)
                     {
                         CaveTunnel tunnel2 = new CaveTunnel();
-                        tunnel2.tunnelDepth = 9;
+                        tunnel2.tunnelDepth = tunnel.tunnelDepth +3;
                         tunnel2.tunnelFrom(body,-tunnel.direction);
                     }
                     else {

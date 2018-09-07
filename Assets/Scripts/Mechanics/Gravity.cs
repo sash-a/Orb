@@ -7,6 +7,7 @@ public class Gravity : MonoBehaviour
     private Rigidbody rb;
 
     private static float acceleration = 4000f;//4000
+    public bool inSphere = true;//if false - uses traditional down vector as grav dir
 
     void Start()
     {
@@ -25,7 +26,14 @@ public class Gravity : MonoBehaviour
         age++;
         if (!gameObject.CompareTag("TriVoxel"))
         {
-            rb.AddForce(transform.position.normalized * acceleration * Time.fixedDeltaTime, ForceMode.Acceleration);
+            if (inSphere)
+            {
+                rb.AddForce(getDownDir() * acceleration * Time.fixedDeltaTime, ForceMode.Acceleration);
+            }
+            else
+            {
+                rb.AddForce(getDownDir() * acceleration * Time.fixedDeltaTime, ForceMode.Acceleration);
+            }
         }
         else
         {
@@ -56,5 +64,17 @@ public class Gravity : MonoBehaviour
         }
 
         oldPos = transform.position;
+    }
+
+    public Vector3 getDownDir()
+    {
+        if (inSphere)
+        {
+            return transform.position.normalized;
+        }
+        else
+        {
+            return Vector3.down;
+        }
     }
 }

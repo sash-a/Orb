@@ -80,7 +80,14 @@ public class NetHealth : NetworkBehaviour
         }
         else
         {
-            NetworkServer.Destroy(gameObject);
+            PlayerController player = GetComponent<PlayerController>();
+            if (player != null)
+            {//is a player who has died - spawn back in spawn area
+                player.team.informKilled(player);
+            }
+            else {
+                NetworkServer.Destroy(gameObject);
+            }
         }
     }
 

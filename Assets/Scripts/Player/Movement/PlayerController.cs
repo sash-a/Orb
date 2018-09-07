@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerActions))]
@@ -19,10 +20,21 @@ public class PlayerController : MonoBehaviour
     private float xMove = 0;
     private float yMove = 0;
     private float interpSpeed = 0.25f;
-    
+
+    public Team team;
+
     void Start()
     {
         actions = GetComponent<PlayerActions>();
+        GetComponent<Gravity>().inSphere = false;
+        //sendToSpawnRoom();
+        StartCoroutine(AddPlayer());
+    }
+
+    IEnumerator AddPlayer()
+    {
+        yield return new WaitForSecondsRealtime(0.2f);
+        TeamManager.singleton.addPlayer(this);
     }
 
     void Update()
@@ -67,6 +79,12 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    internal void sendToSpawnRoom()
+    {
+        transform.position = team.getSpawnRoom().transform.position;
+        transform.rotation = Quaternion.LookRotation(new Vector3(transform.position.x, 0, transform.position.z), Vector3.up);
+    }
+
     void MovementAnimation(Vector3 velocity)
     {
         //Animation:
@@ -91,7 +109,7 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        yMoveOld = yMoveOld + (yMove - yMoveOld) * (interpSpeed /( Mathf.Round(yMove) ==0 ? 1 :(float)Mathf.Abs(Mathf.Round(yMove))));
+        yMoveOld = yMoveOld + (yMove - yMoveOld) * (interpSpeed / (Mathf.Round(yMove) == 0 ? 1 : (float)Mathf.Abs(Mathf.Round(yMove))));
         xMoveOld = xMoveOld + (xMove - xMoveOld) * (interpSpeed / (Mathf.Round(xMove) == 0 ? 1 : (float)Mathf.Abs(Mathf.Round(xMove))));
 
         if (Input.GetButtonDown("Jump"))
@@ -104,11 +122,6 @@ public class PlayerController : MonoBehaviour
         animator.SetFloat("yMove", yMoveOld);
     }
 
-    IEnumerator hackPos()
-    {
-        yield return new WaitForSeconds(2);
-        transform.position = new Vector3(0, 0, 0);
-        GetComponent<Rigidbody>().velocity = Vector3.zero;
-    }
+
 
 }

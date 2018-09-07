@@ -22,6 +22,7 @@ public class Portal : MapAsset
     void Start()
     {
         supplyRoom = GameObject.Find("SupplyRoom");
+        transform.parent = MapManager.manager.Map.transform.GetChild(2);
         //orient();
     }
 
@@ -32,7 +33,10 @@ public class Portal : MapAsset
         // Moved suply room to be found on start
         player = collision.gameObject;
         player.transform.position = supplyRoom.transform.position;
-        StartCoroutine(ReturnPlayer());
+        player.GetComponent<Gravity>().inSphere = false;
+        //StartCoroutine(ReturnPlayer());
+        RespawnPlayer spawn = new RespawnPlayer(TeamManager.localPlayer, GameEventManager.clockTime + supplyTime);
+        GameEventManager.singleton.addEvent(spawn);
     }
 
     IEnumerator ReturnPlayer()
@@ -41,6 +45,7 @@ public class Portal : MapAsset
         try
         {
             player.transform.position = new Vector3(0, 40, 0);
+            player.GetComponent<Gravity>().inSphere = true;
             NetworkServer.Destroy(gameObject);
         }
         catch { /* ignored */ }

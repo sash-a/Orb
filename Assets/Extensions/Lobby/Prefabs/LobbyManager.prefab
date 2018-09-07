@@ -604,6 +604,7 @@ GameObject:
   - component: {fileID: 11466428}
   - component: {fileID: 11475086}
   - component: {fileID: 11415508}
+  - component: {fileID: 114046071429507042}
   m_Layer: 5
   m_Name: LobbyManager
   m_TagString: Untagged
@@ -2836,7 +2837,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 127.0.0.1
+  m_Text: 
 --- !u!114 &11466428
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3211,7 +3212,7 @@ MonoBehaviour:
   - {fileID: 100010, guid: 031d08f52af1daa4f929b85221519426, type: 2}
   - {fileID: 1642744248461048, guid: 9367bcf7b4699b541b9a4316055d1581, type: 2}
   - {fileID: 1666006330323904, guid: 76e59d8bd5998494f852fa19b16c6f7b, type: 2}
-  - {fileID: 1989940702272966, guid: 7fbcfc6d61908424d9de4502175ad820, type: 2}
+  - {fileID: 0}
   - {fileID: 1024043239652966, guid: a6977d1620182d34ba0a3834a30482d4, type: 2}
   - {fileID: 1774814971724218, guid: 4bd82bce5ca91e149858c451085b6d3d, type: 2}
   - {fileID: 1123705270456112, guid: 29325a669b3c7c54bb52015a9b02d28c, type: 2}
@@ -3288,7 +3289,7 @@ MonoBehaviour:
   isNetworkActive: 0
   matchMaker: {fileID: 0}
   m_ShowLobbyGUI: 0
-  m_MaxPlayers: 3
+  m_MaxPlayers: 6
   m_MaxPlayersPerConnection: 1
   m_MinPlayers: 1
   m_LobbyPlayerPrefab: {fileID: 11487034, guid: ad727d7e1462ecc4f83c898ecc501997,
@@ -5756,6 +5757,17 @@ Transform:
   m_Father: {fileID: 22459552}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &114046071429507042
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 155310}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec0e28dbe47b0f14b8e04c4ad2aa7c5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114176061470469534
 MonoBehaviour:
   m_ObjectHideFlags: 1
