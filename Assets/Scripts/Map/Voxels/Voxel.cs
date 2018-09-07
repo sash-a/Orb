@@ -51,8 +51,9 @@ public class Voxel : NetworkBehaviour
 
     private void Start()
     {
+        float sepFac = 0.00248f;//0.00248f
         extrudeLength = 0.014f * (float)(Math.Pow(0.75, (MapManager.splits + 1) / 2));
-        scaleRatio = (0.00248f * MapManager.mapSize + extrudeLength * MapManager.mapSize / 200) / (0.00248f * MapManager.mapSize);
+        scaleRatio = (sepFac * MapManager.mapSize + extrudeLength * MapManager.mapSize / 200) / (sepFac * MapManager.mapSize);
         isMelted = false;
         if (centreOfObject.Equals(Vector3.zero))
         {
@@ -148,6 +149,17 @@ public class Voxel : NetworkBehaviour
             delegateTexture();
             gameObject.name = "SubVoxel";
         }
+    }
+
+    public void resetScale()
+    {
+        float sepFac = 0.0025f;// - maxGradient/30;//0.00248f
+        extrudeLength = 0.014f * (float)(Math.Pow(0.75, (MapManager.splits + 1) / 2));
+        scaleRatio = (sepFac * MapManager.mapSize + extrudeLength * MapManager.mapSize / 200) / (sepFac * MapManager.mapSize);
+
+        scale = Math.Pow(scaleRatio, Math.Abs(layer));
+        worldCentreOfObject = centreOfObject * (float)scale * MapManager.mapSize;
+        transform.localScale = Vector3.one * (float)scale * MapManager.mapSize;
     }
 
     internal void genGrass(int side)

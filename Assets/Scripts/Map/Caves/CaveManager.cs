@@ -52,6 +52,8 @@ public class CaveManager : NetworkBehaviour
         Dictionary<Voxel, Voxel> portalCandidates = new Dictionary<Voxel, Voxel>();//first is the floor vox second is the base of the wall vox
         int requiredHeight = 6;//how high the wall infront of the floor vox has to be to be a candiate for a portal
         int requiredDistance = 60;//a portal is not allowed to be further than this from a cave body to prevent in tunnel portals
+
+        int candidateCount = 0;
         foreach (Voxel vox in caveWalls)
         {
             //Debug.Log("vox grad = " + (vox.maxGradient * 1000));
@@ -88,7 +90,8 @@ public class CaveManager : NetworkBehaviour
                             }
                             if (valid && closeEnough)
                             {
-                                Debug.Log("found portal candidate");
+                                    //Debug.Log("found portal candidate");
+                                    candidateCount++;
                                 placePortal(vox, neighbour);
                                 //StartCoroutine(neighbour.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveBorder")));
                             }
@@ -97,6 +100,7 @@ public class CaveManager : NetworkBehaviour
                 }
             }
         }
+        //Debug.Log("found " + candidateCount + " portal candidates ");
     }
 
     private void placePortal(Voxel wall, Voxel Base)

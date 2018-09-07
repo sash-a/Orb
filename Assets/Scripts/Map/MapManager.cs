@@ -403,6 +403,8 @@ public class MapManager : NetworkBehaviour
         float maxHeight = -1;
         float minHeight = float.MaxValue;
 
+        float[] heights = new float[3];
+
         for (int v = 0; v < 3; v++)
         {
             //Debug.Log("looping through verts");
@@ -422,14 +424,19 @@ public class MapManager : NetworkBehaviour
             verts[v] = filter.mesh.vertices[v] + func * height;
             verts[v + 3] = filter.mesh.vertices[v + 3] + func * height;
 
+            heights[v] = height;
+
             if (height > maxHeight)
             {
                 maxHeight = height;
             }
-            if (height < minHeight)
-            {
-                minHeight = height;
+            else {
+                if (height < minHeight)
+                {
+                    minHeight = height;
+                }
             }
+            
         }
         //Debug.Log("recaulculating voxel stuff");
         if (vox.mainAsset != null)
@@ -437,6 +444,14 @@ public class MapManager : NetworkBehaviour
             Vector3[] facePoints = vox.getMainFaceAtLayer(vox.mainAsset.voxSide);
             Vector3 oldPos = (facePoints[0] + facePoints[1] + facePoints[2]) / 3f;
         }
+
+        //needs to work with actual points
+        Vector3 heightNormal = Vector3.Cross(new Vector3(0, heights[0], 0) - new Vector3(0, heights[1], 0), new Vector3(0, heights[1], 0) - new Vector3(0, heights[2], 0));
+        if (Vector3.Dot(heightNormal,Vector3.up) < 0) {
+            heightNormal *= -1;
+        }
+        float grad = 90f - (float)Math.Acos(Vector3.Dot(vox.worldCentreOfObject.normalized, heightNormal.normalized));
+        //Debug.Log("vox has grad of: " + grad);
 
         filter.mesh.vertices = verts;
         vox.updateCollider();
@@ -446,6 +461,7 @@ public class MapManager : NetworkBehaviour
         filter.mesh.RecalculateTangents();
         vox.delegateTexture();
         vox.maxGradient = (maxHeight - minHeight);
+        vox.resetScale();
         //Debug.Log("vox with max grad = " + vox.maxGradient);
 
         if (vox.mainAsset != null)

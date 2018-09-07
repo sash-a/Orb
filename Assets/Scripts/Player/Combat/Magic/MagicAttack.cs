@@ -38,6 +38,10 @@ public class MagicAttack : AAttackBehaviour
     private EnergyBlockEffectSpawner energyBlockEffectSpawner;
     private DestructionEffectSpawner destructionEffectSpawner;
 
+    // Used so that effects are passed every frame
+    [SerializeField] private float waitTime;
+    private float timePassed;
+
     /// <summary>
     /// 0 = Digger
     /// 1 = Damage/Heal
@@ -109,13 +113,13 @@ public class MagicAttack : AAttackBehaviour
 
         // End attacks if no energy left
         if (isAttacking && !resourceManager.hasEnergy()) endAttack();
-        
+
         // Digging
         if (isDigging && resourceManager.hasEnergy()) dig(hit);
 
         // Damaging
         if (isDamaging && resourceManager.hasEnergy()) damage(hit);
-        
+
         // Trying to pick up something
         if (Input.GetButtonDown("Use"))
         {
@@ -167,10 +171,13 @@ public class MagicAttack : AAttackBehaviour
             }
 
             Voxel voxel = hitFromHand.collider.gameObject.GetComponent<Voxel>();
-            if (voxel == null) {//tried to telekenetisise a non voxel object
+            if (voxel == null)
+            {
+                //tried to telekenetisise a non voxel object
                 Debug.LogError("telekenetisised non voxel object");
                 return;
             }
+
             if (voxel.shatterLevel >= 1) // need to change this to accomodate the teleken artifact
             {
                 isTelekening = true;
@@ -197,6 +204,7 @@ public class MagicAttack : AAttackBehaviour
     [Client]
     public override void endAttack()
     {
+        timePassed = 0;
         if (attackStats.isTelekenetic)
         {
             isTelekening = false;
@@ -358,6 +366,11 @@ public class MagicAttack : AAttackBehaviour
     [Client]
     void dig(RaycastHit hitFromCam)
     {
+        timePassed += Time.deltaTime;
+        if (timePassed < waitTime)
+            return;
+        timePassed = 0;
+
         // Checking range, need high distance in raycast to orient effect
         if (Mathf.Abs(Vector3.Distance(hitFromCam.point, transform.position)) > attackStats.diggerRange) return;
 
@@ -372,11 +385,11 @@ public class MagicAttack : AAttackBehaviour
 
             // If voxel is about to die
             if (!voxel.hasEnergy &&
-                voxel.GetComponent<NetHealth>().getHealth() <= attackStats.diggerEnvDamage * Time.deltaTime)
+                voxel.GetComponent<NetHealth>().getHealth() <= attackStats.diggerEnvDamage)
                 destructionEffectSpawner.play(hitFromHand.point, voxel);
 
 
-            CmdVoxelDamaged(hitFromHand.collider.gameObject, attackStats.diggerEnvDamage * Time.deltaTime);
+            CmdVoxelDamaged(hitFromHand.collider.gameObject, attackStats.diggerEnvDamage);
 
             // Spawn energy blocks
             if (voxel.hasEnergy)
@@ -387,7 +400,7 @@ public class MagicAttack : AAttackBehaviour
         }
         else if (hitFromHand.collider.CompareTag(PLAYER_TAG) || hitFromHand.collider.CompareTag("Shield"))
         {
-            CmdVoxelDamaged(hitFromHand.collider.gameObject, attackStats.diggerDamage * Time.deltaTime);
+            CmdVoxelDamaged(hitFromHand.collider.gameObject, attackStats.diggerDamage);
         }
     }
 
@@ -397,6 +410,11 @@ public class MagicAttack : AAttackBehaviour
     [Client]
     void damage(RaycastHit hitFromCam)
     {
+        timePassed += Time.deltaTime;
+        if (timePassed < waitTime)
+            return;
+        timePassed = 0;
+
         // Checking range, need high distance in raycast to orient effect
         if (Mathf.Abs(Vector3.Distance(hitFromCam.point, transform.position)) > attackStats.attackRange) return;
 
@@ -410,16 +428,16 @@ public class MagicAttack : AAttackBehaviour
             var character = hitFromHand.collider.gameObject.GetComponent<Identifier>().typePrefix;
             if (character == Identifier.magicianType) // Heal
             {
-                CmdPlayerAttacked(hitFromHand.collider.name, -attackStats.heal * Time.deltaTime);
+                CmdPlayerAttacked(hitFromHand.collider.name, -attackStats.heal);
             }
             else // Damage
             {
-                CmdPlayerAttacked(hitFromHand.collider.name, attackStats.attackDamage * Time.deltaTime);
+                CmdPlayerAttacked(hitFromHand.collider.name, attackStats.attackDamage);
             }
         }
         else if (hitFromHand.collider.CompareTag(VOXEL_TAG))
         {
-            CmdVoxelDamaged(hitFromHand.collider.gameObject, attackStats.attackEnvDamage * Time.deltaTime);
+            CmdVoxelDamaged(hitFromHand.collider.gameObject, attackStats.attackEnvDamage);
         }
         else if (hitFromHand.collider.CompareTag("Shield"))
         {
@@ -569,9 +587,9 @@ public class MagicAttack : AAttackBehaviour
         RaycastHit hit;
         if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, pickupDistance, mask))
             return;
-        
+
         PickUpItem item = hit.transform.gameObject.GetComponentInChildren<PickUpItem>(); // Pickup item lives on parent
-        
+
         if (item == null) return;
 
         if (item.itemClass == PickUpItem.Class.MAGICIAN)
@@ -580,7 +598,7 @@ public class MagicAttack : AAttackBehaviour
             item.pickedUp();
         }
     }
-    
+
     #region syncParticleEffects
 
     /*

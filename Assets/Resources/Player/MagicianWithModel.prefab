@@ -3088,14 +3088,14 @@ MonoBehaviour:
     isDigger: 0
     manaRegen: 100
     diggerDamage: 10
-    diggerEnvDamage: 25
+    diggerEnvDamage: 50
     diggerRange: 25
     diggerMana: 1.1
-    attackDamage: 10
+    attackDamage: 1
     attackEnvDamage: 3
     attackShieldDamage: 10
     heal: 6
-    attackRange: 100
+    attackRange: 200
     attackMana: 5
     shieldMana: 4
     initialShieldMana: 10
@@ -3110,6 +3110,7 @@ MonoBehaviour:
   damageHandFX: {fileID: 198975176742124356}
   diggerFX: {fileID: 198277429952926542}
   diggerHandFX: {fileID: 198975176742124356}
+  waitTime: 0.5
   currentWeapon: 0
   pickupDistance: 20
   animator: {fileID: 95638754553782564}

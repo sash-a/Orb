@@ -47,8 +47,12 @@ public class PlayerController : MonoBehaviour
         {
             actions.move(Input.GetKey(KeyCode.LeftShift) ? velocity * 1 : velocity);
         }
-            
-        
+
+        if (transform.name.Contains("agician"))
+        {
+            actions.move(Input.GetKey(KeyCode.LeftShift) ? velocity * runMultiplier : velocity);
+        }
+
         // Rotation
         var yRot = new Vector3(0, Input.GetAxis("Mouse X"), 0) * lookSens;
         float xRot = Input.GetAxis("Mouse Y") * lookSens;
@@ -77,7 +81,16 @@ public class PlayerController : MonoBehaviour
                 xMove *= 2;
             }
         }
-        
+
+        if (transform.name.Contains("agician"))
+        {
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                yMove *= 2;
+                xMove *= 2;
+            }
+        }
+
         yMoveOld = yMoveOld + (yMove - yMoveOld) * (interpSpeed /( Mathf.Round(yMove) ==0 ? 1 :(float)Mathf.Abs(Mathf.Round(yMove))));
         xMoveOld = xMoveOld + (xMove - xMoveOld) * (interpSpeed / (Mathf.Round(xMove) == 0 ? 1 : (float)Mathf.Abs(Mathf.Round(xMove))));
 
