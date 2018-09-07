@@ -60,6 +60,9 @@ public class PlayerSetup : NetworkBehaviour
                 ui.gameObject.SetActive(true);
                 type.UI = ui;
 
+                GetComponent<WeaponAttack>().damageIndicator = ui.damageIndicator;
+                Debug.Log("Set dmg indicator " + (GetComponent<WeaponAttack>().damageIndicator == null));
+
                 // Weapon wheel
                 weaponWheel.weapons = GetComponent<WeaponAttack>();
                 weaponWheel.playerHealth = GetComponent<NetHealth>();
@@ -72,6 +75,9 @@ public class PlayerSetup : NetworkBehaviour
                 ui.gunnerUI.SetActive(false);
                 ui.gameObject.SetActive(true);
                 type.UI = ui;
+                
+                GetComponent<MagicAttack>().damageIndicator = ui.damageIndicator;
+
             }
             
             // Disable local player graphics

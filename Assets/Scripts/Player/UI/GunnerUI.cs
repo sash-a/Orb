@@ -10,6 +10,7 @@ public class GunnerUI : PlayerUI
     private NetHealth health;
     private ResourceManager resourceManager;
     private WeaponAttack weapons;
+    public DamageIndicator damageIndicator;
 
     // Bars
     [SerializeField] private RectTransform healthBar;

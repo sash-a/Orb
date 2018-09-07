@@ -11,7 +11,8 @@ public class MagicianUI : PlayerUI
     private ResourceManager resourceManager;
     public NetHealth shieldHealth;
     public MagicAttack magic;
-
+    public DamageIndicator damageIndicator;
+    
     // Bars
     [SerializeField] private RectTransform healthBar;
     [SerializeField] private RectTransform shieldBar;

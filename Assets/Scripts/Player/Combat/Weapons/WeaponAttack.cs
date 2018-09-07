@@ -112,11 +112,11 @@ public class WeaponAttack : AAttackBehaviour
             }
         }
 
-        if (Input.GetButton("Fire1") && Time.time >= weapons[selectedWeapon].nextTimeToFire && !isReloading && !isThrowingGrenade)
+        if (Input.GetButton("Fire1") && Time.time >= weapons[selectedWeapon].nextTimeToFire && !isReloading &&
+            !isThrowingGrenade)
         {
             weapons[selectedWeapon].nextTimeToFire = Time.time + 1f / weapons[selectedWeapon].fireRate;
             attack();
-
         }
 
         if (Input.GetButton("Fire1"))
@@ -216,7 +216,6 @@ public class WeaponAttack : AAttackBehaviour
             yield return new WaitForSeconds(3.3f);
             isReloading = false;
         }
-
     }
 
     [Client]

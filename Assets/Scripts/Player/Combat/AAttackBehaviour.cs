@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.Networking.Types;
 
 public abstract class AAttackBehaviour : NetworkBehaviour
 {
@@ -14,6 +15,8 @@ public abstract class AAttackBehaviour : NetworkBehaviour
     
     // Manages ammo and energy for players
     protected ResourceManager resourceManager;
+
+    public DamageIndicator damageIndicator;
 
     void Start()
     {
@@ -50,7 +53,7 @@ public abstract class AAttackBehaviour : NetworkBehaviour
     /// <summary>
     /// Notifies server that player has been shot
     /// </summary>
-    /// <param name="id">The ID of the player as provided in the game manager class</param>
+    /// <param name="id">The ID of the player being shot as provided in the game manager class</param>
     /// <param name="damage">The amount of damage to do to the player</param>
     [Command]
     public void CmdPlayerAttacked(string id, float damage)
@@ -64,6 +67,16 @@ public abstract class AAttackBehaviour : NetworkBehaviour
             return;
         }
 
+        var playerIdentifier = player.GetComponent<Identifier>();
+        TargetDamageIndicator
+        (
+            player.GetComponent<NetworkIdentity>().connectionToClient,
+            GetComponent<Identifier>().id,
+            playerIdentifier.id,
+            playerIdentifier.typePrefix
+        );
+        Debug.Log("Calling dmg indicator");
+        
         health.RpcDamage(damage);
     }
 
@@ -110,5 +123,29 @@ public abstract class AAttackBehaviour : NetworkBehaviour
     public ResourceManager getResourceManager()
     {
         return resourceManager;
+    }
+    
+    [TargetRpc]
+    void TargetDamageIndicator(NetworkConnection client, string shooterID, string victim, string victimClass)
+    {
+        Debug.Log("In targetRpc");
+        if (!isLocalPlayer)
+        {
+            Debug.Log("Not local player");
+        }
+           
+        var shooter = GameManager.getObject(shooterID);
+        var shot = GameManager.getObject(victim);
+
+        if (victimClass == Identifier.gunnerType)
+        {
+            shot.GetComponent<WeaponAttack>().damageIndicator.hit(shooter.transform);
+            Debug.Log("hit gunner");
+        }
+        else
+        {
+            Debug.Log("Hit magician");
+            shot.GetComponent<MagicAttack>().damageIndicator.hit(shooter.transform);
+        }
     }
 }

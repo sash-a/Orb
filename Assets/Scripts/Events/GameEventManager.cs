@@ -147,7 +147,7 @@ public class GameEventManager : NetworkBehaviour
         }
         if (closestEvent != null)
         {
-            DisplayCountDownFor(closestEvent);
+//            DisplayCountDownFor(closestEvent);
         }
     }
 
