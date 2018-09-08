@@ -81,7 +81,11 @@ public class Voxel : NetworkBehaviour
         secondaryAssets = new HashSet<MapAsset>();
 
         filter = gameObject.GetComponent<MeshFilter>();
-        GetComponent<MeshCollider>().convex = false;
+        if (GetComponent<MeshCollider>() != null)
+        {
+            GetComponent<MeshCollider>().convex = false;
+        }
+        
 
         scale = Math.Pow(scaleRatio, Math.Abs(layer));
         worldCentreOfObject = centreOfObject * (float)scale * MapManager.mapSize;
@@ -982,6 +986,9 @@ public class Voxel : NetworkBehaviour
                             delegateTexture();
                         }
                     }
+                    else if(deletedAdjacents == 3){
+                        CmdDestroyVoxel();
+                    }
                 }
 
                 if (filter == null)
@@ -1274,12 +1281,15 @@ public class Voxel : NetworkBehaviour
 
         m.vertices = verts;
         m.triangles = genVolumeTriangles();
-        gameObject.GetComponent<MeshCollider>().sharedMesh = m;
+        if (gameObject.GetComponent<MeshCollider>() != null)
+        {
+            gameObject.GetComponent<MeshCollider>().sharedMesh = m;
 
-        //gameObject.GetComponent<MeshCollider>().sharedMesh.RecalculateNormals();
-        gameObject.GetComponent<MeshCollider>().convex = !gameObject.GetComponent<MeshCollider>().convex;
-        //gameObject.GetComponent<MeshCollider>().sharedMesh.RecalculateNormals();
-        gameObject.GetComponent<MeshCollider>().convex = !gameObject.GetComponent<MeshCollider>().convex;
+            //gameObject.GetComponent<MeshCollider>().sharedMesh.RecalculateNormals();
+            gameObject.GetComponent<MeshCollider>().convex = !gameObject.GetComponent<MeshCollider>().convex;
+            //gameObject.GetComponent<MeshCollider>().sharedMesh.RecalculateNormals();
+            gameObject.GetComponent<MeshCollider>().convex = !gameObject.GetComponent<MeshCollider>().convex;
+        }
     }
 
     private void shrink(int index, float f)

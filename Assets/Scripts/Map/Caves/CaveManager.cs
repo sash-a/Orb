@@ -57,58 +57,60 @@ public class CaveManager : NetworkBehaviour
         foreach (Voxel vox in caveWalls)
         {
             //Debug.Log("vox grad = " + (vox.maxGradient * 1000));
-            if (vox.layer > 3 && vox.mainAsset == null )
-            foreach (int nei in MapManager.manager.neighboursMap[vox.columnID])
-            {
-                if (MapManager.manager.doesVoxelExist(vox.layer + 1, nei))
+            if (vox.layer > 3 && vox.mainAsset == null)
+                foreach (int nei in MapManager.manager.neighboursMap[vox.columnID])
                 {
-                    Voxel neighbour = MapManager.manager.voxels[vox.layer + 1][nei];
-                    if (caveFloors.Contains(neighbour) &&(neighbour.maxGradient * 1000) <= 15 && !neighbour.smoothed && neighbour.mainAsset==null)
+                    if (MapManager.manager.doesVoxelExist(vox.layer + 1, nei))
                     {
-                        //Debug.Log("found cave border");
-                        neighbour.isCaveBorder = true;
-                        bool valid = true;
-                        for (int i = 0; i < requiredHeight; i++)
+                        Voxel neighbour = MapManager.manager.voxels[vox.layer + 1][nei];
+                        if (caveFloors.Contains(neighbour) && (neighbour.maxGradient * 1000) <= 15 && !neighbour.smoothed && neighbour.mainAsset == null)
                         {
-                            if (!(MapManager.manager.doesVoxelExist(vox.layer - i, vox.columnID) && caveWalls.Contains(MapManager.manager.voxels[vox.layer - i][vox.columnID]))) {
-                                //the voxel i above vox is not a wall
-                                valid = false;
-                            }
-                        }
-                        if (valid)
-                        {
-                            bool closeEnough = false;
-                            foreach (CaveBody body in caves)
+                            //Debug.Log("found cave border");
+                            neighbour.isCaveBorder = true;
+                            bool valid = true;
+                            for (int i = 0; i < requiredHeight; i++)
                             {
-                                double dist = Vector3.Distance(body.center, vox.worldCentreOfObject);
-                                //Debug.Log("comparing " + body.center + " and  " + vox.worldCentreOfObject + " dist: " + dist);
-
-                                if (dist < requiredDistance)
+                                if (!(MapManager.manager.doesVoxelExist(vox.layer - i, vox.columnID) && caveWalls.Contains(MapManager.manager.voxels[vox.layer - i][vox.columnID])))
                                 {
-                                    closeEnough = true;
+                                    //the voxel i above vox is not a wall
+                                    valid = false;
                                 }
                             }
-                            if (valid && closeEnough)
+                            if (valid)
                             {
+                                bool closeEnough = false;
+                                foreach (CaveBody body in caves)
+                                {
+                                    double dist = Vector3.Distance(body.center, vox.worldCentreOfObject);
+                                    //Debug.Log("comparing " + body.center + " and  " + vox.worldCentreOfObject + " dist: " + dist);
+
+                                    if (dist < requiredDistance)
+                                    {
+                                        closeEnough = true;
+                                    }
+                                }
+                                if (valid && closeEnough)
+                                {
                                     //Debug.Log("found portal candidate");
                                     candidateCount++;
-                                placePortal(vox, neighbour);
-                                //StartCoroutine(neighbour.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveBorder")));
+                                    placePortal(vox, neighbour);
+                                    //StartCoroutine(neighbour.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveBorder")));
+                                }
                             }
                         }
                     }
                 }
-            }
         }
         //Debug.Log("found " + candidateCount + " portal candidates ");
     }
 
     private void placePortal(Voxel wall, Voxel Base)
     {
-        Vector3 pos = (Base.worldCentreOfObject + wall.worldCentreOfObject)/2.0f;
+        Vector3 pos = (Base.worldCentreOfObject + wall.worldCentreOfObject) / 2.0f;
         Vector3 forwards = (Base.worldCentreOfObject - wall.worldCentreOfObject);
         forwards = Vector3.Cross(-Base.worldCentreOfObject, Vector3.Cross(forwards, -Base.worldCentreOfObject)).normalized;
-        if (Vector3.Dot(forwards, (Base.worldCentreOfObject - wall.worldCentreOfObject)) < 0) {
+        if (Vector3.Dot(forwards, (Base.worldCentreOfObject - wall.worldCentreOfObject)) < 0)
+        {
             forwards *= -1;
         }
         pos += forwards * 1.4f;
@@ -119,9 +121,10 @@ public class CaveManager : NetworkBehaviour
         //Debug.Log("forwards " + forwards + " orient = " + orient + " base cent: " + Base.worldCentreOfObject + " wall cent: " + wall.worldCentreOfObject    );
 
 
-        GameObject portal =  (GameObject)Instantiate(Resources.Load<UnityEngine.Object>("Prefabs/Map/Portal"),pos,orient);
+        GameObject portal = (GameObject)Instantiate(Resources.Load<UnityEngine.Object>("Prefabs/Map/Portal"), pos, orient);
         portal.transform.GetChild(0).GetComponent<Portal>().voxel = Base;
-        if (Base.mainAsset != null) {
+        if (Base.mainAsset != null)
+        {
             NetworkServer.Destroy(Base.mainAsset.gameObject);
         }
         Base.mainAsset = portal.transform.GetChild(0).GetComponent<Portal>();
@@ -132,14 +135,16 @@ public class CaveManager : NetworkBehaviour
     public void gatherCaveVoxels()
     {
         //Debug.Log("gathering cave voxels locally");
-        for (int i = 0; i <MapManager.mapLayers; i++)
+        for (int i = 0; i < MapManager.mapLayers; i++)
         {
             foreach (Voxel vox in MapManager.manager.voxels[i].Values)
             {
-                if (vox.isMelted) {
+                if (vox.isMelted)
+                {
                     continue;
                 }
-                if (vox.columnID == 0) {
+                if (vox.columnID == 0)
+                {
                     //Debug.Log("found vox at colID=0   layer: " + i);
                     //var myKey = MapManager.manager.voxels[i].FirstOrDefault(x => x.Value == vox).Key;
                     //vox.columnID = MapManager.manager.voxels[i].
@@ -147,7 +152,8 @@ public class CaveManager : NetworkBehaviour
                 if (MapManager.manager.doesVoxelExist(i, vox.columnID))
                 {
                     bool wall = true;
-                    if (vox.layer != i) {
+                    if (vox.layer != i)
+                    {
                         //Debug.Log("i= " + i + " vox layer = " + vox.layer);
                         vox.layer = i;
                     }
@@ -219,18 +225,30 @@ public class CaveManager : NetworkBehaviour
                 if (farEnough)//the new cave entrance is far enough away from all other cave entrances
                 {
                     Vector3 dir = Vector3.zero;
+                    int dropOffFactor = 100;
 
-                    int count = 0;
+                    int count = 0;//number of other cave entrances there are
                     foreach (CaveEntrance ent in entrances)
                     {//points the dir of the new cave entrance away from nearby entrances and cave bodies
                         Vector3 estimatedCavePosition = MapManager.manager.getPositionOf(0, ent.columnID) + ent.direction.normalized * estimatedEntranceDistance * 0.7f;
                         float dist = Vector3.Distance(MapManager.manager.getPositionOf(0, colID), estimatedCavePosition);
-                        dir += 0.5f * (MapManager.manager.getPositionOf(0, colID) - estimatedCavePosition).normalized / (float)Math.Pow(Vector3.Distance(MapManager.manager.getPositionOf(0, colID), estimatedCavePosition), 3);//the closer the cave body the more repelling effect it has
-                        dir += (MapManager.manager.getPositionOf(0, colID) - MapManager.manager.getPositionOf(0, ent.columnID)).normalized / (float)Math.Pow(Vector3.Distance(MapManager.manager.getPositionOf(0, colID), MapManager.manager.getPositionOf(0, ent.columnID)), 3);//the closer the cave body the more repelling effect it has
 
+                        dir += 0.5f * (MapManager.manager.getPositionOf(0, colID) - estimatedCavePosition).normalized / (float)Math.Pow(Vector3.Distance(MapManager.manager.getPositionOf(0, colID), estimatedCavePosition)/dropOffFactor, 2);//the closer the cave body the more repelling effect it has
+                        dir += (MapManager.manager.getPositionOf(0, colID) - MapManager.manager.getPositionOf(0, ent.columnID)).normalized / (float)Math.Pow(Vector3.Distance(MapManager.manager.getPositionOf(0, colID), MapManager.manager.getPositionOf(0, ent.columnID)) / dropOffFactor, 2);//the closer the cave body the more repelling effect it has
+
+                        //Debug.Log("adding " + 0.5f * (MapManager.manager.getPositionOf(0, colID) - estimatedCavePosition).normalized+  " divided by "+ (float)Math.Pow(Vector3.Distance(MapManager.manager.getPositionOf(0, colID), estimatedCavePosition) / dropOffFactor, 2));
+                        //Debug.Log("and " + (MapManager.manager.getPositionOf(0, colID) - MapManager.manager.getPositionOf(0, ent.columnID)).normalized + " divided by " + (float)Math.Pow(Vector3.Distance(MapManager.manager.getPositionOf(0, colID), MapManager.manager.getPositionOf(0, ent.columnID)) / dropOffFactor, 2)); 
                         count++;
                     }
+                    if (dir.magnitude != 1 && count > 0)
+                    {
+                        //Debug.LogError("created dir with mag !=1 : " + dir);
+                    }
                     dir = planariseDir(colID, dir);
+                    if (dir.magnitude != 1 && count > 0)
+                    {
+                        //Debug.LogError("created planarised dir with mag !=1 : " + dir);
+                    }
                     //dir is now a direction which is pointing away from all other
 
 
@@ -290,7 +308,8 @@ public class CaveManager : NetworkBehaviour
             {
                 finishDigging();
             }
-            else {//keep digging
+            else
+            {//keep digging
                 digNextTier();
             }
             //MapManager.SmoothVoxels();
@@ -300,8 +319,10 @@ public class CaveManager : NetworkBehaviour
 
     private static void digNextTier()
     {
-        foreach (CaveBody body in caves) {
-            if (body.tier == caveTiers - tiersLeft - 1) {//if cave body is from tier above
+        foreach (CaveBody body in caves)
+        {
+            if (body.tier == caveTiers - tiersLeft - 1)
+            {//if cave body is from tier above
                 int num = UnityEngine.Random.Range(1, 3);
                 //int num = 2;
                 CaveTunnel tunnel = null;
@@ -310,10 +331,11 @@ public class CaveManager : NetworkBehaviour
                     if (i == 1)
                     {
                         CaveTunnel tunnel2 = new CaveTunnel();
-                        tunnel2.tunnelDepth = tunnel.tunnelDepth +3;
-                        tunnel2.tunnelFrom(body,-tunnel.direction);
+                        tunnel2.tunnelDepth = tunnel.tunnelDepth + 3;
+                        tunnel2.tunnelFrom(body, -tunnel.direction);
                     }
-                    else {
+                    else
+                    {
                         tunnel = new CaveTunnel();
                         tunnel.tunnelFrom(body);
                     }
@@ -360,6 +382,6 @@ public class CaveManager : NetworkBehaviour
             newDir = newDir * -1;
         }
         //Debug.Log("planarised dir from " + dir.normalized + " to " + newDir);
-        return newDir;
+        return newDir.normalized;
     }
 }

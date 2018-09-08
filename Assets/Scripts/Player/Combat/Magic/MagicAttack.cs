@@ -137,7 +137,7 @@ public class MagicAttack : AAttackBehaviour
 
     void Animation()
     {
-        animator.SetBool("isAttacking", isAttacking);
+        animator.SetBool("isAttacking", isDamaging);
         animator.SetBool("shieldUp", shieldUp);
         animator.SetBool("isDigging", isDigging);
         animator.SetBool("isTelekening", isTelekening);

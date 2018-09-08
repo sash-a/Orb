@@ -29,6 +29,7 @@ public class PlayerController : MonoBehaviour
         GetComponent<Gravity>().inSphere = false;
         //sendToSpawnRoom();
         StartCoroutine(AddPlayer());
+        //Debug.Log("look sens: " + lookSens);
     }
 
     IEnumerator AddPlayer()
@@ -66,8 +67,8 @@ public class PlayerController : MonoBehaviour
         }
 
         // Rotation
-        var yRot = new Vector3(0, Input.GetAxis("Mouse X"), 0) * lookSens;
-        float xRot = Input.GetAxis("Mouse Y") * lookSens;
+        var yRot = new Vector3(0, Input.GetAxis("Mouse X"), 0) * lookSens *Time.deltaTime;
+        float xRot = Input.GetAxis("Mouse Y") * lookSens * Time.deltaTime;
 
         actions.rotate(yRot, xRot);
 

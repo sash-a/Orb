@@ -26,6 +26,7 @@ public class MapChunk : MonoBehaviour
                 NetworkServer.Destroy(vox.mainAsset.gameObject);
             }
 
+
             if (vox != null)
             {
                 NetworkServer.Destroy(vox.gameObject);
@@ -39,6 +40,8 @@ public class MapChunk : MonoBehaviour
     {
         foreach (Voxel vox in containedVoxels)
         {
+            //Destroy(vox.GetComponent<MeshCollider>());
+
             if (vox.mainAsset != null) {
                 vox.mainAsset.gameObject.transform.parent = transform;
             }
@@ -57,6 +60,7 @@ public class MapChunk : MonoBehaviour
         {
             containedVoxels = new HashSet<Voxel>();
         }
+        Destroy(v.GetComponent<Rigidbody>());
 
         NetworkTransform netTrans = v.GetComponent<NetworkTransform>();
         if (netTrans != null)
@@ -69,8 +73,7 @@ public class MapChunk : MonoBehaviour
         }
         containedVoxels.Add(v);
         //v.GetComponent<Rigidbody>().isKinematic = true;
-        Destroy(v.GetComponent<Rigidbody>());
-        Destroy(v.GetComponent<MeshCollider>());
+       
 
         if (v.mainAsset != null) {
             //v.asset.changeParent(gameObject.transform);

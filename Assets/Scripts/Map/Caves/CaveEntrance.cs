@@ -25,19 +25,34 @@ public class CaveEntrance : CaveComponent
     {
         //Debug.Log("creating cave entrance at: " + colID + " with random dir" );
 
-        int n = rand.Next(0, 2);
-        int count = 0;
         Vector3 dir = Vector3.zero;
-        foreach (int nei in MapManager.manager.neighboursMap[colID])
-        {
-            if (count == n)
-            {
-                dir = MapManager.manager.getPositionOf(0, nei) - MapManager.manager.getPositionOf(0, colID);
-                break;
-            }
-            count++;
-        }
 
+        int tries = 10;
+        while (dir.magnitude!=1 && tries>0)
+        {
+            int n = rand.Next(0, 2);
+            int count = 0;
+            bool dirSet = false;
+            foreach (int nei in MapManager.manager.neighboursMap[colID])
+            {
+                if (count == n)
+                {
+                    if (MapManager.manager.getPositionOf(0, colID).Equals(MapManager.manager.getPositionOf(0, nei)) || (MapManager.manager.getPositionOf(0, nei) - MapManager.manager.getPositionOf(0, colID)).normalized.magnitude<0.9) {
+                        Debug.LogError("neighbour position not unique, pos 1 = " + MapManager.manager.getPositionOf(0, colID) + " pos 2 = " + MapManager.manager.getPositionOf(0, nei));
+                    }
+                    dir =( MapManager.manager.getPositionOf(0, nei) - MapManager.manager.getPositionOf(0, colID)).normalized;
+                    
+                    dirSet = true;
+                    break;
+                }
+                count++;
+            }
+            tries--;
+        }
+        if (dir.magnitude != 1)
+        {
+            Debug.LogError("trying to start entrance with no direction, dir = " + dir);
+        }
         createEntranceAt(colID, dir);
        
     }
@@ -90,7 +105,10 @@ public class CaveEntrance : CaveComponent
         digger.transform.position = Vector3.zero;
         digger.setScale(entrancesize);
         digger.gradient = 2;
-        direction = dir;
+        direction = dir.normalized;
+        if (direction.magnitude != 1) {
+            Debug.LogError("digging entrance with no direction, dir = " + direction);
+        }
 
 
         digger.right = Vector3.Cross(direction, -MapManager.manager.getPositionOf(0, columnID)).normalized;
