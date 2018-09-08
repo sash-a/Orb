@@ -8,6 +8,7 @@ public class WeaponWheel : MonoBehaviour
     public WeaponAttack weapons;
     public ResourceManager rm;
     public NetHealth playerHealth;
+    public GunnerUI ui;
 
     public int healthCost;
     public int armorCost;
@@ -23,11 +24,11 @@ public class WeaponWheel : MonoBehaviour
     #endregion
 
     #endregion
-    
+
     private void Start()
     {
         weapons.weaponWheel = this;
-        
+
         weapons.equippedWeapons[1].ammoButton = ammo1;
         weapons.equippedWeapons[1].upgradeButton = upg1;
         weapons.equippedWeapons[2].ammoButton = ammo2;
@@ -46,15 +47,20 @@ public class WeaponWheel : MonoBehaviour
         specialAmmo.GetComponentInChildren<Text>().text = specialWeapon.name + " ammo";
         specialAmmo.onClick.RemoveAllListeners();
         specialAmmo.onClick.AddListener(delegate { purchaseAmmo(specialWeapon.name); });
+        
+        
     }
-    
+
     public void purchaseGun(string gunName)
     {
         WeaponType newWeapon = weapons.weapons.Find(w => w.name == gunName);
-        if (rm.getEnergy() >= newWeapon.baseCost)
+        var currentWeapon = weapons.equippedWeapons[weapons.equippedWeapon];
+        
+        if (rm.getEnergy() >= newWeapon.baseCost && currentWeapon.name != WeaponType.DIGGING_TOOL)
         {
             rm.useEnergy(newWeapon.baseCost);
-            swapGun(newWeapon, weapons.equippedWeapons[weapons.equippedWeapon]);
+            swapGun(newWeapon, currentWeapon);
+            ui.onWeaponPurchased(weapons.equippedWeapon, newWeapon);
         }
     }
 
@@ -85,17 +91,17 @@ public class WeaponWheel : MonoBehaviour
         b.GetComponentInChildren<Text>().text = oldWeapon.name;
         b.onClick.RemoveAllListeners();
         b.onClick.AddListener(delegate { purchaseGun(oldWeapon.name); });
-        
+
         // Setting the ammo/upgrade buttons
         newWeapon.ammoButton = oldWeapon.ammoButton;
         newWeapon.upgradeButton = oldWeapon.upgradeButton;
         oldWeapon.ammoButton = null;
         oldWeapon.upgradeButton = null;
-        
+
         newWeapon.ammoButton.GetComponentInChildren<Text>().text = newWeapon.name + " ammo";
         newWeapon.ammoButton.onClick.RemoveAllListeners();
         newWeapon.ammoButton.onClick.AddListener(delegate { purchaseAmmo(newWeapon.name); });
-        
+
         newWeapon.upgradeButton.GetComponentInChildren<Text>().text = "Upgrade " + newWeapon.name;
         newWeapon.upgradeButton.onClick.RemoveAllListeners();
         newWeapon.upgradeButton.onClick.AddListener(delegate { purchaseUpgrade(newWeapon.name); });
@@ -160,5 +166,4 @@ public class WeaponWheel : MonoBehaviour
             weapon.upgrade();
         }
     }
-    
 }

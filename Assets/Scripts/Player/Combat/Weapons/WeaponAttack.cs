@@ -50,11 +50,10 @@ public class WeaponAttack : AAttackBehaviour
         resourceManager = GetComponent<ResourceManager>();
         //energyBlockEffectSpawner = GetComponent<EnergyBlockEffectSpawner>();
 
-
-        equippedWeapons.Add(weapons[0]);
-        equippedWeapons.Add(weapons[1]);
-
-        equippedWeapons.Add(weapons[2]);
+        equippedWeapons.Add(weapons[0]); // Digger
+        equippedWeapons.Add(weapons[1]); // Pistol
+        equippedWeapons.Add(weapons[2]); // Assalt rifle
+        equippedWeapons.Add(weapons[6]); // Empty special
     }
 
     private void Update()

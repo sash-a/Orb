@@ -14,6 +14,7 @@ public class WeaponType
     public static readonly string SNIPER = "sniper";
     public static readonly string EX_CROSSBOW = "Ex_crossbow";
     public static readonly string GRENADE = "grenade";
+    public static readonly string EMPTY_SPECIAL = "Empty_Special";
 
     #endregion
     
@@ -58,6 +59,8 @@ public class WeaponType
     public int baseCost;
 
     #endregion
+
+    public Sprite uiImage;
     
     //digging tool constructor 
     public WeaponType(string name, float damage, float envDamage, float range, float fireRate, ParticleSystem digBeam)

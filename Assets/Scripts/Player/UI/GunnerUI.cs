@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,22 +17,11 @@ public class GunnerUI : PlayerUI
     [SerializeField] private RectTransform healthBar;
     [SerializeField] private RectTransform shieldBar;
 
-    // Gun icons
-    [SerializeField] private Image gunSlotBorder0;
-    [SerializeField] private Image gunSlotBorder1;
-    [SerializeField] private Image gunSlotBorder2;
-
-    [SerializeField] private Image gunIcon1;
-    [SerializeField] private Image gunIcon2;
-
-    public Sprite pistolIcon;
-    public Sprite rifleIcon;
-    public Sprite shotgunIcon;
-    public Sprite sniperIcon;
-
-
+    // Guns
     [SerializeField] private Sprite borderEquipped;
     [SerializeField] private Sprite borderUnequipped;
+    [SerializeField] private List<Image> gunSlotBorders;
+    [SerializeField] private List<Image> gunIcons;
 
 
     // Ammo count
@@ -53,6 +43,14 @@ public class GunnerUI : PlayerUI
         if (player != null && player.GetComponent<Identifier>().typePrefix != Identifier.gunnerType)
         {
             Debug.LogError("Displaying incorrect HUD");
+        }
+
+        weaponWheel.GetComponent<WeaponWheel>().ui = this;
+
+        // Setting initial gun icons
+        for (int i = 0; i < weapons.equippedWeapons.Count; i++)
+        {
+            gunIcons[i].sprite = weapons.equippedWeapons[i].uiImage;
         }
     }
 
@@ -115,23 +113,9 @@ public class GunnerUI : PlayerUI
 
     void showEquipped()
     {
-        if (weapons.equippedWeapon == 0)
+        for (int i = 0; i < weapons.equippedWeapons.Count; i++)
         {
-            gunSlotBorder0.sprite = borderEquipped;
-            gunSlotBorder1.sprite = borderUnequipped;
-            gunSlotBorder2.sprite = borderUnequipped;
-        }
-        else if (weapons.equippedWeapon == 1)
-        {
-            gunSlotBorder0.sprite = borderUnequipped;
-            gunSlotBorder1.sprite = borderEquipped;
-            gunSlotBorder2.sprite = borderUnequipped;
-        }
-        else if (weapons.equippedWeapon == 2)
-        {
-            gunSlotBorder0.sprite = borderUnequipped;
-            gunSlotBorder1.sprite = borderUnequipped;
-            gunSlotBorder2.sprite = borderEquipped;
+            gunSlotBorders[i].sprite = i == weapons.equippedWeapon ? borderEquipped : borderUnequipped;
         }
     }
 
@@ -160,5 +144,10 @@ public class GunnerUI : PlayerUI
         {
             ammoCount.text = clip + "|" + total;
         }
+    }
+
+    public void onWeaponPurchased(int oldWeaponEquippedIndex, WeaponType newWeapon)
+    {
+        gunIcons[oldWeaponEquippedIndex].sprite = newWeapon.uiImage;
     }
 }
