@@ -21,7 +21,9 @@ public class PlayerActions : NetworkBehaviour
 
     Vector3 pivotPoint;//the local position of the cam pivot vs the player on start time - before any controls
 
-    private bool isJumping;
+    private bool isGroundPlanted;
+    private bool isJumping=false;
+    private bool hasDoubleJumped=false;
 
     void Start()
     {
@@ -48,7 +50,7 @@ public class PlayerActions : NetworkBehaviour
         velocity = Vector3.zero;
         rb = GetComponent<Rigidbody>();
         grav = GetComponent<Gravity>();
-        isJumping = false;
+        isGroundPlanted = false;
     }
 
     void FixedUpdate()
@@ -119,15 +121,26 @@ public class PlayerActions : NetworkBehaviour
 
     public void jump(float jumpForce)
     {
-        if (isJumping)
+        if (isGroundPlanted)
         {
-            isJumping = false;
-            rb.AddForce(-grav.getDownDir()* jumpForce);
+            isGroundPlanted = false;
+            rb.AddForce(-grav.getDownDir() * jumpForce);
+            isJumping = true;
+        }
+        else {
+            if(isJumping && !hasDoubleJumped) {
+                rb.AddForce(-grav.getDownDir() * jumpForce);
+                hasDoubleJumped = true;
+            }
         }
     }
 
     void OnCollisionEnter(Collision other)
     {
-        isJumping = other.gameObject.CompareTag("TriVoxel");
+        isGroundPlanted = other.gameObject.CompareTag("TriVoxel");
+        if (isGroundPlanted) {
+            isJumping = false;
+            hasDoubleJumped = false;
+        }
     }
 }

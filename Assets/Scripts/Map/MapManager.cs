@@ -43,6 +43,9 @@ public class MapManager : NetworkBehaviour
 
     // maps column id's onto a set of all column ids that that column is adjacent to
     public Dictionary<int, HashSet<int>> neighboursMap;
+
+ 
+
     public HashSet<Portal> portals;
 
     public static Voxel DeletedVoxel;
@@ -54,6 +57,8 @@ public class MapManager : NetworkBehaviour
     public HashSet<PickUpItem> collectables;
 
     public GameObject shreddingShell;
+    public GameObject warningShell;
+
 
 
     /// <summary>
@@ -83,6 +88,7 @@ public class MapManager : NetworkBehaviour
 
 
     }
+
 
     private void Update()
     {
@@ -236,6 +242,7 @@ public class MapManager : NetworkBehaviour
         GameEventManager.singleton.passMessage("waitForMapCompletion", "mapCompleted");
         //localPlayer.transform.position = new Vector3(0, -30, 0);
         GetComponent<MapAssetManager>().genAssets();
+        GameEventManager.singleton.addShredEvents();
         BuildLog.writeLog("Map finished");
         //Debug.Log("Map finished locally on (server = " + isServer + ")");
     }
@@ -606,23 +613,23 @@ public class MapManager : NetworkBehaviour
     }
 
 
-    Vector3 shredOrigin;
+    Vector3 shredOrigin = new Vector3(0, mapSize * 2, 0);
     int shredNo = 0;
-    float radius;
+    float nextShredRadius = mapSize * 1.6f;
 
     [Command]
     public void CmdShredMap()
     {
         //StartCoroutine(ShredMap());
-        ShredMap();
-        RpcUpdateShreddingShell(radius *1.9f,shredOrigin);
+        ShredMapNext();
+        RpcUpdateShreddingShell(nextShredRadius *1.9f,shredOrigin);
     }
 
-    void ShredMap()
+    void ShredMapNext()
     {
         //yield return new WaitForSecondsRealtime(0.1f);
 
-        if (radius > mapSize * 2.5)
+        if (nextShredRadius > mapSize * 2.5)
         {//reached max shredding
             return;
         }
@@ -631,7 +638,7 @@ public class MapManager : NetworkBehaviour
         if (shredNo == 0)
         {
             shredOrigin = new Vector3(0, mapSize * 2, 0);
-            radius = mapSize * 1.8f;
+            nextShredRadius = mapSize * 1.6f;
         }
 
         GameObject mapChunk = Instantiate(Resources.Load<GameObject>("Prefabs/Map/MapChunk"));
@@ -647,7 +654,7 @@ public class MapManager : NetworkBehaviour
                 if (!isDeleted(i, vox.columnID))
                 {
                     //try { 
-                    if (Vector3.Distance(vox.worldCentreOfObject, shredOrigin) < radius)
+                    if (Vector3.Distance(vox.worldCentreOfObject, shredOrigin) < nextShredRadius)
                     {
                         chunk.addVoxel(vox);
                         count++;
@@ -666,9 +673,9 @@ public class MapManager : NetworkBehaviour
         }
 
         mapChunk.transform.position = center / count;
-        chunk.finishChunk(shredOrigin, radius);
+        chunk.finishChunk(shredOrigin, nextShredRadius);
         shredNo++;
-        radius += mapSize * 0.2f;
+        nextShredRadius += mapSize * 0.2f;
     }
 
     [ClientRpc]
@@ -679,6 +686,42 @@ public class MapManager : NetworkBehaviour
         }
         shreddingShell.transform.localScale = new Vector3(radius, radius, radius);
 
+    }
+
+    [Command]
+    internal void CmdCreateWarningShell()
+    {
+        RpcCreateWarningShell(nextShredRadius * 2f, shredOrigin);
+    }
+
+    [ClientRpc]
+    void RpcCreateWarningShell(float radius, Vector3 origin) {
+        StartCoroutine(placeWarningShell(radius, origin));
+    }
+
+
+    IEnumerator placeWarningShell(float radius, Vector3 origin) {
+        if (warningShell == null)
+        {
+            warningShell = (GameObject)Instantiate<UnityEngine.Object>(Resources.Load("Prefabs/Map/ShreddingWarningShell"));
+            warningShell.transform.localScale = new Vector3(radius, radius, radius);
+            warningShell.transform.position = origin;
+
+            yield return new WaitForSecondsRealtime(ShredMap.countDown);
+            Destroy(warningShell);
+        }
+
+    }
+
+
+    internal bool isInWarningZone(Vector3 position)
+    {
+        double distance = Vector3.Distance(shredOrigin, position);
+        if (distance < nextShredRadius)
+        {
+            return true;
+        }
+        return false;
     }
 
     public Voxel getSubVoxelAt(int layer, int columnID, String subID)

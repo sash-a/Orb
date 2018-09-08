@@ -1,15 +1,18 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ShredMap : GameEvent {
+public class ShredMap : GameEvent
+{
+    public static int countDown = 25;
 
-    public GameObject shreddingShellPrefab;
 
-    public ShredMap(float startTime) {
+    public ShredMap(float startTime)
+    {
         this.startTime = startTime;
         isTimeBased = true;
-        countDownPeriod = 10;
+        countDownPeriod = countDown;
         name = "map shredding";
         serverOnly = true;
     }
@@ -35,4 +38,22 @@ public class ShredMap : GameEvent {
         validateParameters();
     }
 
+    public override int getCountDownValue()
+    {
+        if (GameEventManager.clockTime <= startTime && GameEventManager.clockTime >= startTime - countDownPeriod && isTimeBased)
+        {
+            if (MapManager.manager.warningShell == null)
+            {
+                MapManager.manager.CmdCreateWarningShell();
+            }
+            return Mathf.RoundToInt(startTime - GameEventManager.clockTime);
+
+        }
+        else
+        {
+            return -1;
+        }
+    }
+
+   
 }

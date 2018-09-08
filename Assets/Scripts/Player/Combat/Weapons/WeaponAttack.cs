@@ -13,6 +13,7 @@ public class WeaponAttack : AAttackBehaviour
     public GameObject hitEffect;
     public GameObject explosionEffect;
     public EnergyBlockEffectSpawner energyBlockEffectSpawner;
+    public GameObject damageTextIndicatorEffect;
 
     public int selectedWeapon = 0;
 
@@ -268,6 +269,7 @@ public class WeaponAttack : AAttackBehaviour
             // if we hit a player
             if (hitFromGun.collider.tag == PLAYER_TAG)
             {
+                createDamageText(hitFromGun.transform, weapons[selectedWeapon].damage);
                 CmdPlayerAttacked(hitFromGun.collider.name, weapons[selectedWeapon].damage);
             }
             else //if not a player
@@ -304,6 +306,7 @@ public class WeaponAttack : AAttackBehaviour
 
             if (hitFromGun.collider.CompareTag("Shield"))
             {
+                createDamageText(hitFromGun.transform, weapons[selectedWeapon].damage);
                 CmdShieldHit(hitFromGun.collider.gameObject, weapons[selectedWeapon].damage);
             }
         }
@@ -313,6 +316,15 @@ public class WeaponAttack : AAttackBehaviour
         }
     }
 
+    private void createDamageText(Transform hit, float damage)
+    {
+        Instantiate
+        (
+            damageTextIndicatorEffect,
+            hit.position + hit.up * 10,
+            hit.rotation
+        ).GetComponent<TextDamageIndicator>().setUp((int) damage);
+    }
 
     public override void endAttack()
     {

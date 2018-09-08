@@ -123,8 +123,9 @@ public class CaveManager : NetworkBehaviour
         portal.transform.GetChild(0).GetComponent<Portal>().voxel = Base;
         if (Base.mainAsset != null) {
             NetworkServer.Destroy(Base.mainAsset.gameObject);
-            Base.mainAsset = portal.transform.GetChild(0).GetComponent<Portal>();
         }
+        Base.mainAsset = portal.transform.GetChild(0).GetComponent<Portal>();
+
         NetworkServer.Spawn(portal);
     }
 

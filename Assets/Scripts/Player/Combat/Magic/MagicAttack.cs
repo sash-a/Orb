@@ -4,6 +4,8 @@ using UnityEngine.Networking;
 [RequireComponent(typeof(ResourceManager))]
 public class MagicAttack : AAttackBehaviour
 {
+    #region variables
+
     [SerializeField] private MagicType attackStats;
     [SerializeField] private Transform rightHand;
 
@@ -16,7 +18,7 @@ public class MagicAttack : AAttackBehaviour
     [SyncVar] private bool isDamaging;
 
     // Shield
-    private Shield currentShield; // The current instance of shield=
+    private Shield currentShield; // The current instance of shield
     [SerializeField] private GameObject shield;
     private bool shieldUp; // True if the player is currently using a shield
 
@@ -38,7 +40,9 @@ public class MagicAttack : AAttackBehaviour
     private EnergyBlockEffectSpawner energyBlockEffectSpawner;
     private DestructionEffectSpawner destructionEffectSpawner;
 
-    // Used so that effects are passed every frame
+    public GameObject damageTextIndicatorEffect;
+
+    // Used so that commands are not passed every frame
     [SerializeField] private float waitTime;
     private float timePassed;
 
@@ -53,6 +57,9 @@ public class MagicAttack : AAttackBehaviour
 
     //Animation:
     public Animator animator;
+
+    #endregion
+
 
     void Start()
     {
@@ -121,10 +128,8 @@ public class MagicAttack : AAttackBehaviour
         if (isDamaging && resourceManager.hasEnergy()) damage(hit);
 
         // Trying to pick up something
-        if (Input.GetButtonDown("Use"))
-        {
-            pickup();
-        }
+        if (Input.GetButtonDown("Use")) pickup();
+        
 
         //Animation:
         Animation();
@@ -400,6 +405,7 @@ public class MagicAttack : AAttackBehaviour
         }
         else if (hitFromHand.collider.CompareTag(PLAYER_TAG) || hitFromHand.collider.CompareTag("Shield"))
         {
+            createDamageText(hitFromHand.transform, attackStats.diggerDamage);
             CmdVoxelDamaged(hitFromHand.collider.gameObject, attackStats.diggerDamage);
         }
     }
@@ -428,10 +434,12 @@ public class MagicAttack : AAttackBehaviour
             var character = hitFromHand.collider.gameObject.GetComponent<Identifier>().typePrefix;
             if (character == Identifier.magicianType) // Heal
             {
+                createDamageText(hitFromHand.transform, attackStats.heal);
                 CmdPlayerAttacked(hitFromHand.collider.name, -attackStats.heal);
             }
             else // Damage
             {
+                createDamageText(hitFromHand.transform, attackStats.attackDamage);
                 CmdPlayerAttacked(hitFromHand.collider.name, attackStats.attackDamage);
             }
         }
@@ -675,5 +683,15 @@ public class MagicAttack : AAttackBehaviour
 
     #endregion
 
+    private void createDamageText(Transform hit, float damage)
+    {
+        Instantiate
+        (
+            damageTextIndicatorEffect,
+            hit.position + hit.up * 10,
+            hit.rotation
+        ).GetComponent<TextDamageIndicator>().setUp((int) damage);
+    }
+    
     #endregion
 }

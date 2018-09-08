@@ -26,7 +26,7 @@ public abstract class GameEvent {
         }
     }
 
-    public int getCountDownValue() {
+    public virtual int getCountDownValue() {
         if (GameEventManager.clockTime <= startTime && GameEventManager.clockTime >= startTime - countDownPeriod && isTimeBased)
         {
             return Mathf.RoundToInt(startTime - GameEventManager.clockTime);

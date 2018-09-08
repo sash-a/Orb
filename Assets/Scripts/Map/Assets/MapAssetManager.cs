@@ -8,7 +8,7 @@ using UnityEngine.Networking;
 public class MapAssetManager : NetworkBehaviour
 {
 
-    public static int mainAssetSparsity = 30;
+    public static int mainAssetSparsity = 40;
     public static int grassDensity = 3;//how many blades of grass per voxel
     //colab is a bitch
 

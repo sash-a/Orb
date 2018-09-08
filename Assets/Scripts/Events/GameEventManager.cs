@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 
 public class GameEventManager : NetworkBehaviour
 {
-    public static int gameLength = 200;//number of seconds before max map shredding
+    public static int gameLength = 100;//number of seconds before max map shredding
 
 
     public static float clockTime;
@@ -38,10 +38,14 @@ public class GameEventManager : NetworkBehaviour
         WaitForAllMapsToComplete wait = new WaitForAllMapsToComplete();
         addEvent(wait);
 
+        
+    }
+
+    public void addShredEvents() {
         int shreds = 4;
         for (int i = 0; i < shreds; i++)
         {//4 evenly spaced out shreds
-            ShredMap shred = new ShredMap(clockTime + ((i+1)* gameLength / shreds));
+            ShredMap shred = new ShredMap(clockTime + ((i + 1) * gameLength / shreds));
             addEvent(shred);
         }
     }

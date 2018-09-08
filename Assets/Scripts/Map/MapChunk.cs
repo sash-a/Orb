@@ -1,4 +1,5 @@
-﻿ using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -118,7 +119,8 @@ public class MapChunk : MonoBehaviour
             if (containedNeighboursCount < 3 - v.getDeletedAdjacentCount() - unspawnedNeighboursCount)
             {
                 //not all this voxels neighbours are in the chunk - so it must be an edge voxel
-                createPillar(v);
+                StartCoroutine(createPillarIncrementally(v));
+                //createPillar(v);
                 edgeCount++;
             }
         }
@@ -144,6 +146,51 @@ public class MapChunk : MonoBehaviour
                     vox.showNeighbours(false);
                     MapManager.manager.CmdInformDeleted(vox.layer, vox.columnID);
                     checkNeighbours(vox);
+                }
+            }
+        }
+    }
+    int batchCount = 0;
+
+    IEnumerator createPillarIncrementally(Voxel v) {
+        int batchSize = 1;
+        int skipFrames = 25;
+        int framesLeft = UnityEngine.Random.Range(0,skipFrames);//offsets the different pillars
+
+
+        for (int i = 1; i < MapManager.mapLayers; i++)
+        {
+            while (framesLeft > 0)
+            {
+                framesLeft--;
+                yield return new WaitForFixedUpdate();
+            }
+            framesLeft = skipFrames;
+            
+
+            v.createNewVoxel(i - v.layer);
+            if (!MapManager.manager.isDeleted(i, v.columnID))
+            {
+                Voxel vox = MapManager.manager.voxels[i][v.columnID];
+                if (vox != null)
+                {
+                    //
+                    addVoxel(vox);
+                    vox.gameObject.transform.parent = gameObject.transform;
+                    //Debug.Log("adding new column voxel to map chunk - parent name: " + vox.gameObject.transform.parent.gameObject.name);
+                    vox.showNeighbours(false);
+                    MapManager.manager.CmdInformDeleted(vox.layer, vox.columnID);
+                    checkNeighbours(vox);
+
+                    if (batchCount >= batchSize)
+                    {
+                        batchCount = 0;
+                        yield return new WaitForFixedUpdate();
+                        //yield return new WaitForEndOfFrame();
+                    }
+                    else {
+                        batchCount++;
+                    }
                 }
             }
         }

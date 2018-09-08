@@ -77,6 +77,12 @@ public class PlayerController : MonoBehaviour
         //Animation
         MovementAnimation(velocity);
 
+        if (MapManager.manager !=null &&MapManager.manager.warningShell != null) {
+            if (MapManager.manager.isInWarningZone(transform.position)) {
+                Debug.Log("player is in warning zone!");
+            }
+        }
+
     }
 
     internal void sendToSpawnRoom()

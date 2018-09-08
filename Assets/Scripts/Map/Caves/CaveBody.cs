@@ -14,6 +14,8 @@ public class CaveBody : CaveComponent
 
     int length = 10;
 
+    Vector3 baseScale;
+
     public CaveBody(Digger d) : base(d)
     {
         //Debug.Log("creating cave body - adding to caves list");
@@ -24,7 +26,7 @@ public class CaveBody : CaveComponent
         //ebug.Log("after: " + digger.master is CaveEntrance);
         center = Vector3.zero;
         CaveManager.caves.Add(this);
-        digger.setScale(8);
+        digger.setScale(10);
 
     }
 

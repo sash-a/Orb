@@ -10,7 +10,7 @@ public class Digger : NetworkBehaviour
 
     public int gradient;//number of neighbours it will bouonce to before increasing the layer
     public int neighbourCount;//the count for number of runs without rise
-    public static int maxSize = 20;
+    public static int maxSize = 25;
     public static int minSize = 5;
 
 

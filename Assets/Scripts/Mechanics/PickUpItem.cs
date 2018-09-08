@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections;
+using UnityEngine;
 
 public class PickUpItem : MonoBehaviour
 {
@@ -29,5 +31,18 @@ public class PickUpItem : MonoBehaviour
         //play some effect or something
         MapManager.manager.collectables.Remove(this);
         Destroy(gameObject);
+    }
+
+    private void Start()
+    {
+        StartCoroutine(setItem());
+    }
+
+    private IEnumerator setItem()
+    {
+        yield return new WaitForSecondsRealtime(2);
+        if (!MapManager.manager.collectables.Contains(this)) {
+            MapManager.manager.collectables.Add(this);
+        }
     }
 }
