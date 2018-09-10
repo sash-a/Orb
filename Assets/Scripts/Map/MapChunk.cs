@@ -9,9 +9,11 @@ public class MapChunk : MonoBehaviour
     Vector3 chunkOrigin;
     float chunkRadius;
 
+    int columnsRemaining = 0;
+
     private void Update()
     {
-        if (transform.position.magnitude > MapManager.mapSize * 5)
+        if (transform.position.magnitude > MapManager.mapSize * 10)
         {
             destroyChunk();
         }
@@ -42,7 +44,8 @@ public class MapChunk : MonoBehaviour
         {
             //Destroy(vox.GetComponent<MeshCollider>());
 
-            if (vox.mainAsset != null) {
+            if (vox.mainAsset != null)
+            {
                 vox.mainAsset.gameObject.transform.parent = transform;
             }
             MapManager.manager.CmdInformDeleted(vox.layer, vox.columnID);
@@ -51,7 +54,8 @@ public class MapChunk : MonoBehaviour
 
     public void addVoxel(Voxel v)
     {
-        if (v == null) {
+        if (v == null)
+        {
             Debug.LogError("null voxel being added to map chunk " + v);
             return;
         }
@@ -73,9 +77,10 @@ public class MapChunk : MonoBehaviour
         }
         containedVoxels.Add(v);
         //v.GetComponent<Rigidbody>().isKinematic = true;
-       
 
-        if (v.mainAsset != null) {
+
+        if (v.mainAsset != null)
+        {
             //v.asset.changeParent(gameObject.transform);
         }
     }
@@ -122,6 +127,7 @@ public class MapChunk : MonoBehaviour
             if (containedNeighboursCount < 3 - v.getDeletedAdjacentCount() - unspawnedNeighboursCount)
             {
                 //not all this voxels neighbours are in the chunk - so it must be an edge voxel
+                columnsRemaining++;
                 StartCoroutine(createPillarIncrementally(v));
                 //createPillar(v);
                 edgeCount++;
@@ -129,7 +135,7 @@ public class MapChunk : MonoBehaviour
         }
 
         separateChunk();
-       // Debug.Log("suspected  " + suspectedEdges.Count + "/" + containedVoxels.Count + " voxels of being on edge | actually " + edgeCount + " edges  |  radius: " + radius);
+        // Debug.Log("suspected  " + suspectedEdges.Count + "/" + containedVoxels.Count + " voxels of being on edge | actually " + edgeCount + " edges  |  radius: " + radius);
     }
 
     private void createPillar(Voxel v)
@@ -154,11 +160,13 @@ public class MapChunk : MonoBehaviour
         }
     }
     int batchCount = 0;
+    int skipFrames = 60;
 
-    IEnumerator createPillarIncrementally(Voxel v) {
+
+    IEnumerator createPillarIncrementally(Voxel v)
+    {
         int batchSize = 1;
-        int skipFrames = 25;
-        int framesLeft = UnityEngine.Random.Range(0,skipFrames);//offsets the different pillars
+        int framesLeft = UnityEngine.Random.Range(0, skipFrames);//offsets the different pillars
 
 
         for (int i = 1; i < MapManager.mapLayers; i++)
@@ -169,7 +177,7 @@ public class MapChunk : MonoBehaviour
                 yield return new WaitForFixedUpdate();
             }
             framesLeft = skipFrames;
-            
+
 
             v.createNewVoxel(i - v.layer);
             if (!MapManager.manager.isDeleted(i, v.columnID))
@@ -191,12 +199,14 @@ public class MapChunk : MonoBehaviour
                         yield return new WaitForFixedUpdate();
                         //yield return new WaitForEndOfFrame();
                     }
-                    else {
+                    else
+                    {
                         batchCount++;
                     }
                 }
             }
         }
+        columnsRemaining--;
     }
 
     private void checkNeighbours(Voxel vox)

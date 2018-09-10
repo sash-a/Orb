@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,11 +10,17 @@ public abstract class GameEvent {
     public int countDownPeriod=5;//the number of seconds before the start time the event starts a count down timer
     public bool isTimeBased=false;//some events are triggered by hooks
     public string name ="none";//some events can be triggered by name in network message passing
+    public string message = "none";
+  
+
     /// <summary>
     /// some events run locally on all systems - some do not
     /// those that run server only are stored by each local event manager but are only ever executed on the server
     /// </summary>
     public bool serverOnly = false;//
+    public bool displayMessage = true;
+
+    public UIMessage UIMessageObject;//doesnt have to have a message
 
     public bool isStarted()
     {
@@ -62,4 +69,11 @@ public abstract class GameEvent {
     public abstract void execute();
     public abstract void passMessage(string message);//can be used for passing special instructions to an event
 
+
+    internal string getMessage()
+    {
+        return message + " " + getCountDownValue();
+    }
+
+   
 }

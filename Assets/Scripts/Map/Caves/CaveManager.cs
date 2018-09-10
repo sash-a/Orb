@@ -195,6 +195,12 @@ public class CaveManager : NetworkBehaviour
 
     public static void digTierZeroCaves()
     {
+        try
+        {
+            new UIMessage("digging caves 1/2", 3f);
+        }
+        catch { }
+
         float estimatedEntranceDistance = 0.5f * MapManager.mapSize / (float)Math.Pow(2, MapManager.splits);
 
         rand = new System.Random();
@@ -319,6 +325,9 @@ public class CaveManager : NetworkBehaviour
 
     private static void digNextTier()
     {
+        new UIMessage("digging caves 2/2", 3f);
+
+
         foreach (CaveBody body in caves)
         {
             if (body.tier == caveTiers - tiersLeft - 1)

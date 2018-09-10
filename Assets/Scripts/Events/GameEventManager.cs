@@ -16,48 +16,78 @@ public class GameEventManager : NetworkBehaviour
     Dictionary<string, GameEvent> namedEvents;
     List<GameEvent> countDownEvents;
 
+    public MessageDisplay display;
+
+    private void Start()
+    {
+        singleton = this;
+    }
 
     // Use this for initialization
     public override void OnStartClient()
     {
-        base.OnStartClient();
+        singleton = this;
 
+        //Debug.Log("started game event manager");
+        base.OnStartClient();
         events = new HashSet<GameEvent>();
+
         countDownEvents = new List<GameEvent>();
         namedEvents = new Dictionary<string, GameEvent>();
         singleton = this;
-        StartCoroutine(setUpStartGame());
+        //StartCoroutine(setUpStartGame());
         setUpStartGame();
     }
 
 
 
-    private IEnumerator setUpStartGame()
+    private void setUpStartGame()
     {
-        yield return new WaitForSecondsRealtime(1f);//wait for map to begin and all players to spawn
+        //Debug.Log("setting up game event man ");
+        //yield return new WaitForSecondsRealtime(1f);//wait for map to begin and all players to spawn
         WaitForAllMapsToComplete wait = new WaitForAllMapsToComplete();
+        //Debug.Log(wait);
+        if (wait == null)
+        {
+            Debug.LogError("failed to create wait object");
+        }
         addEvent(wait);
 
-        
     }
 
-    public void addShredEvents() {
+    [Command]
+    public void CmdAddShredEvents()
+    {
+        RpcAddShreddingEvents();
+    }
+
+    [ClientRpc]
+    void RpcAddShreddingEvents() {
         int shreds = 4;
         for (int i = 0; i < shreds; i++)
         {//4 evenly spaced out shreds
+            //Debug.Log("adding shredding event to event manager");
             ShredMap shred = new ShredMap(clockTime + ((i + 1) * gameLength / shreds));
+            events.Add(shred);
+            //printEventList();
+
             addEvent(shred);
         }
     }
 
     public void addEvent(GameEvent e)
     {
-        events.Add(e);
+        //Debug.Log("adding event: " + e + " contained = " + events.Contains(e));
+        if (!events.Contains(e))
+        {
+            events.Add(e);
+        }
         e.start();
         if (e.name != "none" && !namedEvents.ContainsKey(e.name))
         {
             namedEvents.Add(e.name, e);
         }
+        
     }
 
     public void passMessage(string name, string message)
@@ -97,36 +127,56 @@ public class GameEventManager : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
+        //printEventList();
         clockTime += Time.deltaTime;
         List<GameEvent> executedEvents = new List<GameEvent>();
+        List<GameEvent> removedEvents = new List<GameEvent>();
+
         foreach (GameEvent ev in events)
         {
             int countdown = ev.getCountDownValue();
-            if (!ev.serverOnly || isServer)
+            if ((!ev.serverOnly) || isServer)//remove non time based server only events from clients
             { //only consider this event if this is the server or if this event happens on clients
                 if (countdown >= 0)
                 {//is in count down phase
+                    //Debug.Log("adding count down for event: " + ev.name);
                     countDownEvents.Add(ev);
                 }
                 else
                 {
                     if (ev.isStarted())
                     {
-                        ev.execute();
+                        if (ev.name.Contains("ait")) {
+                            //Debug.Log("executing wait for map");
+                        }
                         executedEvents.Add(ev);
                     }
                 }
             }
             else
             {
-                executedEvents.Add(ev);
+                if (!ev.isTimeBased)
+                {
+                    //Debug.Log("removing non time based server only event: " + ev.name);
+                    removedEvents.Add(ev);
+                }
             }
         }
         foreach (GameEvent ev in executedEvents)
         {
+            //Debug.Log("removing event:  " + ev.name + " and executing it ");
+            if (!ev.serverOnly || isServer)
+            {
+                ev.execute();
+            }
             events.Remove(ev);
         }
-
+        foreach (GameEvent ev in removedEvents)
+        {
+            //if (ev.name == "map shredding") {
+            //Debug.Log("removing event:  " + ev.name + " from events queue ");
+            events.Remove(ev);
+        }
         countDown();
     }
 
@@ -151,23 +201,26 @@ public class GameEventManager : NetworkBehaviour
         }
         if (closestEvent != null)
         {
-//            DisplayCountDownFor(closestEvent);
+            DisplayCountDownFor(closestEvent);
         }
     }
 
     private void DisplayCountDownFor(GameEvent closestEvent)
     {
-        if (closestEvent.getCountDownValue() >= 0)
+        if (closestEvent.getCountDownValue() >= 0 && closestEvent.UIMessageObject == null && closestEvent.displayMessage && closestEvent.isTimeBased)
         {
-            Debug.Log(closestEvent.name + " : " + closestEvent.getCountDownValue());
+            //Debug.Log(closestEvent.name + " : " + closestEvent.getCountDownValue() + " sending message to message board ");
+            UIMessage mess = new UIMessage(closestEvent);
         }
     }
 
     public void printEventList()
     {
+        string list = "events in queue: \t";
         foreach (GameEvent ev in events)
         {
-
+            list += ev.name + " ; ";
         }
+        Debug.Log(list);
     }
 }

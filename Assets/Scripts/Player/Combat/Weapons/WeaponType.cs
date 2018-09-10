@@ -60,7 +60,9 @@ public class WeaponType
 
     #endregion
 
-    public Sprite uiImage;
+    public Sprite uiEquippedBarImage;
+    public Sprite uiWhealSprite;
+    public Image uiWhealImage;
     
     //digging tool constructor 
     public WeaponType(string name, float damage, float envDamage, float range, float fireRate, ParticleSystem digBeam)

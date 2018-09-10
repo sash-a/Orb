@@ -47,8 +47,8 @@ public class NetHealth : NetworkBehaviour
         // Remove damage from armour first
         if (amount >= armour)
         {
-            armour = 0;
             amount -= armour;
+            armour = 0;
         }
         else
         {
@@ -70,6 +70,7 @@ public class NetHealth : NetworkBehaviour
     // TODO specilize for player (disable and set cam)
     private void die()
     {
+        //Debug.Log("Calling die!!");
         isDead = true;
 
         if (gameObject.name.Contains("voxel") || gameObject.name.Contains("Voxel") ||
@@ -82,10 +83,13 @@ public class NetHealth : NetworkBehaviour
         {
             PlayerController player = GetComponent<PlayerController>();
             if (player != null)
-            {//is a player who has died - spawn back in spawn area
-                player.team.informKilled(player);
+            {
+                // Is a player who has died - spawn back in spawn area
+                //player.team.RpcInformKilled(player);
+                Destroy(gameObject);
             }
-            else {
+            else
+            {
                 NetworkServer.Destroy(gameObject);
             }
         }
@@ -109,7 +113,7 @@ public class NetHealth : NetworkBehaviour
     {
         return health / maxHealth;
     }
-    
+
     public float getArmourPercent()
     {
         return armour / maxArmour;
@@ -120,7 +124,7 @@ public class NetHealth : NetworkBehaviour
     {
         armour = Math.Min(maxArmour, armour + amount);
     }
-    
+
     public void heal(float amout)
     {
         health = Mathf.Min(health + amout, maxHealth);

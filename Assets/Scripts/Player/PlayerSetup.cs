@@ -61,7 +61,7 @@ public class PlayerSetup : NetworkBehaviour
                 type.UI = ui;
 
                 GetComponent<WeaponAttack>().damageIndicator = ui.damageIndicator;
-                Debug.Log("Set dmg indicator " + (GetComponent<WeaponAttack>().damageIndicator == null));
+                //Debug.Log("Set dmg indicator " + (GetComponent<WeaponAttack>().damageIndicator == null));
 
                 // Weapon wheel
                 weaponWheel.weapons = GetComponent<WeaponAttack>();

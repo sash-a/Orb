@@ -18,12 +18,13 @@ public class PlayerActions : NetworkBehaviour
 
     private Rigidbody rb;
     Gravity grav;
+    NetHealth health;
 
     Vector3 pivotPoint;//the local position of the cam pivot vs the player on start time - before any controls
 
     private bool isGroundPlanted;
-    private bool isJumping=false;
-    private bool hasDoubleJumped=false;
+    private bool isJumping = false;
+    private bool hasDoubleJumped = false;
 
     void Start()
     {
@@ -32,13 +33,15 @@ public class PlayerActions : NetworkBehaviour
         {
             cam.GetComponent<AudioListener>().enabled = false;
         }
-        else {
+        else
+        {
             PlayerController player = GetComponent<PlayerController>();
             if (player != null)
             {
                 TeamManager.localPlayer = player;
             }
-            else {
+            else
+            {
                 Debug.Log("failed to find player controller component from player action script");
             }
         }
@@ -49,6 +52,7 @@ public class PlayerActions : NetworkBehaviour
         pivotPoint = cam.transform.parent.localPosition;
         velocity = Vector3.zero;
         rb = GetComponent<Rigidbody>();
+        health = GetComponent<NetHealth>();
         grav = GetComponent<Gravity>();
         isGroundPlanted = false;
     }
@@ -68,6 +72,23 @@ public class PlayerActions : NetworkBehaviour
         {
             transform.position = new Vector3(0, -10, 0);
             rb.velocity = Vector3.zero;
+        }
+
+        if (grav == null) {
+            grav = GetComponent<Gravity>();
+        }
+        if (health == null) {
+            health = GetComponent<NetHealth>();
+        }
+
+        if (grav != null && !grav.inSphere && health!=null && health.getHealth() > 0 && MapManager.manager!=null && MapManager.manager.mapDoneLocally)
+        {//should be in sphere but isnt
+            if (Time.time > 125)
+            {//enough time has passed that the origonal spawning must have failed
+                Debug.LogError("having to respawn players on team ");
+                grav.inSphere = true;
+                TeamManager.singleton.CmdSpawnPlayers();
+            }
         }
     }
 
@@ -107,7 +128,7 @@ public class PlayerActions : NetworkBehaviour
         rb.MoveRotation(rb.rotation * Quaternion.Euler(rotation));
         // Rotating cam around the x axis
         currentCamRotX -= camRotationX;
-        currentCamRotX = Mathf.Clamp(currentCamRotX, -camRotLimitX+15, camRotLimitX - 30);
+        currentCamRotX = Mathf.Clamp(currentCamRotX, -camRotLimitX + 15, camRotLimitX - 30);
         cam.transform.localEulerAngles = new Vector3(currentCamRotX, 0, 0);
 
         //Debug.Log("current: " + currentCamRotX + " limit: +-" + camRotLimitX);
@@ -127,8 +148,10 @@ public class PlayerActions : NetworkBehaviour
             rb.AddForce(-grav.getDownDir() * jumpForce);
             isJumping = true;
         }
-        else {
-            if(isJumping && !hasDoubleJumped) {
+        else
+        {
+            if (isJumping && !hasDoubleJumped)
+            {
                 rb.AddForce(-grav.getDownDir() * jumpForce);
                 hasDoubleJumped = true;
             }
@@ -138,7 +161,8 @@ public class PlayerActions : NetworkBehaviour
     void OnCollisionEnter(Collision other)
     {
         isGroundPlanted = other.gameObject.CompareTag("TriVoxel");
-        if (isGroundPlanted) {
+        if (isGroundPlanted)
+        {
             isJumping = false;
             hasDoubleJumped = false;
         }

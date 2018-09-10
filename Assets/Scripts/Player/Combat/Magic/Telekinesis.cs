@@ -11,7 +11,7 @@ public class Telekinesis : MonoBehaviour
     [SerializeField] private Voxel vox;
     private Transform voxPos;
 
-    private const float voxelSpeed = 5;
+    private const float voxelSpeed = 10;
     private const float gunnerSpeed = 2;
     private const float beastSpeed = 0;
     private float speed;

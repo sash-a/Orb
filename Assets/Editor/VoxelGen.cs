@@ -39,7 +39,9 @@ public class VoxelGen
             Debug.Log("Did not find voxel saved - generating it");
 
             voxel = new GameObject();
-            voxel.AddComponent<Voxel>();
+            GameObject voxelPosition = new GameObject();
+            voxelPosition.transform.parent = voxel.transform;
+                        
             // Mesh stuff
             voxel.AddComponent<MeshFilter>();
             voxel.AddComponent<MeshCollider>();
@@ -70,6 +72,9 @@ public class VoxelGen
             voxel.name = "TriVoxel";
 
             voxelBehaviour = voxel.GetComponent<Voxel>();
+            
+            voxelBehaviour.voxelPositon = voxelPosition.transform;
+
             voxelBehaviour.layer = layer; // Should always be 0
 
             vertices = getVolumeVertices();
@@ -90,7 +95,7 @@ public class VoxelGen
 
             filter.mesh.RecalculateNormals();
             voxel.GetComponent<MeshCollider>().sharedMesh = filter.mesh;
-
+            voxel.GetComponent<MeshCollider>().convex = true;
             voxelBehaviour.obtusePoint = getObtusePoint();
 
             // Saving mesh

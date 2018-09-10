@@ -12,7 +12,7 @@ public abstract class AAttackBehaviour : NetworkBehaviour
 
     // Layers that the local player can attack.
     [SerializeField] protected LayerMask mask;
-    
+
     // Manages ammo and energy for players
     protected ResourceManager resourceManager;
 
@@ -28,9 +28,9 @@ public abstract class AAttackBehaviour : NetworkBehaviour
     }
 
     protected void Update()
-    {        
+    {
         if (PlayerUI.isPaused) return;
-        
+
         if (Input.GetButtonDown("Fire1")) attack();
         if (Input.GetButtonUp("Fire1")) endAttack();
 
@@ -76,7 +76,7 @@ public abstract class AAttackBehaviour : NetworkBehaviour
             playerIdentifier.typePrefix
         );
         Debug.Log("Calling dmg indicator");
-        
+
         health.RpcDamage(damage);
     }
 
@@ -86,9 +86,13 @@ public abstract class AAttackBehaviour : NetworkBehaviour
     /// <param name="go">GameObject that was hit</param>
     /// <param name="damage">Damage to be done to the voxel</param>
     [Command]
-    public void CmdVoxelDamaged(GameObject go, float damage)
+    public virtual void CmdVoxelDamaged(GameObject go, float damage)
     {
-        if (go == null) return;
+        if (go == null)
+        {
+            Debug.LogError("trying to damage null voxel");
+            return;
+        }
 
         var health = go.GetComponent<NetHealth>();
         if (health == null)
@@ -96,7 +100,7 @@ public abstract class AAttackBehaviour : NetworkBehaviour
             Debug.LogError("Voxel did not have health component");
             return;
         }
-
+        //Debug.Log("damaging voxel health");
         health.RpcDamage(damage);
     }
 
@@ -124,7 +128,7 @@ public abstract class AAttackBehaviour : NetworkBehaviour
     {
         return resourceManager;
     }
-    
+
     [TargetRpc]
     void TargetDamageIndicator(NetworkConnection client, string shooterID, string victim, string victimClass)
     {
@@ -133,7 +137,7 @@ public abstract class AAttackBehaviour : NetworkBehaviour
         {
             Debug.Log("Not local player");
         }
-           
+
         var shooter = GameManager.getObject(shooterID);
         var shot = GameManager.getObject(victim);
 

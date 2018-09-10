@@ -15,6 +15,8 @@ public class TeamManager : NetworkBehaviour
 
     public static PlayerController localPlayer;
 
+    public static int playerCount;//incremented by lobby system
+
 
     Vector3[] spawnPoints;
 
@@ -50,6 +52,7 @@ public class TeamManager : NetworkBehaviour
         {
             Debug.LogError("cannot assign player to team - given player name: " + player.gameObject.name);
         }
+        player.sendToSpawnRoom();
     }
 
     [Command]
@@ -59,7 +62,7 @@ public class TeamManager : NetworkBehaviour
         {
             Debug.LogError("trying to spawn players client side");
         }
-        //Debug.Log("spawning players");
+        Debug.Log("spawning players");
         spawnPoints = getFurthestClearings();
 
         RpcSpawnPlayers(spawnPoints[0], spawnPoints[1]);
@@ -83,7 +86,7 @@ public class TeamManager : NetworkBehaviour
         int samples = 50;//number of empty voxels that will be checked to be clearings
 
 
-        System.Random rand = new System.Random();
+        System.Random rand = new System.Random(0);
 
         for (int i = 0; i < samples; i++)
         {

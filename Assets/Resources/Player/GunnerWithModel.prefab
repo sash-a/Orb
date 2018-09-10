@@ -211,6 +211,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4386417911628216}
+  - component: {fileID: 136107865445594630}
   m_Layer: 0
   m_Name: mixamorig:RightArm
   m_TagString: Untagged
@@ -337,6 +338,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4969015799933542}
+  - component: {fileID: 136295699840563798}
   m_Layer: 0
   m_Name: mixamorig:RightForeArm
   m_TagString: Untagged
@@ -587,6 +589,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4695909603303984}
+  - component: {fileID: 136665313575317430}
   m_Layer: 0
   m_Name: mixamorig:RightLeg
   m_TagString: Untagged
@@ -836,6 +839,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4251091789612034}
+  - component: {fileID: 136220606524597376}
   m_Layer: 0
   m_Name: mixamorig:LeftForeArm
   m_TagString: Untagged
@@ -851,6 +855,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4863756695148410}
+  - component: {fileID: 136882092115799786}
   m_Layer: 0
   m_Name: mixamorig:Head
   m_TagString: Untagged
@@ -883,6 +888,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4529503822090048}
+  - component: {fileID: 136435699435407264}
   m_Layer: 0
   m_Name: mixamorig:Spine1
   m_TagString: Untagged
@@ -1004,6 +1010,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4825790259233688}
+  - component: {fileID: 136911203733530154}
   m_Layer: 0
   m_Name: mixamorig:LeftLeg
   m_TagString: Untagged
@@ -1034,6 +1041,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4495956555522068}
+  - component: {fileID: 136664665610424168}
   m_Layer: 0
   m_Name: mixamorig:LeftArm
   m_TagString: Untagged
@@ -1390,7 +1398,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4244637701543086}
   - component: {fileID: 54080912790009562}
-  - component: {fileID: 65750186661646744}
   - component: {fileID: 114281825091383018}
   - component: {fileID: 114097339601434050}
   - component: {fileID: 114839632858119836}
@@ -1628,6 +1635,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4837780595369308}
+  - component: {fileID: 136901305930759334}
   m_Layer: 0
   m_Name: mixamorig:LeftUpLeg
   m_TagString: Untagged
@@ -1659,6 +1667,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4490440884950360}
+  - component: {fileID: 136288295810853038}
   m_Layer: 0
   m_Name: mixamorig:RightUpLeg
   m_TagString: Untagged
@@ -3673,18 +3682,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
---- !u!65 &65750186661646744
-BoxCollider:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1779332119490236}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 2.8850093, y: 7.6629705, z: 1.3240843}
-  m_Center: {x: 0.014890432, y: 4.348005, z: 0.16204214}
 --- !u!81 &81588149550913254
 AudioListener:
   m_ObjectHideFlags: 1
@@ -3794,7 +3791,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_TransformSyncMode: 3
-  m_SendInterval: 0.06666667
+  m_SendInterval: 0.1
   m_SyncRotationAxis: 7
   m_RotationSyncCompression: 0
   m_SyncSpin: 0
@@ -4025,7 +4022,10 @@ MonoBehaviour:
     modifier: 0
     upgradeCost: 0
     baseCost: 0
-    uiImage: {fileID: 21300000, guid: fe9622a4946778641bf0b93c5692c20d, type: 3}
+    uiEquippedBarImage: {fileID: 21300000, guid: fe9622a4946778641bf0b93c5692c20d,
+      type: 3}
+    uiWhealSprite: {fileID: 0}
+    uiWhealImage: {fileID: 0}
   - shootPos: {fileID: 4107546691609194}
     name: pistol
     damage: 5
@@ -4053,7 +4053,10 @@ MonoBehaviour:
     modifier: 1.2
     upgradeCost: 10
     baseCost: 20
-    uiImage: {fileID: 21300000, guid: 813dec1c7f7a3ef43ad077cee4e98a69, type: 3}
+    uiEquippedBarImage: {fileID: 21300000, guid: 813dec1c7f7a3ef43ad077cee4e98a69,
+      type: 3}
+    uiWhealSprite: {fileID: 21300000, guid: 504570302059155418ffc3975e298394, type: 3}
+    uiWhealImage: {fileID: 0}
   - shootPos: {fileID: 4372791469633016}
     name: assault rifle
     damage: 3
@@ -4081,7 +4084,10 @@ MonoBehaviour:
     modifier: 1.2
     upgradeCost: 25
     baseCost: 50
-    uiImage: {fileID: 21300000, guid: 933920b618f7df646b1adfbd47e5d82e, type: 3}
+    uiEquippedBarImage: {fileID: 21300000, guid: 933920b618f7df646b1adfbd47e5d82e,
+      type: 3}
+    uiWhealSprite: {fileID: 21300000, guid: 1c7aff7f807bc024690a394eff884207, type: 3}
+    uiWhealImage: {fileID: 0}
   - shootPos: {fileID: 4109384920274248}
     name: shotgun
     damage: 12
@@ -4109,7 +4115,10 @@ MonoBehaviour:
     modifier: 1.2
     upgradeCost: 20
     baseCost: 35
-    uiImage: {fileID: 21300000, guid: 28ae105b26440b040bf38c225fd3d501, type: 3}
+    uiEquippedBarImage: {fileID: 21300000, guid: 28ae105b26440b040bf38c225fd3d501,
+      type: 3}
+    uiWhealSprite: {fileID: 21300000, guid: 5e16533d0b9df3a4f95ac5a934d045bf, type: 3}
+    uiWhealImage: {fileID: 0}
   - shootPos: {fileID: 4520976047990618}
     name: sniper
     damage: 20
@@ -4137,7 +4146,10 @@ MonoBehaviour:
     modifier: 1.2
     upgradeCost: 25
     baseCost: 50
-    uiImage: {fileID: 21300000, guid: 70b43bb96add7d34aaa01d02a1ec59ca, type: 3}
+    uiEquippedBarImage: {fileID: 21300000, guid: 70b43bb96add7d34aaa01d02a1ec59ca,
+      type: 3}
+    uiWhealSprite: {fileID: 21300000, guid: 468be54cd4e08ae4bb3087302b22474d, type: 3}
+    uiWhealImage: {fileID: 0}
   - shootPos: {fileID: 4383348818249674}
     name: Ex_crossbow
     damage: 0
@@ -4165,7 +4177,9 @@ MonoBehaviour:
     modifier: 0
     upgradeCost: 0
     baseCost: 0
-    uiImage: {fileID: 0}
+    uiEquippedBarImage: {fileID: 0}
+    uiWhealSprite: {fileID: 0}
+    uiWhealImage: {fileID: 0}
   - shootPos: {fileID: 4056315528935844}
     name: Empty_Special
     damage: 0
@@ -4193,7 +4207,9 @@ MonoBehaviour:
     modifier: 0
     upgradeCost: 0
     baseCost: 0
-    uiImage: {fileID: 0}
+    uiEquippedBarImage: {fileID: 0}
+    uiWhealSprite: {fileID: 0}
+    uiWhealImage: {fileID: 0}
   grenade:
     shootPos: {fileID: 0}
     name: 
@@ -4222,7 +4238,9 @@ MonoBehaviour:
     modifier: 0
     upgradeCost: 0
     baseCost: 0
-    uiImage: {fileID: 0}
+    uiEquippedBarImage: {fileID: 0}
+    uiWhealSprite: {fileID: 0}
+    uiWhealImage: {fileID: 0}
   equippedWeapons: []
   grenadeSpawn: {fileID: 1738716742802238}
   grenadePrefab: {fileID: 1482330286129388, guid: 9f8ade568ae7c2940bf057e6e620e02e,
@@ -4294,7 +4312,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 12
-  lookSens: 50
+  lookSens: 100
   jumpForce: 2000
   runMultiplier: 1.7
   animator: {fileID: 95862667050278438}
@@ -4351,7 +4369,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Target: {fileID: 4185892770116456}
   m_ChildIndex: 0
-  m_SendInterval: 0.09090909
+  m_SendInterval: 0.1
   m_SyncRotationAxis: 1
   m_RotationSyncCompression: 0
   m_MovementThreshold: 0.001
@@ -4377,6 +4395,136 @@ Behaviour:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1152568004159054}
   m_Enabled: 1
+--- !u!136 &136107865445594630
+CapsuleCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1123207368345372}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.09183804
+  m_Height: 0.38533786
+  m_Direction: 0
+  m_Center: {x: 0.09955375, y: 0.030965338, z: -0.0033558123}
+--- !u!136 &136220606524597376
+CapsuleCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1454253820140852}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.07630327
+  m_Height: 0.4404986
+  m_Direction: 0
+  m_Center: {x: -0.1947541, y: 0.004693479, z: -0.003355722}
+--- !u!136 &136288295810853038
+CapsuleCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1990649177220284}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.1257399
+  m_Height: 0.5036818
+  m_Direction: 1
+  m_Center: {x: -0.0072922544, y: -0.24816163, z: 0.021112273}
+--- !u!136 &136295699840563798
+CapsuleCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1183959199442306}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.075701796
+  m_Height: 0.3884895
+  m_Direction: 0
+  m_Center: {x: 0.16567233, y: 0.0056189257, z: -0.0033557476}
+--- !u!136 &136435699435407264
+CapsuleCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1470903066447730}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.19166481
+  m_Height: 0.7612268
+  m_Direction: 1
+  m_Center: {x: 0.0034415422, y: -0.009426415, z: -2.6017391e-11}
+--- !u!136 &136664665610424168
+CapsuleCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1533565131541378}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.09105717
+  m_Height: 0.3935828
+  m_Direction: 0
+  m_Center: {x: -0.09655454, y: 0.030185541, z: -0.0033558176}
+--- !u!136 &136665313575317430
+CapsuleCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1308518226635962}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.10693602
+  m_Height: 0.59531754
+  m_Direction: 1
+  m_Center: {x: -0.010177407, y: -0.3005998, z: -0.03791558}
+--- !u!136 &136882092115799786
+CapsuleCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1457432523816594}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.14456272
+  m_Height: 0.35158235
+  m_Direction: 1
+  m_Center: {x: 0.0016126507, y: 0.091683365, z: 0.029920967}
+--- !u!136 &136901305930759334
+CapsuleCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1981671821851148}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.1257399
+  m_Height: 0.5036818
+  m_Direction: 1
+  m_Center: {x: -0.0072922544, y: -0.24816163, z: 0.021112273}
+--- !u!136 &136911203733530154
+CapsuleCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1515814128423246}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.10693602
+  m_Height: 0.59531754
+  m_Direction: 1
+  m_Center: {x: -0.010177407, y: -0.3005998, z: -0.03791558}
 --- !u!137 &137259939282091922
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1

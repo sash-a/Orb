@@ -141,7 +141,7 @@ public class WeaponAttack : AAttackBehaviour
             {
                 //wait for grenade animation to reach apex of throw
                 isThrowingGrenade = true;
-                Debug.Log(isThrowingGrenade);
+                //Debug.Log(isThrowingGrenade);
                 StartCoroutine(wait(1.50f));
                 //Spawn Grenade
                 CmdthrowGrenade();
@@ -266,10 +266,11 @@ public class WeaponAttack : AAttackBehaviour
                 return; // Should never return
 
             // if we hit a player
-            if (hitFromGun.collider.tag == PLAYER_TAG)
+            var rootTransform = hitFromGun.collider.transform.root;
+            if (rootTransform.CompareTag(PLAYER_TAG))
             {
-                createDamageText(hitFromGun.transform, weapons[selectedWeapon].damage);
-                CmdPlayerAttacked(hitFromGun.collider.name, weapons[selectedWeapon].damage);
+                createDamageText(rootTransform, weapons[selectedWeapon].damage);
+                CmdPlayerAttacked(rootTransform.name, weapons[selectedWeapon].damage);
             }
             else //if not a player
             {
@@ -280,7 +281,7 @@ public class WeaponAttack : AAttackBehaviour
             }
 
 
-            if (hitFromGun.collider.gameObject.tag == VOXEL_TAG)
+            if (hitFromGun.collider.CompareTag(VOXEL_TAG))
             {
                 var voxel = hitFromGun.collider.GetComponent<Voxel>();
 

@@ -199,6 +199,7 @@ public class MapManager : NetworkBehaviour
         }
         yield return new WaitForSeconds(4f);
 
+        //Debug.Log("all voxels loaded client side");
 
         foreach (Voxel vox in voxels[0].Values)
         {
@@ -210,8 +211,8 @@ public class MapManager : NetworkBehaviour
             }
             catch (ArgumentException a)
             {
-                Debug.LogError(a);
-                Debug.Log("already added this voxel to voxel positions? colID = " + vox.columnID + " old center: " + voxelPositions[vox.columnID] + " new center: " + vox.centreOfObject);
+                //Debug.LogError(a);
+                //Debug.Log("already added this voxel to voxel positions? colID = " + vox.columnID + " old center: " + voxelPositions[vox.columnID] + " new center: " + vox.centreOfObject);
             }
         }
 
@@ -233,6 +234,7 @@ public class MapManager : NetworkBehaviour
 
     public void finishMapLocally()
     {
+        
         mapDoneLocally = true;
         SmoothVoxels();
         CaveManager.manager.placeCavePortalsArtefacts();
@@ -242,9 +244,8 @@ public class MapManager : NetworkBehaviour
         GameEventManager.singleton.passMessage("waitForMapCompletion", "mapCompleted");
         //localPlayer.transform.position = new Vector3(0, -30, 0);
         GetComponent<MapAssetManager>().genAssets();
-        GameEventManager.singleton.addShredEvents();
         BuildLog.writeLog("Map finished");
-        //Debug.Log("Map finished locally on (server = " + isServer + ")");
+        Debug.Log("Map finished locally on (server = " + isServer + ")");
     }
 
 
@@ -692,6 +693,7 @@ public class MapManager : NetworkBehaviour
     internal void CmdCreateWarningShell()
     {
         RpcCreateWarningShell(nextShredRadius * 2f, shredOrigin);
+        StartCoroutine(placeWarningShell(nextShredRadius * 2f, shredOrigin));
     }
 
     [ClientRpc]

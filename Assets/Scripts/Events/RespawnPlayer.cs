@@ -11,6 +11,7 @@ public class RespawnPlayer : GameEvent {
         this.startTime = startTime;
         isTimeBased = true;
         name = "Spawn Player";
+        message = "respawning player in: ";
         if (play == null)
         {
             Debug.LogError("trying to spawn invalid player");
@@ -22,6 +23,7 @@ public class RespawnPlayer : GameEvent {
 
     public override void execute()
     {
+        //yield return new WaitForEndOfFrame();
         //Debug.Log("respawning local player");
         if (TeamManager.singleton.magicians.players.Contains(player))
         {

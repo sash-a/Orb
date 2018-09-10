@@ -8,16 +8,15 @@ public class Shield : NetworkBehaviour
 
     void Start()
     {
-        if (!isLocalPlayer) assignRemoteLayer();
-
         transform.localPosition += transform.up * 2;
+
+        if (!isLocalPlayer) assignRemoteLayer();
     }
 
     public override void OnStartClient()
     {
         base.OnStartClient();
         // TODO is this never called doesn't seem to be registering
-        //Debug.Log("Registering shield");
         GameManager.register(GetComponent<NetworkIdentity>().netId.ToString(), GetComponent<Identifier>());
     }
 
@@ -29,6 +28,15 @@ public class Shield : NetworkBehaviour
     public void setCaster(Identifier id, float maxHealth)
     {
         caster = id;
+
+        var player = GameManager.getObject(caster.id);
+        Debug.Log(player.GetComponent<MagicAttack>().getAttackStats().artifactType);
+        // if owns artifact
+        if (player.GetComponent<MagicAttack>().getAttackStats().artifactType == PickUpItem.ItemType.HEALER_ARTIFACT)
+        {
+            Debug.Log("Scaling");
+            transform.localScale *= 1.5f;
+        }
         // UI
         if (isServer) return;
 

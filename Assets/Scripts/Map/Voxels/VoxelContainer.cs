@@ -156,7 +156,7 @@ public class VoxelContainer : Voxel
                 subVoxelScript.isCaveFloor = majorVoxel.isCaveFloor;
                 subVoxelScript.isCaveBorder = majorVoxel.isCaveBorder;
                 subVoxelScript.isCaveCeiling = majorVoxel.isCaveCeiling;
-
+                subVoxelScript.shatterCap = majorVoxel.shatterCap;
 
                 subVoxelScript.filter = subMesh;
                 subVoxelScript.deletedPoints = new HashSet<int>();

@@ -49,7 +49,7 @@ public class CaveEntrance : CaveComponent
             }
             tries--;
         }
-        if (dir.magnitude != 1)
+        if (dir.magnitude < 0.9f)
         {
             Debug.LogError("trying to start entrance with no direction, dir = " + dir);
         }

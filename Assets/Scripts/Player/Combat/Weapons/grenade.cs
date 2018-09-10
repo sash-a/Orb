@@ -4,12 +4,11 @@ using UnityEngine.Networking;
 //[RequireComponent(typeof(ResourceManager))] //not sure if this is neccesary
 public class grenade : AAttackBehaviour
 {
-    //Shane's gravity script is causing grenades to fall through the ground!!!!!!!!
 
-    public float delay = 3f;
-    public float blastRadius = 5f;
+    public float delay = 2.2f;
+    public float blastRadius = 12f;
     public float damage = 10f;
-    public float envDamage = 10f;
+    public float envDamage = 1000f;
 
     float countdown;
 
@@ -17,10 +16,15 @@ public class grenade : AAttackBehaviour
 
     public GameObject explosionEffect;
 
+    public static UnityEngine.Object AOEDamage;
+
     // Use this for initialization
     void Start()
     {
         countdown = delay;
+        if (AOEDamage == null) {
+            AOEDamage = Resources.Load<UnityEngine.Object>("Prefabs/AOE");
+        }
     }
 
     // Update is called once per frame
@@ -29,7 +33,7 @@ public class grenade : AAttackBehaviour
         countdown -= Time.deltaTime;
         if (countdown <= 0f && !hasExploded)
         {
-            Debug.Log("Boom!");
+            //Debug.Log("Boom!");
             attack();
             hasExploded = true;
         }
@@ -38,8 +42,10 @@ public class grenade : AAttackBehaviour
     [Command]
     private void CmdExplosionFX()
     {
-        GameObject explosion = Instantiate(explosionEffect, transform.position, Quaternion.identity);
+        GameObject explosion = Instantiate(explosionEffect, transform.position + (transform.position.normalized), Quaternion.identity);
+        explosion.transform.localScale *= blastRadius;
         NetworkServer.Spawn(explosion);
+        Destroy(gameObject);
     }
 
     //EXPLOSION
@@ -49,50 +55,60 @@ public class grenade : AAttackBehaviour
 
         //Explosion effect
         CmdExplosionFX();
-
-        //all items in blast radius
-        RaycastHit[] colliders = Physics.SphereCastAll(transform.position, blastRadius, transform.position, 0, mask, QueryTriggerInteraction.UseGlobal);
-
-        //loop through every item in blast radius
-        foreach (RaycastHit nearbyObject in colliders)
-        {
-
-            if (nearbyObject.collider.tag == PLAYER_TAG)
-            {
-                if (nearbyObject.distance >= 0 && nearbyObject.distance < 1)
-                {
-                    CmdPlayerAttacked(nearbyObject.collider.name, damage);
-                }
-                else
-                {
-                    CmdPlayerAttacked(nearbyObject.collider.name, damage / nearbyObject.distance);
-                }
-            }
+        GameObject AOE = (GameObject)Instantiate<UnityEngine.Object>(AOEDamage);
+        AOE.transform.position = transform.position;
+        AreaOfEffectDamage a = AOE.GetComponent<AreaOfEffectDamage>();
+        a.duration = 2;
+        a.damage = damage;
+        a.radius = blastRadius;
+        a.damageMagicians = true;
 
 
-            if (nearbyObject.collider.tag == VOXEL_TAG)
-            {
-                //adjust damage so that the further away something is from grenade the less damage it does
-                if (nearbyObject.distance >= 0 && nearbyObject.distance < 1)
-                {
-                    CmdVoxelDamaged(nearbyObject.collider.gameObject, envDamage); // weapontype.envDamage?
-                }
-                else
-                {
-                    CmdVoxelDamaged(nearbyObject.collider.gameObject, envDamage / nearbyObject.distance); // weapontype.envDamage?
-                }
 
 
-                if (nearbyObject.collider.GetComponent<NetHealth>().getHealth() <= damage)
-                {
-                    //commenting out for now...spawning it on nearbyObject spawns it in the sky for some reason
-                    //CmdVoxelDestructionEffect(nearbyObject.point, nearbyObject.normal);
-                }
-            }
-        }
+        ////all items in blast radius
+        //RaycastHit[] colliders = Physics.SphereCastAll(transform.position, blastRadius, transform.position, 0, mask, QueryTriggerInteraction.UseGlobal);
 
-        //destroy grenade when finished exploding
-        Destroy(gameObject);
+        ////loop through every item in blast radius
+        //foreach (RaycastHit nearbyObject in colliders)
+        //{
+
+        //    if (nearbyObject.collider.tag == PLAYER_TAG)
+        //    {
+        //        if (nearbyObject.distance >= 0 && nearbyObject.distance < 1)
+        //        {
+        //            CmdPlayerAttacked(nearbyObject.collider.name, damage);
+        //        }
+        //        else
+        //        {
+        //            CmdPlayerAttacked(nearbyObject.collider.name, damage / nearbyObject.distance);
+        //        }
+        //    }
+
+
+        //    if (nearbyObject.collider.tag == VOXEL_TAG)
+        //    {
+        //        //adjust damage so that the further away something is from grenade the less damage it does
+        //        if (nearbyObject.distance >= 0 && nearbyObject.distance < 1)
+        //        {
+        //            CmdVoxelDamaged(nearbyObject.collider.gameObject, envDamage); // weapontype.envDamage?
+        //        }
+        //        else
+        //        {
+        //            CmdVoxelDamaged(nearbyObject.collider.gameObject, envDamage / nearbyObject.distance); // weapontype.envDamage?
+        //        }
+
+
+        //        if (nearbyObject.collider.GetComponent<NetHealth>().getHealth() <= damage)
+        //        {
+        //            //commenting out for now...spawning it on nearbyObject spawns it in the sky for some reason
+        //            //CmdVoxelDestructionEffect(nearbyObject.point, nearbyObject.normal);
+        //        }
+        //    }
+        //}
+
+        ////destroy grenade when finished exploding
+        //Destroy(gameObject);
 
         //------------------------------------ OLD CODE (JUST IN CASE)
         //all items in blast radius

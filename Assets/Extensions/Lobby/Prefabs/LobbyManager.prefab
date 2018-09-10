@@ -2837,7 +2837,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 
+  m_Text: 127.0.0.1
 --- !u!114 &11466428
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3196,7 +3196,7 @@ MonoBehaviour:
   m_DontDestroyOnLoad: 1
   m_RunInBackground: 1
   m_ScriptCRCCheck: 1
-  m_MaxDelay: 0.01
+  m_MaxDelay: 0.2
   m_LogLevel: 2
   m_PlayerPrefab: {fileID: 0}
   m_AutoCreatePlayer: 1
@@ -3233,16 +3233,16 @@ MonoBehaviour:
   - {fileID: 1730833097582034, guid: 1cbbfeb19a9329f49ac9bafedfc97bbc, type: 2}
   - {fileID: 1621167718731774, guid: 42c5b209173033343a3076689ec3ddb9, type: 2}
   - {fileID: 1086226018064208, guid: 5c8b1e42d9b76e14388d2078ba9f921e, type: 2}
-  m_CustomConfig: 0
-  m_MaxConnections: 4
+  m_CustomConfig: 1
+  m_MaxConnections: 6
   m_ConnectionConfig:
     m_PacketSize: 1500
     m_FragmentSize: 500
     m_ResendTimeout: 1200
-    m_DisconnectTimeout: 2000
-    m_ConnectTimeout: 2000
+    m_DisconnectTimeout: 20000
+    m_ConnectTimeout: 20000
     m_MinUpdateTimeout: 10
-    m_PingTimeout: 500
+    m_PingTimeout: 5000
     m_ReducedPingTimeout: 100
     m_AllCostTimeout: 20
     m_NetworkDropThreshold: 5
@@ -3285,7 +3285,7 @@ MonoBehaviour:
   m_MatchHost: mm.unet.unity3d.com
   m_MatchPort: 443
   matchName: default
-  matchSize: 4
+  matchSize: 6
   isNetworkActive: 0
   matchMaker: {fileID: 0}
   m_ShowLobbyGUI: 0
@@ -3300,7 +3300,7 @@ MonoBehaviour:
   m_PlayScene: OnlineGame
   lobbySlots: []
   gunner: {fileID: 1307754806501666, guid: 9425b6aac61c472458adafb39aca12cd, type: 2}
-  prematchCountdown: 3
+  prematchCountdown: 4
   topPanel: {fileID: 11424994}
   mainMenuPanel: {fileID: 22442386}
   lobbyPanel: {fileID: 22443498}

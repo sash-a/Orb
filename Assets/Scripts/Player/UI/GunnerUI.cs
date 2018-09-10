@@ -36,6 +36,8 @@ public class GunnerUI : PlayerUI
     public GameObject magicianUI;
     public GameObject weaponWheel;
 
+    bool weaponWheelToggle = false;
+
     #endregion
 
     private void Start()
@@ -50,7 +52,7 @@ public class GunnerUI : PlayerUI
         // Setting initial gun icons
         for (int i = 0; i < weapons.equippedWeapons.Count; i++)
         {
-            gunIcons[i].sprite = weapons.equippedWeapons[i].uiImage;
+            gunIcons[i].sprite = weapons.equippedWeapons[i].uiEquippedBarImage;
         }
     }
 
@@ -98,17 +100,23 @@ public class GunnerUI : PlayerUI
 
     void displayWeaponWheel()
     {
+        //if (Input.GetKeyDown(KeyCode.Q))
+        //{
+        //    weaponWheel.SetActive(true);
+        //    togglePauseMenu();
+        //}
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            weaponWheel.SetActive(true);
+            weaponWheelToggle = !weaponWheelToggle;
+            weaponWheel.SetActive(weaponWheelToggle);
             togglePauseMenu();
         }
 
-        if (Input.GetKeyUp(KeyCode.Q))
-        {
-            weaponWheel.SetActive(false);
-            togglePauseMenu();
-        }
+        //if (Input.GetKeyUp(KeyCode.Q))
+        //{
+        //    weaponWheel.SetActive(false);
+        //    togglePauseMenu();
+        //}
     }
 
     void showEquipped()
@@ -148,6 +156,6 @@ public class GunnerUI : PlayerUI
 
     public void onWeaponPurchased(int oldWeaponEquippedIndex, WeaponType newWeapon)
     {
-        gunIcons[oldWeaponEquippedIndex].sprite = newWeapon.uiImage;
+        gunIcons[oldWeaponEquippedIndex].sprite = newWeapon.uiEquippedBarImage;
     }
 }

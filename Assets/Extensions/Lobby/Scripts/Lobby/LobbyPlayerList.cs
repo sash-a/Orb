@@ -44,6 +44,9 @@ namespace Prototype.NetworkLobby
                 return;
 
             _players.Add(player);
+            TeamManager.playerCount++;
+
+            Debug.Log("adding player in lobby");
 
             player.transform.SetParent(playerListContentTransform, false);
             addButtonRow.transform.SetAsLastSibling();

@@ -34,7 +34,7 @@ public class PlayerController : MonoBehaviour
 
     IEnumerator AddPlayer()
     {
-        yield return new WaitForSecondsRealtime(0.2f);
+        yield return new WaitForSecondsRealtime(1f);
         TeamManager.singleton.addPlayer(this);
     }
 
@@ -52,7 +52,7 @@ public class PlayerController : MonoBehaviour
         var yMov = Input.GetAxis("Vertical") * transform.forward;
         var velocity = (xMov + yMov).normalized * speed;
 
-        if (transform.name.Contains("unner") && animator.GetBool("isReloading") && !animator.GetBool("isShooting"))
+        if (transform.name.Contains("unner") && !animator.GetBool("isReloading") && !animator.GetBool("isShooting"))
         {
             actions.move(Input.GetKey(KeyCode.LeftShift) ? velocity * runMultiplier : velocity);
         }
@@ -80,14 +80,17 @@ public class PlayerController : MonoBehaviour
 
         if (MapManager.manager !=null &&MapManager.manager.warningShell != null) {
             if (MapManager.manager.isInWarningZone(transform.position)) {
-                Debug.Log("player is in warning zone!");
+                new UIMessage("WARNING! You are in the shredding zone!", 1);
+                //Debug.Log("player is in warning zone!");
             }
         }
+
 
     }
 
     internal void sendToSpawnRoom()
     {
+        GetComponent<Gravity>().inSphere = false;
         transform.position = team.getSpawnRoom().transform.position;
         transform.rotation = Quaternion.LookRotation(new Vector3(transform.position.x, 0, transform.position.z), Vector3.up);
     }

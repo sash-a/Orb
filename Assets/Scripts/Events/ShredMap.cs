@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class ShredMap : GameEvent
 {
@@ -14,11 +15,13 @@ public class ShredMap : GameEvent
         isTimeBased = true;
         countDownPeriod = countDown;
         name = "map shredding";
+        message = "next map shredding in: ";
         serverOnly = true;
     }
 
     public override void execute()
     {
+        //yield return new WaitForEndOfFrame();
         //Debug.Log("automatically shredding map");
         MapManager.manager.CmdShredMap();
     }

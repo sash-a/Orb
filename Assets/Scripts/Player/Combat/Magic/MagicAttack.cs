@@ -7,6 +7,7 @@ public class MagicAttack : AAttackBehaviour
     #region variables
 
     [SerializeField] private MagicType attackStats;
+    
     [SerializeField] private Transform rightHand;
 
     [SyncVar] private bool isAttacking;
@@ -129,7 +130,7 @@ public class MagicAttack : AAttackBehaviour
 
         // Trying to pick up something
         if (Input.GetButtonDown("Use")) pickup();
-        
+
 
         //Animation:
         Animation();
@@ -384,7 +385,9 @@ public class MagicAttack : AAttackBehaviour
         if (!Physics.Linecast(rightHand.position, hitFromCam.point, out hitFromHand, mask))
             return; // this should never return
 
-        if (hitFromHand.collider.gameObject.CompareTag(VOXEL_TAG))
+        var rootTransform = hitFromHand.collider.transform.root;
+
+        if (hitFromHand.collider.CompareTag(VOXEL_TAG))
         {
             var voxel = hitFromHand.collider.gameObject.GetComponent<Voxel>();
 
@@ -403,10 +406,10 @@ public class MagicAttack : AAttackBehaviour
                 energyBlockEffectSpawner.spawnBlock();
             }
         }
-        else if (hitFromHand.collider.CompareTag(PLAYER_TAG) || hitFromHand.collider.CompareTag("Shield"))
+        else if (rootTransform.CompareTag(PLAYER_TAG) || hitFromHand.collider.CompareTag("Shield"))
         {
-            createDamageText(hitFromHand.transform, attackStats.diggerDamage);
-            CmdVoxelDamaged(hitFromHand.collider.gameObject, attackStats.diggerDamage);
+            createDamageText(rootTransform, attackStats.diggerDamage);
+            CmdVoxelDamaged(rootTransform.gameObject, attackStats.diggerDamage);
         }
     }
 
@@ -429,18 +432,19 @@ public class MagicAttack : AAttackBehaviour
         if (!Physics.Linecast(rightHand.position, hitFromCam.point, out hitFromHand, mask))
             return; // This should never return
 
-        if (hitFromHand.collider.CompareTag(PLAYER_TAG))
+        var rootTransform = hitFromHand.collider.transform.root;
+        if (rootTransform.CompareTag(PLAYER_TAG))
         {
-            var character = hitFromHand.collider.gameObject.GetComponent<Identifier>().typePrefix;
+            var character = rootTransform.gameObject.GetComponent<Identifier>().typePrefix;
             if (character == Identifier.magicianType) // Heal
             {
-                createDamageText(hitFromHand.transform, attackStats.heal);
-                CmdPlayerAttacked(hitFromHand.collider.name, -attackStats.heal);
+                createDamageText(rootTransform, attackStats.heal);
+                CmdPlayerAttacked(rootTransform.name, -attackStats.heal);
             }
             else // Damage
             {
-                createDamageText(hitFromHand.transform, attackStats.attackDamage);
-                CmdPlayerAttacked(hitFromHand.collider.name, attackStats.attackDamage);
+                createDamageText(rootTransform, attackStats.attackDamage);
+                CmdPlayerAttacked(rootTransform.name, attackStats.attackDamage);
             }
         }
         else if (hitFromHand.collider.CompareTag(VOXEL_TAG))
@@ -692,6 +696,11 @@ public class MagicAttack : AAttackBehaviour
             hit.rotation
         ).GetComponent<TextDamageIndicator>().setUp((int) damage);
     }
-    
+
     #endregion
+
+    public MagicType getAttackStats()
+    {
+        return attackStats;
+    }
 }

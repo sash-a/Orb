@@ -5,10 +5,11 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class Voxel : NetworkBehaviour
-{
+{    
     [SyncVar] public bool isBottom;
     [SyncVar] public String subVoxelID;
     [SyncVar] public int shatterLevel;
+    [SyncVar] public int shatterCap = -1;//by default is set to MaxShatters - can be lowered externally to stop certain voxels from splitting all the way
     public Ray lastHitRay;
     public Vector3 lastHitPosition;
 
@@ -26,6 +27,7 @@ public class Voxel : NetworkBehaviour
     // the point on the top side{0,1,2} which is opposite the longest side of the triangle
     public int obtusePoint;
 
+    public Transform voxelPositon;
     [SyncVar] public Vector3 centreOfObject; // centre of the object in object space
     [SyncVar] public Vector3 worldCentreOfObject; // the centre of this object as it is in world space
     public float maxGradient;
@@ -55,6 +57,10 @@ public class Voxel : NetworkBehaviour
         extrudeLength = 0.014f * (float)(Math.Pow(0.75, (MapManager.splits + 1) / 2));
         scaleRatio = (sepFac * MapManager.mapSize + extrudeLength * MapManager.mapSize / 200) / (sepFac * MapManager.mapSize);
         isMelted = false;
+        if (shatterCap == -1)
+        {
+            shatterCap = MapManager.manager.shatters;
+        }
         if (centreOfObject.Equals(Vector3.zero))
         {
             recalcCenters();
@@ -85,10 +91,11 @@ public class Voxel : NetworkBehaviour
         {
             GetComponent<MeshCollider>().convex = false;
         }
-        
+
 
         scale = Math.Pow(scaleRatio, Math.Abs(layer));
         worldCentreOfObject = centreOfObject * (float)scale * MapManager.mapSize;
+
         //Debug.Log("Voxel center obj: " + worldCentreOfObject);
         if ((!MapManager.manager.voxels[layer].ContainsKey(columnID)) ||
             MapManager.manager.voxels[layer][columnID] == null)
@@ -147,6 +154,7 @@ public class Voxel : NetworkBehaviour
                     MapManager.manager.deviateSingleVoxel(this);
                 }
             }
+            voxelPositon.position = worldCentreOfObject;
 
             //Debug.Log("renaming " + gameObject.name + " to trivoxel");
         }
@@ -155,8 +163,12 @@ public class Voxel : NetworkBehaviour
             //is subvoxel
             delegateTexture();
             gameObject.name = "SubVoxel";
+            voxelPositon = GetComponent<SubVoxel>().voxelPosition;
+
         }
     }
+
+   
 
     public void resetScale()
     {
@@ -321,7 +333,7 @@ public class Voxel : NetworkBehaviour
         var matt = new Material(material);
         var colour = matt.color;
 
-   
+
 
         int triesLeft = 5;
         while (filter == null && triesLeft > 0)
@@ -388,7 +400,7 @@ public class Voxel : NetworkBehaviour
         }
 
 
-        if (MapManager.manager.shatters > 0) //using shattering
+        if (shatterCap > 0 && MapManager.manager.shatters>0) //using shattering
         {
             if (gameObject.name != "SubVoxel") //not subvoxel - regular voxel
             {
@@ -986,7 +998,8 @@ public class Voxel : NetworkBehaviour
                             delegateTexture();
                         }
                     }
-                    else if(deletedAdjacents == 3){
+                    else if (deletedAdjacents == 3)
+                    {
                         CmdDestroyVoxel();
                     }
                 }

@@ -2,8 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class Team  {
+public class Team{
 
     public string teamName;
     public HashSet<PlayerController> players;
@@ -29,12 +30,17 @@ public class Team  {
         player.sendToSpawnRoom();
     }
 
-    internal void informKilled(PlayerController player)
+    [ClientRpc]
+    internal void RpcInformKilled(PlayerController player)
     {
         players.Remove(player);
+        //Destroy()
+        //if (player == TeamManager.localPlayer)
+        //{
+        //    player.sendToSpawnRoom();
+        //}
         if (players.Count <= 0) {
             Debug.Log(teamName + " have been defeated ");
-            player.sendToSpawnRoom();
         }
     }
 
