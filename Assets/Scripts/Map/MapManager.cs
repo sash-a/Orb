@@ -54,6 +54,7 @@ public class MapManager : NetworkBehaviour
     public static MapManager manager;
     public static GameObject localPlayer;
 
+    public HashSet<Altar> altars;
     public HashSet<PickUpItem> collectables;
 
     public GameObject shreddingShell;
@@ -83,6 +84,7 @@ public class MapManager : NetworkBehaviour
         spawnedVoxels = new HashSet<int>();
         voxelPositions = new Dictionary<int, Vector3>();
         neighboursMap = new Dictionary<int, HashSet<int>>();
+        altars = new HashSet<Altar>();
         loadNeighboursMap();
         portals = new HashSet<Portal>();
 
@@ -241,10 +243,11 @@ public class MapManager : NetworkBehaviour
         //finishAssets();
         //LobbyManager.s_Singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
         //        NetworkManager.singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
-        GameEventManager.singleton.passMessage("waitForMapCompletion", "mapCompleted");
+        //GameEventManager.singleton.CmdPassMessage("waitForMapCompletion", "mapCompleted");
+        //GameEventManager.singleton.passMessage("waitForMapCompletion", "mapCompleted");
         //localPlayer.transform.position = new Vector3(0, -30, 0);
         GetComponent<MapAssetManager>().genAssets();
-        BuildLog.writeLog("Map finished");
+        BuildLog.writeLog("Map finished locally - sent cmd pass message that map was completed");
         Debug.Log("Map finished locally on (server = " + isServer + ")");
     }
 
@@ -271,6 +274,7 @@ public class MapManager : NetworkBehaviour
 
         if (!found)
         {
+            BuildLog.isBuild = true;
             BuildLog.writeLog("did not find neighbours map in file dir - trying to move back in directory");
             try
             {

@@ -88,8 +88,8 @@ public class WaitForAllMapsToComplete : GameEvent
     {
         if (message.Contains("mapCompleted"))
         {
-            Debug.Log("map finished - inc completed maps");
             completedMaps++;
+            Debug.Log("map finished - inc completed maps to " + completedMaps);
         }
     }
 }

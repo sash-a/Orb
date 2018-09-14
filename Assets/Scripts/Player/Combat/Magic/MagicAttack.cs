@@ -7,7 +7,7 @@ public class MagicAttack : AAttackBehaviour
     #region variables
 
     [SerializeField] private MagicType attackStats;
-    
+
     [SerializeField] private Transform rightHand;
 
     [SyncVar] private bool isAttacking;
@@ -167,31 +167,39 @@ public class MagicAttack : AAttackBehaviour
                 attackStats.telekenRange, mask))
                 return;
 
-            if (!hitFromCam.collider.CompareTag(VOXEL_TAG)) return;
+            Debug.Log(hitFromCam.collider.transform.root.name + " " + hitFromCam.collider.transform.root.tag);
 
-            // Shoot ray from hand to hit position
-            RaycastHit hitFromHand;
-            if (Physics.Linecast(rightHand.position, hitFromCam.point, out hitFromHand, mask))
-            {
-                Debug.Log("hit: " + hitFromHand.collider.name);
-            }
+            if (!hitFromCam.collider.CompareTag(VOXEL_TAG) &&
+                !hitFromCam.collider.transform.root.CompareTag(PLAYER_TAG)) return;
 
-            Voxel voxel = hitFromHand.collider.gameObject.GetComponent<Voxel>();
-            if (voxel == null)
+            Debug.Log("Through first if");
+ 
+            if (hitFromCam.collider.CompareTag(VOXEL_TAG))
             {
-                //tried to telekenetisise a non voxel object
-                Debug.LogError("telekenetisised non voxel object");
-                return;
-            }
+                Voxel voxel = hitFromCam.collider.gameObject.GetComponent<Voxel>();
+                if (voxel == null)
+                {
+                    Debug.LogError("Voxel doesn't have voxel scipt");
+                    return;
+                }
 
-            if (voxel.shatterLevel >= 1) // need to change this to accomodate the teleken artifact
-            {
                 isTelekening = true;
-                CmdVoxelTeleken(voxel.columnID, voxel.layer, voxel.subVoxelID);
+
+                if (voxel.shatterLevel >= 1)
+                {
+                    Debug.Log("Sub");
+                    CmdVoxelTeleken(voxel.columnID, voxel.layer, voxel.subVoxelID);
+                }
+                else
+                {
+                    Debug.Log("not sub");
+                    CmdVoxelTeleken(voxel.columnID, voxel.layer, "NOTSUB");
+                }
             }
-            else
+            else // Is player
             {
-                // Play some effect to show that voxel is too big
+                Debug.Log("Human teleken");
+//                CmdEnableTeleken(hitFromHand.transform.root.gameObject);
             }
         }
         else if (attackStats.isForcePush) // This is not yet working
@@ -202,6 +210,20 @@ public class MagicAttack : AAttackBehaviour
             playDiggerEffect(true);
             isDigging = true;
         }
+    }
+
+    [Command]
+    private void CmdEnableTeleken(GameObject rootGameObject)
+    {
+        RpcEnableTeleken(rootGameObject);
+    }
+
+    [ClientRpc]
+    private void RpcEnableTeleken(GameObject rootGameObject)
+    {
+        var telekenScript = rootGameObject.GetComponent<HumanTeleken>();
+        telekenScript.enabled = true;
+        telekenScript.setUp(telekenObjectPos.transform);
     }
 
     /// <summary>
@@ -476,7 +498,7 @@ public class MagicAttack : AAttackBehaviour
     [Command]
     public void CmdSpawnShield(string casterID)
     {
-        var shieldInst = Instantiate(shield, transform.position, Quaternion.identity);
+        var shieldInst = Instantiate(shield, transform.position, transform.rotation);
         NetworkServer.Spawn(shieldInst);
         // Servers current shield is not neccaserily the servers instance of shield (is likely local clients instance)
         setUpShield(shieldInst);
@@ -527,7 +549,15 @@ public class MagicAttack : AAttackBehaviour
     [Command]
     private void CmdVoxelTeleken(int col, int layer, string subID)
     {
-        currentTelekeneticVoxel = MapManager.manager.getSubVoxelAt(layer, col, subID).gameObject;
+        if (subID == "NOTSUB")
+        {
+            currentTelekeneticVoxel = MapManager.manager.voxels[layer][col].gameObject;
+        }
+        else
+        {
+            currentTelekeneticVoxel = MapManager.manager.getSubVoxelAt(layer, col, subID).gameObject;
+        }
+
         RpcPrepVoxel(col, layer, subID, GetComponent<Identifier>().id);
     }
 
@@ -555,8 +585,19 @@ public class MagicAttack : AAttackBehaviour
     /// <param name="playerID"></param>
     private void prepVoxel(int col, int layer, string subID, string playerID)
     {
-        currentTelekeneticVoxel = MapManager.manager.getSubVoxelAt(layer, col, subID).gameObject;
-        var voxel = MapManager.manager.getSubVoxelAt(layer, col, subID);
+        if (subID == "NOTSUB")
+        {
+            currentTelekeneticVoxel = MapManager.manager.voxels[layer][col].gameObject;
+        }
+        else
+        {
+            currentTelekeneticVoxel = MapManager.manager.getSubVoxelAt(layer, col, subID).gameObject;
+        }
+
+        var voxel = currentTelekeneticVoxel.GetComponent<Voxel>();
+        // Creating the voxels below
+        Debug.Log("Show neighbours " + (subID == "NOTSUB"));
+        voxel.showNeighbours(subID == "NOTSUB");
 
         // Setting up rigidbody
         // Needs to be true to work with a rigid body
@@ -574,9 +615,6 @@ public class MagicAttack : AAttackBehaviour
 
         voxel.transform.parent = MapManager.manager.Map.transform;
         voxel.gameObject.name = playerID + "_teleken_voxel";
-
-        // Creating the voxels below
-        voxel.showNeighbours(false);
 
         var tele = currentTelekeneticVoxel.GetComponent<Telekinesis>();
         tele.enabled = true;

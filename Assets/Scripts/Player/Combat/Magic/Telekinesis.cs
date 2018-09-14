@@ -29,10 +29,10 @@ public class Telekinesis : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         vox = GetComponent<Voxel>();
-        voxPos = GetComponent<SubVoxel>().voxelPosition.transform;
+        voxPos = vox.voxelPositon.transform;
 
-        var shape = teleEffect.GetComponent<ParticleSystem>().shape;
-        shape.mesh = vox.filter.mesh;
+//        var shape = teleEffect.GetComponent<ParticleSystem>().shape;
+//        shape.mesh = vox.filter.mesh;
 
         hasReleased = false;
         throwForce = 150;
@@ -54,8 +54,8 @@ public class Telekinesis : MonoBehaviour
             StartCoroutine(getRB());
         }
 
-        teleEffect.gameObject.SetActive(true);
-        teleEffect.Play();
+//        teleEffect.gameObject.SetActive(true);
+//        teleEffect.Play();
     }
 
     void Update()
@@ -64,11 +64,10 @@ public class Telekinesis : MonoBehaviour
 
         // Stops the voxel from "bouncing" when player not looking around
         if ((voxPos.position - requiredPos.position).magnitude < 1) return;
-        
-        rb.MovePosition(rb.position +
-                        (requiredPos.position - voxPos.position).normalized * Time.deltaTime * speed);
 
-        teleEffect.transform.position = voxPos.position;
+        rb.MovePosition(rb.position + (requiredPos.position - voxPos.position).normalized * Time.deltaTime * speed);
+
+//        teleEffect.transform.position = voxPos.position;
     }
 
     public void throwObject(Vector3 direction)

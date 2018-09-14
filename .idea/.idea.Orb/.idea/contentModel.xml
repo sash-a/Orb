@@ -181,7 +181,6 @@
             </e>
           </e>
         </e>
-        <e p="ModelSelector.cs" t="Include" />
         <e p="Resources" t="Include">
           <e p="Shaders" t="Include">
             <e p="ShieldFX.shader" t="Include" />
@@ -204,12 +203,20 @@
             <e p="VoxelDestructionEffect.cs" t="Include" />
             <e p="VoxelFragmentForce.cs" t="Include" />
           </e>
+          <e p="Events" t="Include">
+            <e p="GameEvent.cs" t="Include" />
+            <e p="GameEventManager.cs" t="Include" />
+            <e p="RespawnPlayer.cs" t="Include" />
+            <e p="ShredMap.cs" t="Include" />
+            <e p="WaitForAllMapsToComplete.cs" t="Include" />
+          </e>
           <e p="Map" t="Include">
             <e p="Assets" t="Include">
               <e p="Altar.cs" t="Include" />
               <e p="AssetModelUniter.cs" t="Include" />
               <e p="MapAsset.cs" t="Include" />
               <e p="MapAssetManager.cs" t="Include" />
+              <e p="ModelSelector.cs" t="Include" />
             </e>
             <e p="Caves" t="Include">
               <e p="CaveBody.cs" t="Include" />
@@ -230,7 +237,9 @@
             </e>
           </e>
           <e p="Mechanics" t="Include">
+            <e p="AreaOfEffectDamage.cs" t="Include" />
             <e p="CursorLock.cs" t="Include" />
+            <e p="DynamicLightingController.cs" t="Include" />
             <e p="FPSShower.cs" t="Include" />
             <e p="Gravity.cs" t="Include" />
             <e p="Health.cs" t="Include" />
@@ -243,6 +252,7 @@
             <e p="Identifier.cs" t="Include" />
             <e p="NetworkConfig.cs" t="Include" />
             <e p="NetworkMapGen.cs" t="Include" />
+            <e p="NetworkMessagePasser.cs" t="Include" />
             <e p="Overlord.cs" t="Include" />
             <e p="RegisterPrefabs.cs" t="Include" />
             <e p="UI" t="Include">
@@ -255,8 +265,10 @@
             <e p="Combat" t="Include">
               <e p="AAttackBehaviour.cs" t="Include" />
               <e p="Crosshair.cs" t="Include" />
+              <e p="DamageIndicator.cs" t="Include" />
               <e p="Magic" t="Include">
                 <e p="ForcePush.cs" t="Include" />
+                <e p="HumanTeleken.cs" t="Include" />
                 <e p="MagicAttack.cs" t="Include" />
                 <e p="MagicType.cs" t="Include" />
                 <e p="Shield.cs" t="Include" />
@@ -268,6 +280,7 @@
                 <e p="Arrow.cs" t="Include" />
                 <e p="grenade.cs" t="Include" />
                 <e p="Scope.cs" t="Include" />
+                <e p="TextDamageIndicator.cs" t="Include" />
                 <e p="WeaponAttack.cs" t="Include" />
                 <e p="WeaponSwitch.cs" t="Include" />
                 <e p="WeaponType.cs" t="Include" />
@@ -278,10 +291,17 @@
               <e p="PlayerController.cs" t="Include" />
             </e>
             <e p="PlayerSetup.cs" t="Include" />
+            <e p="Teams" t="Include">
+              <e p="Team.cs" t="Include" />
+              <e p="TeamManager.cs" t="Include" />
+            </e>
             <e p="UI" t="Include">
               <e p="GunnerUI.cs" t="Include" />
+              <e p="InGameTextObject.cs" t="Include" />
               <e p="MagicianUI.cs" t="Include" />
+              <e p="MessageDisplay.cs" t="Include" />
               <e p="PlayerUI.cs" t="Include" />
+              <e p="UIMessage.cs" t="Include" />
               <e p="WeaponWheel.cs" t="Include" />
             </e>
           </e>

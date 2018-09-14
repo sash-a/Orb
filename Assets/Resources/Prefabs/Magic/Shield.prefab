@@ -21,12 +21,12 @@ GameObject:
   - component: {fileID: 4159955514316544}
   - component: {fileID: 33883194310930864}
   - component: {fileID: 23198779274256800}
-  - component: {fileID: 135676511526226338}
   - component: {fileID: 114357655464427654}
   - component: {fileID: 114770461664496386}
   - component: {fileID: 114338789811109614}
   - component: {fileID: 114955375561606994}
   - component: {fileID: 114947933410451732}
+  - component: {fileID: 136100996748402748}
   m_Layer: 8
   m_Name: Shield
   m_TagString: Shield
@@ -41,8 +41,8 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1247925137036356}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 9, y: 9, z: 9}
+  m_LocalPosition: {x: -4.1254764, y: -0.26999998, z: 1.54}
+  m_LocalScale: {x: 5, y: 7, z: 5}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -183,15 +183,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   caster: {fileID: 0}
---- !u!135 &135676511526226338
-SphereCollider:
+--- !u!136 &136100996748402748
+CapsuleCollider:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1247925137036356}
   m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 2
   m_Radius: 0.9977
+  m_Height: 1.9953998
+  m_Direction: 1
   m_Center: {x: 0, y: 0, z: -0.000049978495}

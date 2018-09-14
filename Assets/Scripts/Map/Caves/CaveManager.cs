@@ -6,6 +6,9 @@ using UnityEngine.Networking;
 
 public class CaveManager : NetworkBehaviour
 {
+    static int numPortals = 6;
+    public static int numAltars = 15;
+
     static int caveTiers = 2;
     static int tiersLeft;
 
@@ -49,28 +52,32 @@ public class CaveManager : NetworkBehaviour
 
     public void placeCavePortalsArtefacts()
     {
+        //Debug.Log("placing cave trinkets");
+
         Dictionary<Voxel, Voxel> portalCandidates = new Dictionary<Voxel, Voxel>();//first is the floor vox second is the base of the wall vox
+        List<Voxel> candidates = new List<Voxel>();
+
         int requiredHeight = 6;//how high the wall infront of the floor vox has to be to be a candiate for a portal
         int requiredDistance = 60;//a portal is not allowed to be further than this from a cave body to prevent in tunnel portals
 
         int candidateCount = 0;
-        foreach (Voxel vox in caveWalls)
+        foreach (Voxel wall in caveWalls)
         {
             //Debug.Log("vox grad = " + (vox.maxGradient * 1000));
-            if (vox.layer > 3 && vox.mainAsset == null)
-                foreach (int nei in MapManager.manager.neighboursMap[vox.columnID])
+            if (wall.layer > 3 && wall.mainAsset == null)
+                foreach (int nei in MapManager.manager.neighboursMap[wall.columnID])
                 {
-                    if (MapManager.manager.doesVoxelExist(vox.layer + 1, nei))
+                    if (MapManager.manager.doesVoxelExist(wall.layer + 1, nei))
                     {
-                        Voxel neighbour = MapManager.manager.voxels[vox.layer + 1][nei];
-                        if (caveFloors.Contains(neighbour) && (neighbour.maxGradient * 1000) <= 15 && !neighbour.smoothed && neighbour.mainAsset == null)
+                        Voxel floor = MapManager.manager.voxels[wall.layer + 1][nei];
+                        if (caveFloors.Contains(floor) && (floor.maxGradient * 1000) <= 15 && !floor.smoothed && floor.mainAsset == null)
                         {
                             //Debug.Log("found cave border");
-                            neighbour.isCaveBorder = true;
+                            floor.isCaveBorder = true;
                             bool valid = true;
                             for (int i = 0; i < requiredHeight; i++)
                             {
-                                if (!(MapManager.manager.doesVoxelExist(vox.layer - i, vox.columnID) && caveWalls.Contains(MapManager.manager.voxels[vox.layer - i][vox.columnID])))
+                                if (!(MapManager.manager.doesVoxelExist(wall.layer - i, wall.columnID) && caveWalls.Contains(MapManager.manager.voxels[wall.layer - i][wall.columnID])))
                                 {
                                     //the voxel i above vox is not a wall
                                     valid = false;
@@ -81,7 +88,7 @@ public class CaveManager : NetworkBehaviour
                                 bool closeEnough = false;
                                 foreach (CaveBody body in caves)
                                 {
-                                    double dist = Vector3.Distance(body.center, vox.worldCentreOfObject);
+                                    double dist = Vector3.Distance(body.center, wall.worldCentreOfObject);
                                     //Debug.Log("comparing " + body.center + " and  " + vox.worldCentreOfObject + " dist: " + dist);
 
                                     if (dist < requiredDistance)
@@ -92,8 +99,12 @@ public class CaveManager : NetworkBehaviour
                                 if (valid && closeEnough)
                                 {
                                     //Debug.Log("found portal candidate");
-                                    candidateCount++;
-                                    placePortal(vox, neighbour);
+                                    if (!candidates.Contains(floor))
+                                    {
+                                        candidateCount++;
+                                        candidates.Add(floor);
+                                        portalCandidates.Add(floor, wall);
+                                    }
                                     //StartCoroutine(neighbour.setTexture(Resources.Load<Material>("Materials/Earth/LowPolyCaveBorder")));
                                 }
                             }
@@ -102,6 +113,90 @@ public class CaveManager : NetworkBehaviour
                 }
         }
         //Debug.Log("found " + candidateCount + " portal candidates ");
+
+        int maxTries = candidateCount + 20;
+
+        while (candidates.Count > numPortals && maxTries >0)
+        {
+            maxTries--;
+            candidates = reducePortalCandidates(candidates);
+        }
+        if (maxTries <= 0) {
+            Debug.LogError("failed to reduce portal candidates");
+        }
+
+        //Debug.Log("created " + candidates.Count + " portals ");
+
+
+        foreach (Voxel vox in candidates) {
+            placePortal(portalCandidates[vox], vox);
+        }
+    }
+
+    /// <summary>
+    /// finds the closest pair of portals - and removes the one (of the pair) which is closest to any other portal (not in the pair)
+    /// </summary>
+    /// <param name="candidates"></param>
+    /// <returns></returns>
+    private List<Voxel> reducePortalCandidates(List<Voxel> candidates)
+    {
+        double minPairDist = double.MaxValue;
+        Voxel[] closestPair = new Voxel[2];
+
+        foreach (Voxel cand1 in candidates)
+        {
+            foreach (Voxel cand2 in candidates)
+            {
+                if (cand1 == cand2)
+                {
+                    continue;
+                }
+                else
+                {
+                    double dist = Vector3.Distance(cand1.worldCentreOfObject, cand2.worldCentreOfObject);
+                    if (dist < minPairDist)
+                    {
+                        minPairDist = dist;
+                        closestPair = new Voxel[2];
+                        closestPair[0] = cand1;
+                        closestPair[1] = cand2;
+                    }
+                }
+            }
+        }
+
+        double minDist = double.MaxValue;
+        int candidateWithMinDist = -1;
+        //pair is now the closest pair of portals
+        foreach (Voxel cand1 in candidates)
+        {
+            if (cand1 != closestPair[0] && cand1 != closestPair[1]) {
+                double dist1 = Vector3.Distance(cand1.worldCentreOfObject, closestPair[0].worldCentreOfObject);
+                double dist2 = Vector3.Distance(cand1.worldCentreOfObject, closestPair[1].worldCentreOfObject);
+
+                double smallDist = Math.Min(dist1, dist2);
+
+                if (smallDist < minDist)
+                {
+                    minDist = smallDist;
+                    if(smallDist == dist1)
+                    {
+                        candidateWithMinDist = 0;
+                    }
+                    if (smallDist == dist2)
+                    {
+                        candidateWithMinDist = 1;
+                    }
+                }
+            }
+        }
+
+        if (candidateWithMinDist !=-1) {
+            candidates.Remove(closestPair[candidateWithMinDist]);
+        }
+
+
+        return candidates ;
     }
 
     private void placePortal(Voxel wall, Voxel Base)
@@ -239,7 +334,7 @@ public class CaveManager : NetworkBehaviour
                         Vector3 estimatedCavePosition = MapManager.manager.getPositionOf(0, ent.columnID) + ent.direction.normalized * estimatedEntranceDistance * 0.7f;
                         float dist = Vector3.Distance(MapManager.manager.getPositionOf(0, colID), estimatedCavePosition);
 
-                        dir += 0.5f * (MapManager.manager.getPositionOf(0, colID) - estimatedCavePosition).normalized / (float)Math.Pow(Vector3.Distance(MapManager.manager.getPositionOf(0, colID), estimatedCavePosition)/dropOffFactor, 2);//the closer the cave body the more repelling effect it has
+                        dir += 0.5f * (MapManager.manager.getPositionOf(0, colID) - estimatedCavePosition).normalized / (float)Math.Pow(Vector3.Distance(MapManager.manager.getPositionOf(0, colID), estimatedCavePosition) / dropOffFactor, 2);//the closer the cave body the more repelling effect it has
                         dir += (MapManager.manager.getPositionOf(0, colID) - MapManager.manager.getPositionOf(0, ent.columnID)).normalized / (float)Math.Pow(Vector3.Distance(MapManager.manager.getPositionOf(0, colID), MapManager.manager.getPositionOf(0, ent.columnID)) / dropOffFactor, 2);//the closer the cave body the more repelling effect it has
 
                         //Debug.Log("adding " + 0.5f * (MapManager.manager.getPositionOf(0, colID) - estimatedCavePosition).normalized+  " divided by "+ (float)Math.Pow(Vector3.Distance(MapManager.manager.getPositionOf(0, colID), estimatedCavePosition) / dropOffFactor, 2));
@@ -357,6 +452,7 @@ public class CaveManager : NetworkBehaviour
     private static void finishDigging()
     {
         MapManager.manager.doneDigging = true;
+        manager.RpcDoneDigging();
         if (MapManager.useHills)
         {
             MapManager.manager.deviateHeights();
@@ -367,6 +463,15 @@ public class CaveManager : NetworkBehaviour
             MapManager.manager.finishMapLocally();
         }
         manager.StartCoroutine(manager.RestoreShatters());
+    }
+
+    [ClientRpc]
+    private void RpcDoneDigging()
+    {
+        Debug.Log("done digging server = " + isServer);
+        BuildLog.writeLog("done digging server = " + isServer);
+
+        MapManager.manager.doneDigging = true;
     }
 
     IEnumerator RestoreShatters()

@@ -31,47 +31,73 @@ public class MapAssetManager : NetworkBehaviour
         genGrass();
         if (!isServer) return;
         System.Random rand = new System.Random(0);
-        genArtifactAltars(rand);
+        genArtifactAltars();
         genMainAssets(rand);
 
 
 
     }
 
-    private void genArtifactAltars(System.Random rand)
+
+    private void genArtifactAltars()
     {
         int count = 0;
         for (int i = 0; i < MapManager.mapLayers; i++)
         {
+            if (MapManager.manager.altars.Count >= CaveManager.numAltars)
+            {
+                break;
+            }
             foreach (Voxel vox in MapManager.manager.voxels[i].Values)
             {
+                if (MapManager.manager.altars.Count >= CaveManager.numAltars) {
+                    break;
+                }
+                if (vox.mainAsset != null) {
+                    continue;
+                }
+
                 if (!MapManager.manager.isDeleted(vox.layer, vox.columnID) && MapManager.manager.doesVoxelExist(vox.layer, vox.columnID))
                 {
                     if (CaveManager.manager.caveFloors.Contains(vox))//||layer==0
                     {
-                        if (vox.layer > 5)
+                        if (vox.layer > 7)
                         {
-                            if (UnityEngine.Random.Range(0f, 1f) < 0.2f)
-                            {
-                                //Debug.Log("generating altar");
+                            if (newAltarFarEnough(vox)) {
                                 vox.addMainAsset(-1, MapAsset.Type.ALTAR);
                             }
+                            //Debug.Log("generating altar");
+
                         }
                     }
-                    if (CaveManager.manager.caveCeilings.Contains(vox))//||layer==0
-                    {
-                        count++;
-                        if (UnityEngine.Random.Range(0f, 1f) < 0.6f)
-                        {
-                            //Debug.Log("generating critter spawner");
-                            vox.addMainAsset(1, MapAsset.Type.CRITTERSPANWER);
-                        }
-                    }
+                    //if (CaveManager.manager.caveCeilings.Contains(vox))//||layer==0
+                    //{
+                    //    count++;
+                    //    if (UnityEngine.Random.Range(0f, 1f) < 0.6f)
+                    //    {
+                    //        //Debug.Log("generating critter spawner");
+                    //        vox.addMainAsset(1, MapAsset.Type.CRITTERSPANWER);
+                    //    }
+                    //}
                 }
 
             }
         }
+        //Debug.Log("placed " + MapManager.manager.altars.Count + " altars ");
         //Debug.Log("tried to place critter spawners in " + count + " places");
+    }
+
+    private bool newAltarFarEnough(Voxel vox)
+    {
+        int minAllowedDistance = 60;// the closest two altars can be from each other
+
+        foreach (Altar a in MapManager.manager.altars) {
+            double d = Vector3.Distance(a.transform.position, vox.worldCentreOfObject);
+            if (d < minAllowedDistance) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void genMainAssets(System.Random rand)

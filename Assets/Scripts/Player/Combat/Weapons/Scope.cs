@@ -4,14 +4,15 @@ using UnityEngine;
 
 public class Scope : MonoBehaviour {
 
-    //public Animator animator;
+    public Animator animator;
     private bool scopedIn = false;
 
     public GameObject ScopeOverlay;
     public GameObject weaponCamera;
 
     public Camera mainCamera;
-    public float zoom = 15f;
+    //public Camera weaponCam;
+    public float zoom = 100f;
     private float normalZoom;
 
 private void Update()
@@ -19,9 +20,8 @@ private void Update()
         if(Input.GetButtonDown("Fire2"))
         {
             scopedIn = !scopedIn;
-            //animator.SetBool("isScoped", scopedIn);
             
-            if(scopedIn)
+            if(scopedIn && !animator.GetBool("isReloading") && !Input.GetKey(KeyCode.LeftShift))
             {
                onScoped();
             }
@@ -31,6 +31,16 @@ private void Update()
             }
            
         }
+
+        if (scopedIn)
+        {
+            if (animator.GetBool("isReloading") || Input.GetKey(KeyCode.LeftShift))
+            {
+                onUnscoped();
+                scopedIn = false;
+            }
+        }
+        
        
     }
 
@@ -38,24 +48,27 @@ private void Update()
     {
         //remove scope image
         ScopeOverlay.SetActive(false);
-        //enables camera that sees weapons
+        //enables camera that sees player
         weaponCamera.SetActive(true);
         //reset zoom
         mainCamera.fieldOfView = normalZoom;
     }
 
-    //coroutine
     void onScoped()
     {
-        //will wait certain amount of seconds before calling rest of the code (animation transition time)
-        //yield return new WaitForSeconds(.15f);
         //display scope picture
         ScopeOverlay.SetActive(true);
-        //disable camera that sees guns (when scoping)
+        //disable camera that sees player (when scoping)
         weaponCamera.SetActive(false);
         //zooming in (and saving normal view)
         normalZoom = mainCamera.fieldOfView;
         mainCamera.fieldOfView = zoom;
+    }
+
+    private void OnDisable()
+    {
+        onUnscoped();
+        scopedIn = false;
     }
 
     //Note: use of second camera also good for when player is colliding with other objects, preventing gun from clipping through

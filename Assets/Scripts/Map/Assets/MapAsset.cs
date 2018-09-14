@@ -68,8 +68,9 @@ public class MapAsset : NetworkBehaviour
         //Debug.Log("creating map asset at: " + vox.worldCentreOfObject);
         GameObject ass = null;
 
-        //ass = Instantiate(Resources.Load<GameObject>("Prefabs/Map/MapAssets/Palm_Tree"), vox.worldCentreOfObject, Quaternion.identity);
-        if (tp.Equals(Type.MAIN) || tp.Equals(Type.ALTAR) || tp.Equals(Type.CRITTERSPANWER))
+
+            //ass = Instantiate(Resources.Load<GameObject>("Prefabs/Map/MapAssets/Palm_Tree"), vox.worldCentreOfObject, Quaternion.identity);
+            if (tp.Equals(Type.MAIN) || tp.Equals(Type.ALTAR) || tp.Equals(Type.CRITTERSPANWER))
         {
             ass = spawnMainAsset(vox, side, tp);
         }
@@ -89,7 +90,11 @@ public class MapAsset : NetworkBehaviour
         {
             NetworkServer.Spawn(ass);
         }
-        return ass.GetComponent<MapAsset>();
+
+        
+
+
+            return ass.GetComponent<MapAsset>();
     }
 
     private static GameObject spawnGrass(Voxel vox, int side)
@@ -127,6 +132,18 @@ public class MapAsset : NetworkBehaviour
         if (tp.Equals(Type.ALTAR))
         {
             model = (GameObject)Instantiate(Resources.Load<GameObject>("Prefabs/Map/MapAssets/Altar"), vox.worldCentreOfObject, Quaternion.identity);
+            if (tp.Equals(Type.ALTAR))
+            {
+                Altar a = model.GetComponent<Altar>();
+                if (a != null)
+                {
+                    MapManager.manager.altars.Add(a);
+                }
+                else {
+                    Debug.LogError("spawned altar object withoiut altar script");
+                }
+
+            }
         }
         if (tp.Equals(Type.CRITTERSPANWER))
         {

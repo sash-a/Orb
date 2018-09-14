@@ -7,8 +7,7 @@ public class Altar : MonoBehaviour {
 
     public enum Type { ARTIFACT, WEAPON};
     public Type type;
-
-
+    public InGameTextObject textObject;
 
     public PickUpItem.ItemType itemType;
 
@@ -42,6 +41,10 @@ public class Altar : MonoBehaviour {
             item.itemClass = PickUpItem.Class.MAGICIAN;
             item.itemType = (PickUpItem.ItemType)(UnityEngine.Random.Range(1 , PickUpItem.numArtifacts + 1));
             item.GetComponent<ModelSelector>().setModel(item.itemType);
+
+            if (textObject != null) {
+                textObject.setValues(Color.red, item.itemType.ToString().ToLower().Replace('_', ' '));
+            }
         }
         else
         {
@@ -50,6 +53,10 @@ public class Altar : MonoBehaviour {
             item.itemClass = PickUpItem.Class.GUNNER;
             //item.itemType = (PickUpItem.ItemType)(UnityEngine.Random.Range(1, PickUpItem.numGuns));
             item.itemType = itemType;
+            if (textObject != null)
+            {
+                textObject.setValues(Color.blue, item.itemType.ToString().ToLower().Replace('_', ' ') + " weapon");
+            }
         }
     }
 

@@ -8,9 +8,9 @@ public class Shield : NetworkBehaviour
 
     void Start()
     {
-        transform.localPosition += transform.up * 2;
+        transform.localPosition += new Vector3(0, 4, 0);
 
-        if (!isLocalPlayer) assignRemoteLayer();
+        if (!caster.gameObject.GetComponent<MagicAttack>().isLocalPlayer) assignRemoteLayer();
     }
 
     public override void OnStartClient()
@@ -30,13 +30,14 @@ public class Shield : NetworkBehaviour
         caster = id;
 
         var player = GameManager.getObject(caster.id);
-        Debug.Log(player.GetComponent<MagicAttack>().getAttackStats().artifactType);
+        //Debug.Log(player.GetComponent<MagicAttack>().getAttackStats().artifactType);
         // if owns artifact
         if (player.GetComponent<MagicAttack>().getAttackStats().artifactType == PickUpItem.ItemType.HEALER_ARTIFACT)
         {
             Debug.Log("Scaling");
-            transform.localScale *= 1.5f;
+            transform.localScale = new Vector3(15f, 15, 15f);
         }
+
         // UI
         if (isServer) return;
 

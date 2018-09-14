@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 
 public class GameEventManager : NetworkBehaviour
 {
-    public static int gameLength = 500;//number of seconds before max map shredding
+    public static int gameLength = 450;//number of seconds before max map shredding
 
 
     public static float clockTime;
@@ -97,7 +97,8 @@ public class GameEventManager : NetworkBehaviour
             GameEvent ev = namedEvents[name];
             if (ev.serverOnly)
             {
-                //Debug.Log("locally passing message to server only event");
+                //Debug.Log("locally passing message " + message + " to server only event: " + name);
+                BuildLog.writeLog("locally passing message " + message + " to server only event: " + name);
                 CmdPassMessage(name, message);
             }
             else
@@ -112,15 +113,18 @@ public class GameEventManager : NetworkBehaviour
     }
 
     [Command]
-    private void CmdPassMessage(string name, string message)
+    public void CmdPassMessage(string name, string message)
     {
         if (namedEvents.ContainsKey(name))//even server side events are stored locally
         {
+            BuildLog.writeLog("passing message " + message + " on server event: " + name);
+            //Debug.Log("passing message " + message + " on server event: " + name);
             namedEvents[name].passMessage(message);
         }
         else
         {
             Debug.LogError("no such named event as: " + name);
+            BuildLog.writeLog("no such named event as: " + name);
         }
     }
 

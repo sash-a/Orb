@@ -6,7 +6,9 @@ public class grenade : AAttackBehaviour
 {
 
     public float delay = 2.2f;
-    public float blastRadius = 12f;
+    public float playerBlastRadius = 18f;
+    public float mapBlastRadius = 6f;
+
     public float damage = 10f;
     public float envDamage = 1000f;
 
@@ -43,7 +45,7 @@ public class grenade : AAttackBehaviour
     private void CmdExplosionFX()
     {
         GameObject explosion = Instantiate(explosionEffect, transform.position + (transform.position.normalized), Quaternion.identity);
-        explosion.transform.localScale *= blastRadius;
+        explosion.transform.localScale *= playerBlastRadius;
         NetworkServer.Spawn(explosion);
         Destroy(gameObject);
     }
@@ -60,7 +62,8 @@ public class grenade : AAttackBehaviour
         AreaOfEffectDamage a = AOE.GetComponent<AreaOfEffectDamage>();
         a.duration = 2;
         a.damage = damage;
-        a.radius = blastRadius;
+        a.radius = playerBlastRadius;
+        a.mapRadius = mapBlastRadius;
         a.damageMagicians = true;
 
 

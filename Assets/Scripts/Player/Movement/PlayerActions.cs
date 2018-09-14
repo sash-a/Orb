@@ -32,6 +32,7 @@ public class PlayerActions : NetworkBehaviour
         if (!isLocalPlayer)
         {
             cam.GetComponent<AudioListener>().enabled = false;
+            return;
         }
         else
         {
@@ -39,12 +40,22 @@ public class PlayerActions : NetworkBehaviour
             if (player != null)
             {
                 TeamManager.localPlayer = player;
+                DynamicLightingController.localPlayer = player;
+
             }
             else
             {
                 Debug.Log("failed to find player controller component from player action script");
             }
+
+
         }
+        if (transform.name.Contains("agician"))
+        {
+            float y = pivotPoint.y;
+            //pivotPoint *= 1.2f;//makes magicians camera further away as theyre bigger
+        }
+
     }
 
     private void initVars()
@@ -55,6 +66,8 @@ public class PlayerActions : NetworkBehaviour
         health = GetComponent<NetHealth>();
         grav = GetComponent<Gravity>();
         isGroundPlanted = false;
+
+        
     }
 
     void FixedUpdate()
@@ -85,7 +98,7 @@ public class PlayerActions : NetworkBehaviour
         {//should be in sphere but isnt
             if (Time.time > 125)
             {//enough time has passed that the origonal spawning must have failed
-                Debug.LogError("having to respawn players on team ");
+                Debug.LogError("having to respawn players manually after 125 seconds from game start");
                 grav.inSphere = true;
                 TeamManager.singleton.CmdSpawnPlayers();
             }

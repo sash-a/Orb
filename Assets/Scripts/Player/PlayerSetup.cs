@@ -6,6 +6,7 @@ public class PlayerSetup : NetworkBehaviour
 {
     public Behaviour[] componentsToDisable;
     public string dontDrawLayerName = "DontDraw";
+    public string dontChangeLayerName = "EnvColliders";
     public GameObject playerGraphics;
 
     private Camera mainCam;
@@ -29,7 +30,7 @@ public class PlayerSetup : NetworkBehaviour
                     comp.enabled = false;
             }
 
-            assignRemotePlayer();
+            assignRemotePlayer(dontChangeLayerName);
         }
         else
         {
@@ -91,18 +92,21 @@ public class PlayerSetup : NetworkBehaviour
         GameManager.register(GetComponent<NetworkIdentity>().netId.ToString(), GetComponent<Identifier>());
     }
 
-    void assignRemotePlayer()
+    void assignRemotePlayer(string ignorelayer)
     {
-        gameObject.layer = LayerMask.NameToLayer(REMOTE_LAYER_NAME);
+        setLayer(gameObject, LayerMask.NameToLayer(REMOTE_LAYER_NAME), LayerMask.NameToLayer(ignorelayer));
     }
 
-    void setLayer(GameObject obj, int layer)
+    void setLayer(GameObject obj, int layer, int ignoreLayer)
     {
         obj.layer = layer;
 
         foreach (Transform child in obj.transform)
         {
-            setLayer(child.gameObject, layer);
+            if (child.gameObject.layer != ignoreLayer)
+            {
+                setLayer(child.gameObject, layer, ignoreLayer);
+            }
         }
     }
     

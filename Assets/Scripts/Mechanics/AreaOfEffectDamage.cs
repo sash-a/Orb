@@ -9,6 +9,7 @@ public class AreaOfEffectDamage : AAttackBehaviour
     public float damage;
 
     public float radius;
+    public float mapRadius;
     public float duration;
 
     public bool damageGunners = false;
@@ -87,7 +88,7 @@ public class AreaOfEffectDamage : AAttackBehaviour
         float time = Time.time;
         //Debug.Log("starting new damage voxels iter");
 
-        RaycastHit[] colliders = Physics.SphereCastAll(transform.position, radius/2, transform.position, 0, mask, QueryTriggerInteraction.UseGlobal);
+        RaycastHit[] colliders = Physics.SphereCastAll(transform.position, mapRadius, transform.position, 0, mask, QueryTriggerInteraction.UseGlobal);
 
         //loop through every item in blast radius
         List<Voxel> damagedVoxels = new List<Voxel>(); ;

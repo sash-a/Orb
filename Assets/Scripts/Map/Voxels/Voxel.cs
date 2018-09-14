@@ -27,7 +27,7 @@ public class Voxel : NetworkBehaviour
     // the point on the top side{0,1,2} which is opposite the longest side of the triangle
     public int obtusePoint;
 
-    public Transform voxelPositon;
+    public Transform voxelPositon; // I know this is spelt wrong but will require an entire regenration to fix
     [SyncVar] public Vector3 centreOfObject; // centre of the object in object space
     [SyncVar] public Vector3 worldCentreOfObject; // the centre of this object as it is in world space
     public float maxGradient;
@@ -89,7 +89,7 @@ public class Voxel : NetworkBehaviour
         filter = gameObject.GetComponent<MeshFilter>();
         if (GetComponent<MeshCollider>() != null)
         {
-            GetComponent<MeshCollider>().convex = false;
+            GetComponent<MeshCollider>().convex = true;
         }
 
 
@@ -718,8 +718,11 @@ public class Voxel : NetworkBehaviour
      */
     public bool createNewVoxel(int dir) //down is dir=1; up is dir = -1
     {
-        if (!isServer)
+        if (!isServer || isMelted)
         {
+            if (isMelted) {
+                Debug.LogError("trying to create new vox from a voxel container");
+            }
             return false;
         }
         //Debug.Log("creeating new voxel");

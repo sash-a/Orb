@@ -83,27 +83,36 @@ public class MagicType
         this.artifactType = artifactType;
         manaRegen *= 1.5f;
 
+        new UIMessage("you have picked up the " + artifactType.ToString(),4);
+
         if (artifactType == PickUpItem.ItemType.DAMAGE_ARTIFACT)
         {
             attackDamage *= 1.8f;
             attackEnvDamage *= 1.2f;
             attackRange *= 1.8f; // TODO extend effect!
-            attackMana *= 1.2f;
+            attackMana *= 0.8f;
+
+            new UIMessage("damage and atack range doubled!", 3);
+
 
         }
         else if (artifactType == PickUpItem.ItemType.HEALER_ARTIFACT)
         {
             heal *= 1.8f;
-            shieldMana *= 1.2f;
+            shieldMana *= 0.8f;
             initialShieldMana *= 1.2f;
             shieldHealth *= 1.8f;
+
+            new UIMessage("heal speed and shield helth doubled!", 3);
+
             // TODO shield type/size!
         }
         else if (artifactType == PickUpItem.ItemType.TELEPATH_ARTIFACT)
         {
-            telekenMana *= 1.2f;
+            telekenMana *= 0.8f;
             telekenRange *= 1.8f;
-            
+            new UIMessage("telekenesis range doubled!", 3);
+
             // TODO can hit humans and can teleken bigger blocks!
         }
     }

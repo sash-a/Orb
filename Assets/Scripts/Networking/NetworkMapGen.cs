@@ -77,8 +77,8 @@ public class NetworkMapGen : NetworkBehaviour
     IEnumerator CountSpawnedVoxels()
     {
         bool loaded = false;
-        int maxTries = 35;
-        float waitTime = 1.5f;
+        int maxTries = 60;
+        float waitTime = 2f;
         int count = 0;
 
         while (!loaded && count < maxTries)
@@ -91,6 +91,8 @@ public class NetworkMapGen : NetworkBehaviour
         if (loaded)
         {
             Debug.Log("(server="+isServer+") voxels spawned correctly ; waited : " + (count*waitTime) + " seconds ");
+            BuildLog.writeLog("(server=" + isServer + ") voxels spawned correctly ; waited : " + (count * waitTime) + " seconds "  );
+
             if (isServer)
             {
                 StartCoroutine(MapManager.manager.allSurfaceVoxelsLoadedServerSide());
@@ -102,6 +104,11 @@ public class NetworkMapGen : NetworkBehaviour
         }
         else
         {
+            BuildLog.writeLog("waited " + (maxTries * waitTime) + " seconds and not all voxels have been spawned - only found " +
+                           MapManager.manager.spawnedVoxels.Count + " unique column id's; should be: " +
+                           768 * Math.Pow(2, MapManager.splits) + " manager done digging?: " + MapManager.manager.doneDigging 
+                           + " condition1: " + (MapManager.manager.spawnedVoxels.Count == 768 * Math.Pow(2, MapManager.splits)) + " condition2: " + ((MapManager.manager.doneDigging || isServer)) + "\n ");
+
             Debug.LogError("waited " + (maxTries* waitTime) + " seconds and not all voxels have been spawned - only found " +
                            MapManager.manager.spawnedVoxels.Count + " unique column id's; should be: " +
                            768 * Math.Pow(2, MapManager.splits) + " manager done digging?: " + MapManager.manager.doneDigging);

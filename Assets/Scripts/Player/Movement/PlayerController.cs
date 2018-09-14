@@ -6,14 +6,18 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float speed;
-    [SerializeField] private float lookSens;
+    public float lookSensitivityBase;
+    public float lookSens;
+
     [SerializeField] private float jumpForce;
     [SerializeField] private float runMultiplier;
     private PlayerActions actions;
+    Gravity gravity;
 
     //Animation
     public Animator animator;
     private bool isMoving = false;
+    private float MouseY = 0.0f;
     //NB variables for walking/running Blend animations
     private float xMoveOld = 0;
     private float yMoveOld = 0;
@@ -21,14 +25,24 @@ public class PlayerController : MonoBehaviour
     private float yMove = 0;
     private float interpSpeed = 0.25f;
 
+    internal bool isInSphere()
+    {
+        return gravity.inSphere;
+    }
+
     public Team team;
 
     void Start()
     {
         actions = GetComponent<PlayerActions>();
-        GetComponent<Gravity>().inSphere = false;
+        gravity = GetComponent<Gravity>();
+        lookSens = lookSensitivityBase;
+        gravity.inSphere = false;
         //sendToSpawnRoom();
         StartCoroutine(AddPlayer());
+
+       
+
         //Debug.Log("look sens: " + lookSens);
     }
 
@@ -63,11 +77,12 @@ public class PlayerController : MonoBehaviour
 
         if (transform.name.Contains("agician"))
         {
+
             actions.move(Input.GetKey(KeyCode.LeftShift) ? velocity * runMultiplier : velocity);
         }
 
         // Rotation
-        var yRot = new Vector3(0, Input.GetAxis("Mouse X"), 0) * lookSens *Time.deltaTime;
+        var yRot = new Vector3(0, Input.GetAxis("Mouse X"), 0) * lookSens * Time.deltaTime;
         float xRot = Input.GetAxis("Mouse Y") * lookSens * Time.deltaTime;
 
         actions.rotate(yRot, xRot);
@@ -78,13 +93,15 @@ public class PlayerController : MonoBehaviour
         //Animation
         MovementAnimation(velocity);
 
-        if (MapManager.manager !=null &&MapManager.manager.warningShell != null) {
-            if (MapManager.manager.isInWarningZone(transform.position)) {
+        if (MapManager.manager != null && MapManager.manager.warningShell != null)
+        {
+            if (MapManager.manager.isInWarningZone(transform.position))
+            {
                 new UIMessage("WARNING! You are in the shredding zone!", 1);
+                DynamicLightingController.singleton.informInShredZone();
                 //Debug.Log("player is in warning zone!");
             }
         }
-
 
     }
 
@@ -127,9 +144,30 @@ public class PlayerController : MonoBehaviour
             animator.SetTrigger("jump");
         }
 
+        if (velocity != Vector3.zero)
+        {
+            isMoving = true;
+        }
+        else
+        {
+            isMoving = false;
+        }
+
+        //aiming up and down
+        //MouseY = Input.GetAxis("Mouse Y");
+        if (Input.GetKeyDown(KeyCode.X) && MouseY == 0.0f)
+        {
+            MouseY = 1.0f;
+        }
+        else if(Input.GetKeyDown(KeyCode.X) && MouseY == 1.0f)
+        {
+            MouseY = 0.0f;
+        }
+
         animator.SetBool("isMoving", isMoving);
         animator.SetFloat("xMove", xMoveOld);
         animator.SetFloat("yMove", yMoveOld);
+        animator.SetFloat("MouseY", MouseY);
     }
 
 

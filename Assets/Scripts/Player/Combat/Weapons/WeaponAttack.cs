@@ -14,6 +14,8 @@ public class WeaponAttack : AAttackBehaviour
     public GameObject explosionEffect;
     public EnergyBlockEffectSpawner energyBlockEffectSpawner;
     public GameObject damageTextIndicatorEffect;
+    public PlayerController player;
+
 
     public int selectedWeapon = 0;
 
@@ -29,19 +31,27 @@ public class WeaponAttack : AAttackBehaviour
     // Grenade specific
     public GameObject grenadeSpawn;
     public GameObject grenadePrefab;
-    public float throwForce = 40;
 
     // Special Weapon specific:
     public GameObject Ex_boltSpawn;
     public GameObject boltPrefab;
     public float boltForce = 200;
 
-    // Animation
+    // Animation:
     public Animator animator;
     private bool isCarryingPistol = true;
     private bool isReloading = false;
     private bool isThrowingGrenade = false;
     private bool isShooting = false;
+    private bool isAiming = false;
+
+    float camAngle = 60;
+    float camZoomSpeed = 0.5f;
+
+    float grenadeHoldLength = 0;
+
+    //Sound:
+    public AudioSource audioSource;
 
     public WeaponWheel weaponWheel;
 
@@ -49,7 +59,7 @@ public class WeaponAttack : AAttackBehaviour
     {
         resourceManager = GetComponent<ResourceManager>();
         //energyBlockEffectSpawner = GetComponent<EnergyBlockEffectSpawner>();
-
+        player = GetComponent<PlayerController>();
         equippedWeapons.Add(weapons[0]); // Digger
         equippedWeapons.Add(weapons[1]); // Pistol
         equippedWeapons.Add(weapons[2]); // Assalt rifle
@@ -77,7 +87,7 @@ public class WeaponAttack : AAttackBehaviour
 
         var scroll = Input.GetAxis("Mouse ScrollWheel");
         //scroll up changes weapons
-        if (scroll < 0f && isLocalPlayer) //need to prevent weapon switching when aiming!
+        if (scroll < 0f && isLocalPlayer) 
         {
             if (equippedWeapon >= equippedWeapons.Count - 1)
             {
@@ -102,7 +112,7 @@ public class WeaponAttack : AAttackBehaviour
             }
         }
 
-        //Find the correct selected weapon in weapons (causing errors?)
+        //Find the correct selected weapon in weapons
         for (int i = 0; i < weapons.Count; i++)
         {
             if (weapons[i].name == equippedWeapons[equippedWeapon].name)
@@ -112,22 +122,39 @@ public class WeaponAttack : AAttackBehaviour
             }
         }
 
+        //Attacking
         if (Input.GetButton("Fire1") && Time.time >= weapons[selectedWeapon].nextTimeToFire && !isReloading &&
-            !isThrowingGrenade)
+            !isThrowingGrenade && !Input.GetKey(KeyCode.LeftShift))
         {
             weapons[selectedWeapon].nextTimeToFire = Time.time + 1f / weapons[selectedWeapon].fireRate;
             attack();
         }
 
-        if (Input.GetButton("Fire1"))
+        //Aiming
+        int idealCamAngle;
+        float idealLookSensitivity;
+
+        if (Input.GetButton("Fire2") && !isReloading && !Input.GetKey(KeyCode.LeftShift) && weapons[selectedWeapon].name != WeaponType.SNIPER)
         {
-            isShooting = true;
+            isAiming = true;
+            idealCamAngle = 40;
+            idealLookSensitivity = player.lookSensitivityBase * 0.28f;
+
         }
         else
         {
-            isShooting = false;
+            isAiming = false;
+            idealCamAngle = 65;
+            idealLookSensitivity = player.lookSensitivityBase;
         }
 
+        camAngle = camAngle + (idealCamAngle - camAngle) * camZoomSpeed;
+        Camera.main.fieldOfView = camAngle;
+        player.lookSens += (idealLookSensitivity - player.lookSens) * camZoomSpeed;
+
+        //Debug.Log("cam angle: " + cam.fieldOfView);
+
+        //Reload
         if (Input.GetKey(KeyCode.R) && weapons[selectedWeapon].name != WeaponType.DIGGING_TOOL)
         {
             //Debug.Log("Reload!");
@@ -135,24 +162,46 @@ public class WeaponAttack : AAttackBehaviour
         }
 
         //NB: This method will only work if grenades is last item in weapons array
-        if (Input.GetKeyUp(KeyCode.G) && !isShooting && !isReloading)
-        {
-            if (grenade.ammunition.getNumGrenades() > 0)
+        if (!isShooting && !isReloading && grenade.ammunition.getNumGrenades() > 0 && isThrowingGrenade == false)
+        {//ready to throw grenade
+            if (Input.GetKey(KeyCode.G))//hold
             {
-                //wait for grenade animation to reach apex of throw
-                isThrowingGrenade = true;
-                //Debug.Log(isThrowingGrenade);
-                StartCoroutine(wait(1.50f));
-                //Spawn Grenade
-                CmdthrowGrenade();
-                resourceManager.useGrenade(1, grenade.ammunition);
-                //Wait for rest of animation to finish
-                StartCoroutine(wait(1.80f));
-                isThrowingGrenade = false;
+                grenadeHoldLength += Time.deltaTime;
+                grenadeHoldLength = Mathf.Min(grenadeHoldLength, 2);
             }
+            if (Input.GetKeyUp(KeyCode.G))
+            {//throw
+
+                //wait for grenade animation to reach apex of throw
+                //Debug.Log("throwing grenade with hold length = " + grenadeHoldLength);
+                StartCoroutine(throwGrenade(70 + 250 * grenadeHoldLength));
+                grenadeHoldLength = 0;
+            }
+
+
+        }
+        else
+        {
+            grenadeHoldLength = 0;
         }
 
+
         Animation();
+    }
+
+    IEnumerator throwGrenade(float throwForce) {
+        isThrowingGrenade = true;
+        animator.SetTrigger("throwGrenade");
+        //Debug.Log(isThrowingGrenade);
+        yield return new WaitForSecondsRealtime(1.80f);
+        //StartCoroutine(wait(1.50f));
+        //Spawn Grenade
+        CmdthrowGrenade(throwForce);
+        resourceManager.useGrenade(1, grenade.ammunition);
+        //Wait for rest of animation to finish
+        yield return new WaitForSecondsRealtime(1.80f);
+        //StartCoroutine(wait(1.80f));
+        isThrowingGrenade = false;
     }
 
     void Animation()
@@ -167,27 +216,40 @@ public class WeaponAttack : AAttackBehaviour
             isCarryingPistol = false;
         }
 
+        if (Input.GetButton("Fire1") && weapons[selectedWeapon].ammunition.getMagAmmo() != 0 && !isReloading && !Input.GetKey(KeyCode.LeftShift))
+        {
+            isShooting = true;
+        }
+        else
+        {
+            isShooting = false;
+        }
+
+        if (weapons[selectedWeapon].ammunition.getMagAmmo() == 0)
+        {
+            isShooting = false;
+        }
+
+
+
         animator.SetBool("isCarryingPistol", isCarryingPistol);
         animator.SetBool("isReloading", isReloading);
         animator.SetBool("isThrowingGrenade", isThrowingGrenade);
         animator.SetBool("isShooting", isShooting);
+        animator.SetBool("isAiming", isAiming);
     }
 
     [Command]
-    public void CmdthrowGrenade()
+    public void CmdthrowGrenade(float throwForce)
     {
-        GameObject grenade =
-            Instantiate(grenadePrefab, grenadeSpawn.transform.position, grenadeSpawn.transform.rotation);
+        Debug.Log("throwing grenade with throwForce: " + throwForce);
+        GameObject grenade =  Instantiate(grenadePrefab, grenadeSpawn.transform.position, Camera.main.transform.rotation);
         Rigidbody rb = grenade.GetComponent<Rigidbody>();
         rb.AddForce(cam.transform.forward * throwForce, ForceMode.VelocityChange);
         NetworkServer.Spawn(grenade);
     }
 
-    IEnumerator wait(float time)
-    {
-        yield return new WaitForSeconds(time);
-    }
-
+ 
     [Command]
     public void CmdShootBolt()
     {
@@ -221,6 +283,11 @@ public class WeaponAttack : AAttackBehaviour
     [Client]
     public override void attack()
     {
+        if (isShooting == true)
+        {
+            audioSource.Play();
+        }
+
         if (!MapManager.manager.mapDoneLocally)
         {
             Debug.LogError("attacking before map finished");
@@ -323,7 +390,7 @@ public class WeaponAttack : AAttackBehaviour
             damageTextIndicatorEffect,
             hit.position + hit.up * 10,
             hit.rotation
-        ).GetComponent<TextDamageIndicator>().setUp((int) damage);
+        ).GetComponent<TextDamageIndicator>().setUp((int)damage);
     }
 
     public override void endAttack()

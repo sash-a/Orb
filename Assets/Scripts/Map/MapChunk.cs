@@ -13,8 +13,10 @@ public class MapChunk : MonoBehaviour
 
     private void Update()
     {
+        transform.position += transform.position.normalized * 50;
         if (transform.position.magnitude > MapManager.mapSize * 10)
         {
+            Debug.Log("destroyed chunk");
             destroyChunk();
         }
     }
@@ -215,7 +217,7 @@ public class MapChunk : MonoBehaviour
         {
             if (!MapManager.manager.isDeleted(vox.layer, n))
             {
-                if (vox != null)
+                if (vox != null && MapManager.manager.doesVoxelExist(vox.layer,n))
                 {
                     Voxel v = MapManager.manager.voxels[vox.layer][n];
                     if (Vector3.Distance(v.worldCentreOfObject, chunkOrigin) < chunkRadius * 0.98f)
