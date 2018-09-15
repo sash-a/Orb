@@ -42,7 +42,7 @@ public class WaitForAllMapsToComplete : GameEvent
         //yield return new WaitForEndOfFrame();
         //spawns players on the map
         //Debug.Log("executing wait for maps");
-        TeamManager.singleton.CmdSpawnPlayers();
+        TeamManager.singleton.CmdSpawnAllPlayers();
         GameEventManager.singleton.CmdAddShredEvents();
 
     }
@@ -51,8 +51,10 @@ public class WaitForAllMapsToComplete : GameEvent
 
     public override bool hook()
     {
-        if (Time.time > 200) {
+        if (Time.time > 400) {
             Debug.Log("giving up waiting for all maps to complete - ending waiting and beginning spawn/ shredding process");
+            BuildLog.writeLog("giving up waiting for all maps to complete - ending waiting and beginning spawn/ shredding process");
+
             return true;
         }
 

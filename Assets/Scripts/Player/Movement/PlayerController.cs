@@ -25,6 +25,12 @@ public class PlayerController : MonoBehaviour
     private float yMove = 0;
     private float interpSpeed = 0.25f;
 
+
+    public string playerName;
+
+    InGameTextObject playerNameText;
+    public Transform playerNameTrans;
+
     internal bool isInSphere()
     {
         return gravity.inSphere;
@@ -41,7 +47,7 @@ public class PlayerController : MonoBehaviour
         //sendToSpawnRoom();
         StartCoroutine(AddPlayer());
 
-       
+
 
         //Debug.Log("look sens: " + lookSens);
     }
@@ -112,6 +118,11 @@ public class PlayerController : MonoBehaviour
         transform.rotation = Quaternion.LookRotation(new Vector3(transform.position.x, 0, transform.position.z), Vector3.up);
     }
 
+    public void respawnPlayer()
+    {
+        transform.position = team.getSpawnRoom().transform.position * 0.9f;
+    }
+
     void MovementAnimation(Vector3 velocity)
     {
         //Animation:
@@ -159,7 +170,7 @@ public class PlayerController : MonoBehaviour
         {
             MouseY = 1.0f;
         }
-        else if(Input.GetKeyDown(KeyCode.X) && MouseY == 1.0f)
+        else if (Input.GetKeyDown(KeyCode.X) && MouseY == 1.0f)
         {
             MouseY = 0.0f;
         }
@@ -170,6 +181,34 @@ public class PlayerController : MonoBehaviour
         animator.SetFloat("MouseY", MouseY);
     }
 
+    public void setPlayerName(string name, bool isLocalPlayer)
+    {
+        playerName = name;
+        if (!isLocalPlayer || false) {//dont put someones own name on their head
+            //Debug.Log("objcect player name");
 
+            GameObject text = Instantiate(Resources.Load<GameObject>("Prefabs/UI/InGameTextObject"));
+            playerNameText = text.GetComponent<InGameTextObject>();
+            if (playerNameText != null)
+            {
+                if (playerNameTrans != null)
+                {
+                    if (name != null)
+                    {
+                        playerNameText.setValues(Color.red, name, playerNameTrans);
+                    }
+                    else {
+                        playerNameText.setValues(Color.red, gameObject.name, playerNameTrans);
+                    }
+                }
+                else {
+                    Debug.LogError("no player name text transform attached to player: " + gameObject.name);
+                }
+            }
+            else {
+                Debug.LogError("no in game text object attached to prefab text object");
+            }
+        }
+    }
 
 }

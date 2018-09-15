@@ -18,6 +18,8 @@ public class GameEventManager : NetworkBehaviour
 
     public MessageDisplay display;
 
+    bool clockStarted = false;
+
     private void Start()
     {
         singleton = this;
@@ -52,25 +54,30 @@ public class GameEventManager : NetworkBehaviour
             Debug.LogError("failed to create wait object");
         }
         addEvent(wait);
-
+        //Time.
     }
 
     [Command]
     public void CmdAddShredEvents()
     {
-        RpcAddShreddingEvents();
+        RpcAddShreddingEvents(Network.time);
     }
 
     [ClientRpc]
-    void RpcAddShreddingEvents() {
+    void RpcAddShreddingEvents(double netTime)
+    {
         int shreds = 4;
+        double diff = Network.time - netTime; // the latency between the server sending the rpc and this client starting the method
+                                              //clockTime = 0;
+        //Debug.Log("adding shredding event to event manager");
+
         for (int i = 0; i < shreds; i++)
         {//4 evenly spaced out shreds
-            //Debug.Log("adding shredding event to event manager");
-            ShredMap shred = new ShredMap(clockTime + ((i + 1) * gameLength / shreds));
+            ///ShredMap shred = new ShredMap(clockTime + (float)-diff + ((i + 1) * gameLength / shreds));
+            ShredMap shred = new ShredMap(clockTime +  ((i + 1) * gameLength / shreds));
+
             events.Add(shred);
             //printEventList();
-
             addEvent(shred);
         }
     }
@@ -87,7 +94,7 @@ public class GameEventManager : NetworkBehaviour
         {
             namedEvents.Add(e.name, e);
         }
-        
+
     }
 
     public void passMessage(string name, string message)
@@ -132,7 +139,10 @@ public class GameEventManager : NetworkBehaviour
     void Update()
     {
         //printEventList();
-        clockTime += Time.deltaTime;
+        if (clockStarted || true)
+        {
+            clockTime += Time.deltaTime;
+        }
         List<GameEvent> executedEvents = new List<GameEvent>();
         List<GameEvent> removedEvents = new List<GameEvent>();
 
@@ -150,7 +160,8 @@ public class GameEventManager : NetworkBehaviour
                 {
                     if (ev.isStarted())
                     {
-                        if (ev.name.Contains("ait")) {
+                        if (ev.name.Contains("ait"))
+                        {
                             //Debug.Log("executing wait for map");
                         }
                         executedEvents.Add(ev);
@@ -163,6 +174,14 @@ public class GameEventManager : NetworkBehaviour
                 {
                     //Debug.Log("removing non time based server only event: " + ev.name);
                     removedEvents.Add(ev);
+                }
+                else
+                {
+                    if (countdown >= 0)
+                    {//is in count down phase
+                     //Debug.Log("adding count down for event: " + ev.name);
+                        countDownEvents.Add(ev);
+                    }
                 }
             }
         }
@@ -209,21 +228,37 @@ public class GameEventManager : NetworkBehaviour
         }
     }
 
+    float timeSinceLastNetCountMessage = 10;
     private void DisplayCountDownFor(GameEvent closestEvent)
     {
+        if (!isServer) {
+            return;
+        }
+
+        timeSinceLastNetCountMessage += Time.deltaTime;
         if (closestEvent.getCountDownValue() >= 0 && closestEvent.UIMessageObject == null && closestEvent.displayMessage && closestEvent.isTimeBased)
         {
             //Debug.Log(closestEvent.name + " : " + closestEvent.getCountDownValue() + " sending message to message board ");
+            //NetworkMessagePasser.add
+            
             UIMessage mess = new UIMessage(closestEvent);
+
+            if (closestEvent.serverOnly && timeSinceLastNetCountMessage >= 1) {
+                NetworkMessagePasser.singleton.addSyncUIMessage(closestEvent.getMessageNoCountDown() + " "+  (closestEvent.getCountDownValue()), false, 1);
+                timeSinceLastNetCountMessage = 0;
+            }
+
+            //UIMessage mess = new UIMessage(closestEvent);
+
         }
     }
 
     public void printEventList()
     {
-        string list = "events in queue: \t";
+        string list = "t = " + clockTime + "events in queue: \t";
         foreach (GameEvent ev in events)
         {
-            list += ev.name + " ; ";
+            list += ev.name + (ev.isTimeBased ? "(" + ev.startTime + " )" : "") + " ; ";
         }
         Debug.Log(list);
     }

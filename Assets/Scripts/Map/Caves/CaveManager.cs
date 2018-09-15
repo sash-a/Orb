@@ -292,7 +292,8 @@ public class CaveManager : NetworkBehaviour
     {
         try
         {
-            new UIMessage("digging caves 1/2", 3f);
+            //new UIMessage("digging caves 1/2", 3f);
+            NetworkMessagePasser.singleton.addSyncUIMessage("digging caves 1/2", true, 5);
         }
         catch { }
 
@@ -420,7 +421,8 @@ public class CaveManager : NetworkBehaviour
 
     private static void digNextTier()
     {
-        new UIMessage("digging caves 2/2", 3f);
+        //new UIMessage("digging caves 2/2", 3f);
+        NetworkMessagePasser.singleton.addSyncUIMessage("digging caves 2/2",true,5);
 
 
         foreach (CaveBody body in caves)
@@ -451,6 +453,8 @@ public class CaveManager : NetworkBehaviour
 
     private static void finishDigging()
     {
+        NetworkMessagePasser.singleton.addSyncUIMessage("decorating map", true, 4);
+
         MapManager.manager.doneDigging = true;
         manager.RpcDoneDigging();
         if (MapManager.useHills)
@@ -468,7 +472,7 @@ public class CaveManager : NetworkBehaviour
     [ClientRpc]
     private void RpcDoneDigging()
     {
-        Debug.Log("done digging server = " + isServer);
+        //Debug.Log("done digging server = " + isServer);
         BuildLog.writeLog("done digging server = " + isServer);
 
         MapManager.manager.doneDigging = true;

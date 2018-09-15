@@ -54,7 +54,7 @@ public class grenade : AAttackBehaviour
     [Client]
     public override void attack()
     {
-
+        if (!isServer) return;
         //Explosion effect
         CmdExplosionFX();
         GameObject AOE = (GameObject)Instantiate<UnityEngine.Object>(AOEDamage);

@@ -26,6 +26,9 @@ public class PlayerActions : NetworkBehaviour
     private bool isJumping = false;
     private bool hasDoubleJumped = false;
 
+    PlayerController player;
+
+
     void Start()
     {
         initVars();
@@ -66,8 +69,13 @@ public class PlayerActions : NetworkBehaviour
         health = GetComponent<NetHealth>();
         grav = GetComponent<Gravity>();
         isGroundPlanted = false;
-
-        
+        player = GetComponent<PlayerController>();
+        if (isLocalPlayer)
+        {
+            //Debug.Log("init player name");
+            CmdSetPlayerName(TeamManager.localPlayerName);
+            //player.playerName = TeamManager.localPlayerName;
+        }
     }
 
     void FixedUpdate()
@@ -81,9 +89,10 @@ public class PlayerActions : NetworkBehaviour
         doMovement();
         doRotations();
 
-        if (transform.position.magnitude > MapManager.mapSize * 5)//if you fall out come back in
+        if (transform.position.magnitude > MapManager.mapSize * 3.5f && MapManager.manager != null && MapManager.manager.mapDoneLocally)//if you fall out come back in
         {
-            transform.position = new Vector3(0, -10, 0);
+            //transform.position = new Vector3(0, -10, 0);
+            player.respawnPlayer();
             rb.velocity = Vector3.zero;
         }
 
@@ -96,11 +105,13 @@ public class PlayerActions : NetworkBehaviour
 
         if (grav != null && !grav.inSphere && health!=null && health.getHealth() > 0 && MapManager.manager!=null && MapManager.manager.mapDoneLocally)
         {//should be in sphere but isnt
-            if (Time.time > 125)
+            if (Time.time > 250)
             {//enough time has passed that the origonal spawning must have failed
-                Debug.LogError("having to respawn players manually after 125 seconds from game start");
+                Debug.LogError("having to respawn players manually after 250 seconds from game start");
+                BuildLog.writeLog("having to respawn players manually after 250 seconds from game start");
+
                 grav.inSphere = true;
-                TeamManager.singleton.CmdSpawnPlayers();
+                TeamManager.singleton.CmdSpawnAllPlayers();
             }
         }
     }
@@ -179,5 +190,21 @@ public class PlayerActions : NetworkBehaviour
             isJumping = false;
             hasDoubleJumped = false;
         }
+    }
+
+    [Command]
+   void CmdSetPlayerName(string name) {
+        //Debug.Log("cmd player name");
+
+        RpcSetPlayerName(name);
+        player.setPlayerName(name, isLocalPlayer);
+
+    }
+
+    [ClientRpc]
+    void RpcSetPlayerName(string name) {
+        //Debug.Log("rpc player name");
+
+        player.setPlayerName(name, isLocalPlayer);
     }
 }

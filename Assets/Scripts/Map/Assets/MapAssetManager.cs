@@ -42,7 +42,7 @@ public class MapAssetManager : NetworkBehaviour
     private void genArtifactAltars()
     {
         int count = 0;
-        for (int i = 0; i < MapManager.mapLayers; i++)
+        for (int i = MapManager.mapLayers-1; i >=0; i--)
         {
             if (MapManager.manager.altars.Count >= CaveManager.numAltars)
             {

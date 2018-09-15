@@ -75,5 +75,12 @@ public abstract class GameEvent {
         return message + " " + getCountDownValue();
     }
 
-   
+    internal string getMessageNoCountDown()
+    {
+        return message;
+    }
+
 }
+
+
+

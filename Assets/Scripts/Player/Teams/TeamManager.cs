@@ -11,8 +11,8 @@ public class TeamManager : NetworkBehaviour
     public Team magicians;
     public Team gunners;
 
+    public static string localPlayerName;
     public static TeamManager singleton;
-
     public static PlayerController localPlayer;
 
     public static int playerCount;//incremented by lobby system
@@ -56,7 +56,7 @@ public class TeamManager : NetworkBehaviour
     }
 
     [Command]
-    public void CmdSpawnPlayers()
+    public void CmdSpawnAllPlayers()
     {//should only be spawned server side
         if (!isServer)
         {
@@ -65,11 +65,11 @@ public class TeamManager : NetworkBehaviour
         Debug.Log("spawning players");
         spawnPoints = getFurthestClearings();
 
-        RpcSpawnPlayers(spawnPoints[0], spawnPoints[1]);
+        RpcSpawnAllPlayers(spawnPoints[0], spawnPoints[1]);
     }
 
     [ClientRpc]
-    void RpcSpawnPlayers(Vector3 spawnPoint1, Vector3 spawnPoint2)
+    void RpcSpawnAllPlayers(Vector3 spawnPoint1, Vector3 spawnPoint2)
     {
         magicians.mapSpawnPoint = spawnPoint1;
         gunners.mapSpawnPoint = spawnPoint2;

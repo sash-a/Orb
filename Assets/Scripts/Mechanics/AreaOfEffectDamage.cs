@@ -15,7 +15,7 @@ public class AreaOfEffectDamage : AAttackBehaviour
     public bool damageGunners = false;
     public bool damageMagicians = false;
     public bool damageVoxels = true;
-    bool showVisualisation = false;
+    bool showVisualisation = true;
 
     public float damagePeriod = 0.2f;//period of time between damaging elements
     float timeSinceDamage = 0;
@@ -95,7 +95,6 @@ public class AreaOfEffectDamage : AAttackBehaviour
 
         foreach (RaycastHit nearbyObject in colliders)
         {
-
             if (nearbyObject.collider.tag == "TriVoxel")
             {
                 //Debug.Log("found vox in AOE : " + nearbyObject.collider.gameObject + " damaging by: " + damage*2);
@@ -174,7 +173,7 @@ public class AreaOfEffectDamage : AAttackBehaviour
             if (dist <= radius)
             {
                 Debug.Log("found player in area of effect");
-                player.GetComponent<NetHealth>().RpcDamage(damage);
+                player.GetComponent<NetHealth>().RpcDamage(damage * Time.deltaTime);
             }
         }
     }

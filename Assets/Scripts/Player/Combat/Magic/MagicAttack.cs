@@ -28,10 +28,6 @@ public class MagicAttack : AAttackBehaviour
     [SerializeField] private GameObject telekenObjectPos;
     private GameObject currentTelekeneticVoxel;
 
-    // Force push
-    private bool canCastPush; // True once player can recast forcePush
-    [SerializeField] private float force;
-
     // Effects
     [SerializeField] private ParticleSystem damageFX;
     [SerializeField] private ParticleSystem damageHandFX;
@@ -41,6 +37,8 @@ public class MagicAttack : AAttackBehaviour
     private EnergyBlockEffectSpawner energyBlockEffectSpawner;
     private DestructionEffectSpawner destructionEffectSpawner;
 
+    public GameObject magicGrenadeFX;
+        
     public GameObject damageTextIndicatorEffect;
 
     // Used so that commands are not passed every frame
@@ -73,7 +71,6 @@ public class MagicAttack : AAttackBehaviour
         currentWeapon = 0;
         shieldUp = false;
         isAttacking = false;
-        force = 100;
 
         // Initial weapon selection
         attackStats.changeToDigger();
@@ -131,6 +128,12 @@ public class MagicAttack : AAttackBehaviour
         // Trying to pick up something
         if (Input.GetButtonDown("Use")) pickup();
 
+        // Throw grenade
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            Debug.Log("Spawning grenade");
+            CmdSpawnGrenade();
+        }
 
         //Animation:
         Animation();
@@ -237,10 +240,6 @@ public class MagicAttack : AAttackBehaviour
         {
             isTelekening = false;
             CmdEndTeleken();
-        }
-        else if (attackStats.isForcePush)
-        {
-            canCastPush = true;
         }
         else if (attackStats.isDamage)
         {
@@ -628,6 +627,18 @@ public class MagicAttack : AAttackBehaviour
         {
             currentTelekeneticVoxel.GetComponent<Telekinesis>().throwObject(cam.transform.forward);
         }
+    }
+
+    #endregion
+
+    #region MagicGrenade
+
+    [Command]
+    void CmdSpawnGrenade()
+    {
+        var magicGrenade = Instantiate(magicGrenadeFX, rightHand.position, cam.transform.rotation);
+        magicGrenade.GetComponent<MagicGrenade>().setCaster(gameObject);
+        NetworkServer.Spawn(magicGrenade);
     }
 
     #endregion
