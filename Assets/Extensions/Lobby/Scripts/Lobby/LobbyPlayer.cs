@@ -197,8 +197,10 @@ namespace Prototype.NetworkLobby
         {
             playerName = newName;
             nameInput.text = playerName;
-            TeamManager.localPlayerName = playerName;
-
+            if (isLocalPlayer)
+            {
+                TeamManager.localPlayerName = playerName;
+            }
         }
 
         public void OnMyColor(Color newColor)

@@ -60,14 +60,28 @@ public class GameEventManager : NetworkBehaviour
     [Command]
     public void CmdAddShredEvents()
     {
-        RpcAddShreddingEvents(Network.time);
+        StartCoroutine(sendRedundantAddShredMessages());
     }
 
+    IEnumerator sendRedundantAddShredMessages() {//server sending
+        for (int i = 0; i < 5; i++)
+        {
+            RpcAddShreddingEvents();
+            yield return new WaitForSecondsRealtime(1f);
+        }
+    }
+
+
+    bool addedShreds = false;
     [ClientRpc]
-    void RpcAddShreddingEvents(double netTime)
+    void RpcAddShreddingEvents()//client receiving maybe?
     {
+        if (addedShreds) {
+            return;
+        }
+        addedShreds = true;
         int shreds = 4;
-        double diff = Network.time - netTime; // the latency between the server sending the rpc and this client starting the method
+        //double diff = Network.time - netTime; // the latency between the server sending the rpc and this client starting the method
                                               //clockTime = 0;
         //Debug.Log("adding shredding event to event manager");
 

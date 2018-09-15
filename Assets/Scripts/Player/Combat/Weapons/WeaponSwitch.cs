@@ -29,6 +29,9 @@ public class WeaponSwitch : MonoBehaviour {
             else
             {
                 weapon.gameObject.SetActive(false);
+                if (weapon.gameObject.name.Contains("niper")) {
+                    weapon.gameObject.GetComponent<Scope>().scopedIn = false;
+                }
             }
 
             i++;

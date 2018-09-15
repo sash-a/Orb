@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class InGameTextObject : MonoBehaviour {
-
-
+public class InGameTextObject : MonoBehaviour
+{
     public Transform anchor;
     TextMeshProUGUI text;
     RectTransform pos;
@@ -15,14 +14,17 @@ public class InGameTextObject : MonoBehaviour {
 
     public float size = 1;
 
-
+    public float minTextSize;
+    public float maxTextSize;
 
     // Use this for initialization
-    void Start () {
+    void Start()
+    {
         init();
     }
 
-    void init() {
+    void init()
+    {
         text = GetComponent<TextMeshProUGUI>();
         pos = GetComponent<RectTransform>();
         try
@@ -30,12 +32,16 @@ public class InGameTextObject : MonoBehaviour {
             transform.parent = GameObject.FindGameObjectWithTag("HUD").transform.GetChild(3);
             transform.rotation = GameObject.FindGameObjectWithTag("HUD").transform.rotation;
         }
-        catch { }
+        catch
+        {
+        }
     }
 
-	bool started = false;
+    bool started = false;
+
     // Update is called once per frame
-    void Update () {
+    void Update()
+    {
         if (anchor != null)
         {
             started = true;
@@ -50,22 +56,22 @@ public class InGameTextObject : MonoBehaviour {
             //pos.anchoredPosition.Set(screenPos.x, screenPos.y + 1f);
             // pos.anchoredPosition3D = screenPos;
             pos.transform.position = // screenPos;
-            Camera.main.ViewportToScreenPoint(screenPos);
+                Camera.main.ViewportToScreenPoint(screenPos);
             //pos.z
-            float fontSize = Mathf.Max(Mathf.Min(100, 100/ Mathf.Pow((float)distance/30,3f)), 8);
-            text.fontSize = fontSize* size;
+            float fontSize = Mathf.Max(Mathf.Min(maxTextSize, 100 / Mathf.Pow((float) distance / 30, 3f)), minTextSize);
+            text.fontSize = fontSize * size;
         }
-        else {
-            if (started) {
+        else
+        {
+            if (started)
+            {
                 Destroy(gameObject);
             }
         }
-
-        
-
     }
 
-    public void setValues(Color colour, string uiText, Transform trans) {
+    public void setValues(Color colour, string uiText, Transform trans)
+    {
         init();
         anchor = trans;
         text.text = uiText;

@@ -4090,7 +4090,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   health: 100
-  armour: 50
+  armour: 0
   maxArmour: 100
   maxHealth: 100
 --- !u!114 &114384034673574556
@@ -4169,14 +4169,14 @@ MonoBehaviour:
     name: pistol
     damage: 5
     envDamage: 5
-    range: 60
+    range: 75
     fireRate: 5
     nextTimeToFire: 0
     muzzleFlash: {fileID: 198919756087669810}
     digBeam: {fileID: 0}
     isExplosive: 0
     ammunition:
-      primaryAmmo: 20
+      primaryAmmo: 24
       magazineAmmo: 12
       maxAmmo: 300
       magSize: 12
@@ -4200,14 +4200,14 @@ MonoBehaviour:
     name: assault rifle
     damage: 3
     envDamage: 3
-    range: 70
+    range: 180
     fireRate: 8
     nextTimeToFire: 0
     muzzleFlash: {fileID: 198156763116903948}
     digBeam: {fileID: 0}
     isExplosive: 0
     ammunition:
-      primaryAmmo: 30000
+      primaryAmmo: 60
       magazineAmmo: 30
       maxAmmo: 500
       magSize: 30
@@ -4231,14 +4231,14 @@ MonoBehaviour:
     name: shotgun
     damage: 12
     envDamage: 12
-    range: 30
+    range: 70
     fireRate: 2
     nextTimeToFire: 0
     muzzleFlash: {fileID: 198954621228332998}
     digBeam: {fileID: 0}
     isExplosive: 0
     ammunition:
-      primaryAmmo: 1000
+      primaryAmmo: 12
       magazineAmmo: 6
       maxAmmo: 300
       magSize: 6
@@ -4260,16 +4260,16 @@ MonoBehaviour:
     uiWhealImage: {fileID: 0}
   - shootPos: {fileID: 4520976047990618}
     name: sniper
-    damage: 20
+    damage: 40
     envDamage: 20
-    range: 350
+    range: 500
     fireRate: 1
     nextTimeToFire: 0
     muzzleFlash: {fileID: 198580269505913200}
     digBeam: {fileID: 0}
     isExplosive: 0
     ammunition:
-      primaryAmmo: 60
+      primaryAmmo: 24
       magazineAmmo: 12
       maxAmmo: 100
       magSize: 12
@@ -4388,8 +4388,14 @@ MonoBehaviour:
   boltPrefab: {fileID: 1001148595587118, guid: 85c4b470996871045a81fd44d25e75d0, type: 2}
   boltForce: 200
   animator: {fileID: 95862667050278438}
+  camAngle: 60
   audioSource: {fileID: 82739773511701478}
+  gunShotClip: {fileID: 8300000, guid: 607e004785739c648af51ba8e54941f5, type: 3}
+  reloadClip: {fileID: 8300000, guid: 3c5c1d4d7b9307c458890a4beb12e4ae, type: 3}
   weaponWheel: {fileID: 0}
+  sniperScope: {fileID: 114512659578669254}
+  idealCamAngle: 0
+  weaponCamera: {fileID: 20511666612732806}
 --- !u!114 &114497519043578382
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -4413,10 +4419,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 95862667050278438}
+  scopedIn: 0
   ScopeOverlay: {fileID: 1941547103519624}
-  weaponCamera: {fileID: 1278397054203790}
+  weaponCamera: {fileID: 20511666612732806}
   mainCamera: {fileID: 20162100074544254}
-  zoom: 100
+  isLocalPlayer: 0
+  playerAttack: {fileID: 114406981523820792}
 --- !u!114 &114684309440781596
 MonoBehaviour:
   m_ObjectHideFlags: 1

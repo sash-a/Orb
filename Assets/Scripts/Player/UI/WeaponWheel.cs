@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -78,21 +79,20 @@ public class WeaponWheel : MonoBehaviour
         weapons.weapons[4].uiWhealImage = buyRightIcon;
 
         weapons.equippedWeapons[1].ammoButton.GetComponentInChildren<TextMeshProUGUI>().text =
-            "$" + weapons.equippedWeapons[1].ammunition.cost + 
+            "$" + weapons.equippedWeapons[1].ammunition.cost +
             " (" + weapons.equippedWeapons[1].ammunition.ammoPerPurchase + ")";
 
         weapons.equippedWeapons[1].upgradeButton.GetComponentInChildren<TextMeshProUGUI>().text =
             "$" + weapons.equippedWeapons[1].upgradeCost;
-            
 
 
         weapons.equippedWeapons[2].ammoButton.GetComponentInChildren<TextMeshProUGUI>().text =
-            "$" + weapons.equippedWeapons[2].ammunition.cost + 
+            "$" + weapons.equippedWeapons[2].ammunition.cost +
             " (" + weapons.equippedWeapons[2].ammunition.ammoPerPurchase + ")";
-        
+
         weapons.equippedWeapons[2].upgradeButton.GetComponentInChildren<TextMeshProUGUI>().text =
             "$" + weapons.equippedWeapons[2].upgradeCost;
-        
+
         health.GetComponentInChildren<TextMeshProUGUI>().text = "$" + healthCost;
         armour.GetComponentInChildren<TextMeshProUGUI>().text = "$" + armorCost;
         grenadeAmmo.GetComponentInChildren<TextMeshProUGUI>().text =
@@ -209,6 +209,22 @@ public class WeaponWheel : MonoBehaviour
         {
             rm.useEnergy(armorCost);
             playerHealth.RpcGetArmour(50);
+        }
+    }
+
+    public void purchaseGrenade()
+    {
+        if (rm.getEnergy() >= weapons.grenade.ammunition.cost)
+        {
+            rm.useEnergy(weapons.grenade.ammunition.cost);
+            weapons.grenade.ammunition.setNumGrenades
+            (
+                Mathf.Min
+                (
+                    weapons.grenade.ammunition.getMaxNumGrenades(),
+                    weapons.grenade.ammunition.getNumGrenades() + weapons.grenade.ammunition.ammoPerPurchase
+                )
+            );
         }
     }
 

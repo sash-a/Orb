@@ -30,24 +30,16 @@ public class Portal : MapAsset
 
     private void OnCollisionEnter(Collision collision)
     {
-        // Moved suply room to be found on start
-        player = collision.gameObject;
-        player.transform.position = supplyRoom.transform.position;
-        player.GetComponent<Gravity>().inSphere = false;
-        //StartCoroutine(ReturnPlayer());
-        RespawnPlayer spawn = new RespawnPlayer(TeamManager.localPlayer, GameEventManager.clockTime + supplyTime);
-        GameEventManager.singleton.addEvent(spawn);
+        if (collision.gameObject.name.Contains("unner"))
+        {
+            // Moved suply room to be found on start
+            player = collision.gameObject;
+            player.transform.position = supplyRoom.transform.position;
+            player.GetComponent<Gravity>().inSphere = false;
+            //StartCoroutine(ReturnPlayer());
+            RespawnPlayer spawn = new RespawnPlayer(TeamManager.localPlayer, GameEventManager.clockTime + supplyTime);
+            GameEventManager.singleton.addEvent(spawn);
+        }
     }
 
-    IEnumerator ReturnPlayer()
-    {
-        yield return new WaitForSeconds(supplyTime);
-        try
-        {
-            player.transform.position = new Vector3(0, 40, 0);
-            player.GetComponent<Gravity>().inSphere = true;
-            NetworkServer.Destroy(gameObject);
-        }
-        catch { /* ignored */ }
-    }
 }

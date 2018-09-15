@@ -1,73 +1,79 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class Scope : MonoBehaviour {
 
     public Animator animator;
-    private bool scopedIn = false;
+    public bool scopedIn = false;
 
     public GameObject ScopeOverlay;
-    public GameObject weaponCamera;
+    public Camera weaponCamera;
 
     public Camera mainCamera;
     //public Camera weaponCam;
-    public float zoom = 100f;
-    private float normalZoom;
 
-private void Update()
+    public bool isLocalPlayer=false;
+
+   public WeaponAttack playerAttack;
+
+    private void Start()
     {
-        if(Input.GetButtonDown("Fire2"))
-        {
-            scopedIn = !scopedIn;
-            
-            if(scopedIn && !animator.GetBool("isReloading") && !Input.GetKey(KeyCode.LeftShift))
-            {
-               onScoped();
-            }
-            else
-            {
-                onUnscoped();
-            }
-           
+        //weaponCamera.SetActive(false);
+        if (mainCamera == null) {
+            Debug.LogError("no main camera attached to sniper scsope script");
         }
-
-        if (scopedIn)
-        {
-            if (animator.GetBool("isReloading") || Input.GetKey(KeyCode.LeftShift))
-            {
-                onUnscoped();
-                scopedIn = false;
-            }
-        }
-        
-       
     }
 
-    void onUnscoped()
+    private void Update()
+    {
+
+        if (!isLocalPlayer) {
+            ScopeOverlay.SetActive(false);
+            weaponCamera.gameObject.SetActive(false);
+            return;
+        }
+
+        weaponCamera.fieldOfView = playerAttack.camAngle;
+        Camera.main.fieldOfView = playerAttack.camAngle;
+        mainCamera.fieldOfView = playerAttack.camAngle;
+
+        if (animator.GetBool("isReloading") || Input.GetKey(KeyCode.LeftShift) || !Input.GetButton("Fire2"))
+        {//unscope
+            unscoped();
+            scopedIn = false;
+        }
+        else {
+            scoped();
+            scopedIn = true;
+        }
+
+        //Debug.Log("sniper scoped: " + scopedIn);
+    }
+
+    void unscoped()
     {
         //remove scope image
         ScopeOverlay.SetActive(false);
         //enables camera that sees player
-        weaponCamera.SetActive(true);
+        weaponCamera.gameObject.SetActive(true);
         //reset zoom
-        mainCamera.fieldOfView = normalZoom;
     }
 
-    void onScoped()
+    void scoped()
     {
         //display scope picture
         ScopeOverlay.SetActive(true);
         //disable camera that sees player (when scoping)
-        weaponCamera.SetActive(false);
-        //zooming in (and saving normal view)
-        normalZoom = mainCamera.fieldOfView;
-        mainCamera.fieldOfView = zoom;
+        weaponCamera.gameObject.SetActive(false);
+        //mainCamera.fieldOfView;
+
     }
 
     private void OnDisable()
     {
-        onUnscoped();
+        unscoped();
         scopedIn = false;
     }
 

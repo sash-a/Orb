@@ -30,8 +30,13 @@ public class TextDamageIndicator : MonoBehaviour
         timeElapsed += Time.deltaTime;
     }
 
-    public void setUp(int damage)
+    public void setUp(int damage, bool isHealing = false, bool isHeadShot = false)
     {
         damageAmount.text = damage + "";
+
+        if (isHeadShot)
+            damageAmount.color = Color.red;
+        else if (isHealing)
+            damageAmount.color = Color.green;
     }
 }

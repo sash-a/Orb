@@ -38,7 +38,7 @@ public class MagicAttack : AAttackBehaviour
     private DestructionEffectSpawner destructionEffectSpawner;
 
     public GameObject magicGrenadeFX;
-        
+
     public GameObject damageTextIndicatorEffect;
 
     // Used so that commands are not passed every frame
@@ -56,6 +56,9 @@ public class MagicAttack : AAttackBehaviour
 
     //Animation:
     public Animator animator;
+    PlayerController player;
+    float idealLookSensitivity;
+    float telekenesisLookSensSlowDown = 0.4f;
 
     #endregion
 
@@ -67,6 +70,8 @@ public class MagicAttack : AAttackBehaviour
         resourceManager = GetComponent<ResourceManager>();
         energyBlockEffectSpawner = GetComponent<EnergyBlockEffectSpawner>();
         destructionEffectSpawner = GetComponent<DestructionEffectSpawner>();
+        player = GetComponent<PlayerController>();
+        idealLookSensitivity = player.lookSensitivityBase;
 
         currentWeapon = 0;
         shieldUp = false;
@@ -131,12 +136,24 @@ public class MagicAttack : AAttackBehaviour
         // Throw grenade
         if (Input.GetKeyDown(KeyCode.G))
         {
-            Debug.Log("Spawning grenade");
+            //Debug.Log("Spawning grenade");
             CmdSpawnGrenade();
         }
 
         //Animation:
         Animation();
+
+        if (isTelekening)
+        {
+            idealLookSensitivity = player.lookSensitivityBase * telekenesisLookSensSlowDown;
+        }
+        else
+        {
+            idealLookSensitivity = idealLookSensitivity = player.lookSensitivityBase;
+        }
+
+        player.lookSens += (idealLookSensitivity - player.lookSens) * 0.25f;
+        //Debug.Log("is tele: " + isTelekening + "  look sense: " + player.lookSens);
     }
 
     void Animation()
@@ -170,19 +187,19 @@ public class MagicAttack : AAttackBehaviour
                 attackStats.telekenRange, mask))
                 return;
 
-            Debug.Log(hitFromCam.collider.transform.root.name + " " + hitFromCam.collider.transform.root.tag);
+            //Debug.Log(hitFromCam.collider.transform.root.name + " " + hitFromCam.collider.transform.root.tag);
 
             if (!hitFromCam.collider.CompareTag(VOXEL_TAG) &&
                 !hitFromCam.collider.transform.root.CompareTag(PLAYER_TAG)) return;
 
-            Debug.Log("Through first if");
- 
+            //Debug.Log("Through first if");
+
             if (hitFromCam.collider.CompareTag(VOXEL_TAG))
             {
                 Voxel voxel = hitFromCam.collider.gameObject.GetComponent<Voxel>();
                 if (voxel == null)
                 {
-                    Debug.LogError("Voxel doesn't have voxel scipt");
+                    //Debug.LogError("Voxel doesn't have voxel scipt");
                     return;
                 }
 
@@ -190,14 +207,17 @@ public class MagicAttack : AAttackBehaviour
 
                 if (voxel.shatterLevel >= 1)
                 {
-                    Debug.Log("Sub");
+                    //Debug.Log("Sub");
                     CmdVoxelTeleken(voxel.columnID, voxel.layer, voxel.subVoxelID);
                 }
                 else
                 {
-                    Debug.Log("not sub");
+                    //Debug.Log("not sub");
                     CmdVoxelTeleken(voxel.columnID, voxel.layer, "NOTSUB");
                 }
+
+
+                //decrease look sense
             }
             else // Is player
             {
@@ -240,6 +260,7 @@ public class MagicAttack : AAttackBehaviour
         {
             isTelekening = false;
             CmdEndTeleken();
+            //restore look sens
         }
         else if (attackStats.isDamage)
         {
@@ -459,7 +480,7 @@ public class MagicAttack : AAttackBehaviour
             var character = rootTransform.gameObject.GetComponent<Identifier>().typePrefix;
             if (character == Identifier.magicianType) // Heal
             {
-                createDamageText(rootTransform, attackStats.heal);
+                createDamageText(rootTransform, attackStats.heal, true);
                 CmdPlayerAttacked(rootTransform.name, -attackStats.heal);
             }
             else // Damage
@@ -595,7 +616,7 @@ public class MagicAttack : AAttackBehaviour
 
         var voxel = currentTelekeneticVoxel.GetComponent<Voxel>();
         // Creating the voxels below
-        Debug.Log("Show neighbours " + (subID == "NOTSUB"));
+        //Debug.Log("Show neighbours " + (subID == "NOTSUB"));
         voxel.showNeighbours(subID == "NOTSUB");
 
         // Setting up rigidbody
@@ -617,7 +638,7 @@ public class MagicAttack : AAttackBehaviour
 
         var tele = currentTelekeneticVoxel.GetComponent<Telekinesis>();
         tele.enabled = true;
-        tele.setUp(telekenObjectPos.transform, Telekinesis.VOXEL, GetComponent<Identifier>().id);
+        tele.setUp(telekenObjectPos.transform, Telekinesis.VOXEL, GetComponent<Identifier>().id , isServer);
     }
 
     [Command]
@@ -736,14 +757,14 @@ public class MagicAttack : AAttackBehaviour
 
     #endregion
 
-    private void createDamageText(Transform hit, float damage)
+    private void createDamageText(Transform hit, float damage, bool isHealing = false, bool isHeadshot = false)
     {
         Instantiate
         (
             damageTextIndicatorEffect,
             hit.position + hit.up * 10,
             hit.rotation
-        ).GetComponent<TextDamageIndicator>().setUp((int) damage);
+        ).GetComponent<TextDamageIndicator>().setUp((int) damage, isHealing, isHeadshot);
     }
 
     #endregion

@@ -45,15 +45,22 @@ public class WeaponAttack : AAttackBehaviour
     private bool isShooting = false;
     private bool isAiming = false;
 
-    float camAngle = 60;
-    float camZoomSpeed = 0.5f;
+    public float camAngle = 60;
+    float camZoomSpeed = 0.4f;
 
     float grenadeHoldLength = 0;
 
     //Sound:
     public AudioSource audioSource;
+    public AudioClip gunShotClip;
+    public AudioClip reloadClip;
 
     public WeaponWheel weaponWheel;
+
+    public Scope sniperScope;
+    public int idealCamAngle;
+    public Camera weaponCamera;
+
 
     void Start()
     {
@@ -64,6 +71,15 @@ public class WeaponAttack : AAttackBehaviour
         equippedWeapons.Add(weapons[1]); // Pistol
         equippedWeapons.Add(weapons[2]); // Assalt rifle
         equippedWeapons.Add(weapons[6]); // Empty special
+
+        if (sniperScope != null)
+        {
+            sniperScope.isLocalPlayer = isLocalPlayer;
+        }
+        else
+        {
+            Debug.LogError("no sniper scope script attached to gunner weapon attack");
+        }
     }
 
     private void Update()
@@ -87,7 +103,7 @@ public class WeaponAttack : AAttackBehaviour
 
         var scroll = Input.GetAxis("Mouse ScrollWheel");
         //scroll up changes weapons
-        if (scroll < 0f && isLocalPlayer) 
+        if (scroll < 0f && isLocalPlayer)
         {
             if (equippedWeapon >= equippedWeapons.Count - 1)
             {
@@ -131,13 +147,15 @@ public class WeaponAttack : AAttackBehaviour
         }
 
         //Aiming
-        int idealCamAngle;
         float idealLookSensitivity;
 
-        if (Input.GetButton("Fire2") && !isReloading && !Input.GetKey(KeyCode.LeftShift) && weapons[selectedWeapon].name != WeaponType.SNIPER)
+        if (Input.GetButton("Fire2") && !isReloading && !Input.GetKey(KeyCode.LeftShift) )
         {
-            isAiming = true;
-            idealCamAngle = 40;
+            if (weapons[selectedWeapon].name != WeaponType.SNIPER)
+            {
+                isAiming = true;
+            }
+            idealCamAngle = sniperScope.scopedIn ? 25 : 40;
             idealLookSensitivity = player.lookSensitivityBase * 0.28f;
 
         }
@@ -150,6 +168,7 @@ public class WeaponAttack : AAttackBehaviour
 
         camAngle = camAngle + (idealCamAngle - camAngle) * camZoomSpeed;
         Camera.main.fieldOfView = camAngle;
+        weaponCamera.fieldOfView = camAngle;
         player.lookSens += (idealLookSensitivity - player.lookSens) * camZoomSpeed;
 
         //Debug.Log("cam angle: " + cam.fieldOfView);
@@ -174,7 +193,7 @@ public class WeaponAttack : AAttackBehaviour
 
                 //wait for grenade animation to reach apex of throw
                 //Debug.Log("throwing grenade with hold length = " + grenadeHoldLength);
-                StartCoroutine(throwGrenade(70 + 250 * grenadeHoldLength));
+                StartCoroutine(throwGrenade(150 + 215 * grenadeHoldLength));
                 grenadeHoldLength = 0;
             }
 
@@ -189,7 +208,8 @@ public class WeaponAttack : AAttackBehaviour
         Animation();
     }
 
-    IEnumerator throwGrenade(float throwForce) {
+    IEnumerator throwGrenade(float throwForce)
+    {
         isThrowingGrenade = true;
         animator.SetTrigger("throwGrenade");
         //Debug.Log(isThrowingGrenade);
@@ -239,17 +259,34 @@ public class WeaponAttack : AAttackBehaviour
         animator.SetBool("isAiming", isAiming);
     }
 
+    private AudioClip MakeSubclip(AudioClip clip, float start, float stop)
+    {
+        //Create a new audio clip
+        int frequency = clip.frequency;
+        float timeLength = stop - start;
+        int samplesLength = (int)(frequency * timeLength);
+        AudioClip newClip = AudioClip.Create(clip.name + "-sub", samplesLength, 1, frequency, false);
+        //Create a temporary buffer for the samples
+        float[] data = new float[samplesLength];
+        //Get the data from the original clip
+        clip.GetData(data, (int)(frequency * start));
+        //Transfer the data to the new clip
+        newClip.SetData(data, 0);
+        //Return the sub clip
+        return newClip;
+    }
+
     [Command]
     public void CmdthrowGrenade(float throwForce)
     {
-        Debug.Log("throwing grenade with throwForce: " + throwForce);
-        GameObject grenade =  Instantiate(grenadePrefab, grenadeSpawn.transform.position, Camera.main.transform.rotation);
+        //Debug.Log("throwing grenade with throwForce: " + throwForce);
+        GameObject grenade = Instantiate(grenadePrefab, grenadeSpawn.transform.position, Camera.main.transform.rotation);
         Rigidbody rb = grenade.GetComponent<Rigidbody>();
         rb.AddForce(cam.transform.forward * throwForce, ForceMode.VelocityChange);
         NetworkServer.Spawn(grenade);
     }
 
- 
+
     [Command]
     public void CmdShootBolt()
     {
@@ -271,22 +308,24 @@ public class WeaponAttack : AAttackBehaviour
     {
         if (A.getMagAmmo() != A.getMagSize() && A.getPrimaryAmmo() != 0)
         {
+            audioSource.PlayOneShot(reloadClip, 0.7f);
+
             resourceManager.reloadMagazine(A.getMagSize() - A.getMagAmmo(), A);
 
             isReloading = true;
             //wait length of animation (3.3 seconds)
             yield return new WaitForSeconds(3.3f);
             isReloading = false;
+
         }
     }
 
     [Client]
     public override void attack()
     {
-        if (isShooting == true)
-        {
-            audioSource.Play();
-        }
+        //audioSource.pitch = 0.5f;
+        audioSource.PlayOneShot(gunShotClip, 0.7f);
+        //audioSource.pitch = 1;
 
         if (!MapManager.manager.mapDoneLocally)
         {

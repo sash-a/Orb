@@ -65,12 +65,26 @@ public class TeamManager : NetworkBehaviour
         Debug.Log("spawning players");
         spawnPoints = getFurthestClearings();
 
-        RpcSpawnAllPlayers(spawnPoints[0], spawnPoints[1]);
+        StartCoroutine(sendRedundantSpawnMessages(spawnPoints[0], spawnPoints[1]));
     }
 
+    IEnumerator sendRedundantSpawnMessages(Vector3 spawnPoint1, Vector3 spawnPoint2) {
+        for (int i = 0; i < 5; i++)
+        {
+            RpcSpawnAllPlayers(spawnPoints[0], spawnPoints[1]);
+            yield return new WaitForSecondsRealtime(1f);
+        }
+    }
+
+    bool spawned = false;
     [ClientRpc]
     void RpcSpawnAllPlayers(Vector3 spawnPoint1, Vector3 spawnPoint2)
     {
+        if (spawned) {
+            return;
+        }
+        spawned = true;
+
         magicians.mapSpawnPoint = spawnPoint1;
         gunners.mapSpawnPoint = spawnPoint2;
      

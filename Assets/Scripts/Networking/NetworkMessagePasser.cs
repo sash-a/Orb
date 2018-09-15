@@ -43,7 +43,7 @@ public class NetworkMessagePasser : NetworkBehaviour
         if (MapManager.manager != null && MapManager.manager.mapDoneLocally && !informedMapDoneLocally)
         {
             informedMapDoneLocally = true;
-            Debug.Log("Map done locally (called on player)");
+            //Debug.Log("Map done locally (called on player)");
             CmdInformMapDoneLocally();
             //this.enabled = false;
         }
@@ -59,7 +59,7 @@ public class NetworkMessagePasser : NetworkBehaviour
     [Command]
     void CmdInformMapDoneLocally()
     {
-        Debug.Log("Player telling server map done");
+        //Debug.Log("Player telling server map done");
         GameEventManager.singleton.passMessage("waitForMapCompletion", "mapCompleted");
         //Destroy(this);
     }
