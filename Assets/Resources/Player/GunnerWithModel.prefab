@@ -888,7 +888,7 @@ GameObject:
   - component: {fileID: 4863756695148410}
   - component: {fileID: 136882092115799786}
   m_Layer: 8
-  m_Name: mixamorig:Head
+  m_Name: Head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4424,7 +4424,7 @@ MonoBehaviour:
   weaponCamera: {fileID: 20511666612732806}
   mainCamera: {fileID: 20162100074544254}
   isLocalPlayer: 0
-  playerAttack: {fileID: 114406981523820792}
+  playerAttack: {fileID: 0}
 --- !u!114 &114684309440781596
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -4455,6 +4455,7 @@ MonoBehaviour:
   - {fileID: 20162100074544254}
   - {fileID: 81588149550913254}
   - {fileID: 114684309440781596}
+  - {fileID: 20511666612732806}
   dontDrawLayerName: DontDraw
   dontChangeLayerName: EnvColliders
   playerGraphics: {fileID: 1493828227181294}

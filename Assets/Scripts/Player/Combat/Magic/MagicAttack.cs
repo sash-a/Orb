@@ -475,6 +475,7 @@ public class MagicAttack : AAttackBehaviour
             return; // This should never return
 
         var rootTransform = hitFromHand.collider.transform.root;
+
         if (rootTransform.CompareTag(PLAYER_TAG))
         {
             var character = rootTransform.gameObject.GetComponent<Identifier>().typePrefix;
@@ -485,8 +486,13 @@ public class MagicAttack : AAttackBehaviour
             }
             else // Damage
             {
-                createDamageText(rootTransform, attackStats.attackDamage);
-                CmdPlayerAttacked(rootTransform.name, attackStats.attackDamage);
+                Debug.Log("Hit head: " + (hitFromHand.collider.name == "Head"));
+                float damage = hitFromHand.collider.name == "Head"
+                    ? attackStats.attackDamage * attackStats.headshotMultiplier
+                    : attackStats.attackDamage;
+
+                createDamageText(rootTransform, damage, false, hitFromHand.collider.name == "Head");
+                CmdPlayerAttacked(rootTransform.name, damage);
             }
         }
         else if (hitFromHand.collider.CompareTag(VOXEL_TAG))
@@ -638,7 +644,7 @@ public class MagicAttack : AAttackBehaviour
 
         var tele = currentTelekeneticVoxel.GetComponent<Telekinesis>();
         tele.enabled = true;
-        tele.setUp(telekenObjectPos.transform, Telekinesis.VOXEL, GetComponent<Identifier>().id , isServer);
+        tele.setUp(telekenObjectPos.transform, Telekinesis.VOXEL, GetComponent<Identifier>().id, isServer);
     }
 
     [Command]

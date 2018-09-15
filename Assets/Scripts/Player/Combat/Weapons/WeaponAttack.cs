@@ -149,15 +149,15 @@ public class WeaponAttack : AAttackBehaviour
         //Aiming
         float idealLookSensitivity;
 
-        if (Input.GetButton("Fire2") && !isReloading && !Input.GetKey(KeyCode.LeftShift) )
+        if (Input.GetButton("Fire2") && !isReloading && !Input.GetKey(KeyCode.LeftShift))
         {
             if (weapons[selectedWeapon].name != WeaponType.SNIPER)
             {
                 isAiming = true;
             }
+
             idealCamAngle = sniperScope.scopedIn ? 25 : 40;
             idealLookSensitivity = player.lookSensitivityBase * 0.28f;
-
         }
         else
         {
@@ -182,22 +182,23 @@ public class WeaponAttack : AAttackBehaviour
 
         //NB: This method will only work if grenades is last item in weapons array
         if (!isShooting && !isReloading && grenade.ammunition.getNumGrenades() > 0 && isThrowingGrenade == false)
-        {//ready to throw grenade
-            if (Input.GetKey(KeyCode.G))//hold
+        {
+            //ready to throw grenade
+            if (Input.GetKey(KeyCode.G)) //hold
             {
                 grenadeHoldLength += Time.deltaTime;
                 grenadeHoldLength = Mathf.Min(grenadeHoldLength, 2);
             }
+
             if (Input.GetKeyUp(KeyCode.G))
-            {//throw
+            {
+                //throw
 
                 //wait for grenade animation to reach apex of throw
                 //Debug.Log("throwing grenade with hold length = " + grenadeHoldLength);
                 StartCoroutine(throwGrenade(150 + 215 * grenadeHoldLength));
                 grenadeHoldLength = 0;
             }
-
-
         }
         else
         {
@@ -236,7 +237,8 @@ public class WeaponAttack : AAttackBehaviour
             isCarryingPistol = false;
         }
 
-        if (Input.GetButton("Fire1") && weapons[selectedWeapon].ammunition.getMagAmmo() != 0 && !isReloading && !Input.GetKey(KeyCode.LeftShift))
+        if (Input.GetButton("Fire1") && weapons[selectedWeapon].ammunition.getMagAmmo() != 0 && !isReloading &&
+            !Input.GetKey(KeyCode.LeftShift))
         {
             isShooting = true;
         }
@@ -251,7 +253,6 @@ public class WeaponAttack : AAttackBehaviour
         }
 
 
-
         animator.SetBool("isCarryingPistol", isCarryingPistol);
         animator.SetBool("isReloading", isReloading);
         animator.SetBool("isThrowingGrenade", isThrowingGrenade);
@@ -264,12 +265,12 @@ public class WeaponAttack : AAttackBehaviour
         //Create a new audio clip
         int frequency = clip.frequency;
         float timeLength = stop - start;
-        int samplesLength = (int)(frequency * timeLength);
+        int samplesLength = (int) (frequency * timeLength);
         AudioClip newClip = AudioClip.Create(clip.name + "-sub", samplesLength, 1, frequency, false);
         //Create a temporary buffer for the samples
         float[] data = new float[samplesLength];
         //Get the data from the original clip
-        clip.GetData(data, (int)(frequency * start));
+        clip.GetData(data, (int) (frequency * start));
         //Transfer the data to the new clip
         newClip.SetData(data, 0);
         //Return the sub clip
@@ -280,7 +281,8 @@ public class WeaponAttack : AAttackBehaviour
     public void CmdthrowGrenade(float throwForce)
     {
         //Debug.Log("throwing grenade with throwForce: " + throwForce);
-        GameObject grenade = Instantiate(grenadePrefab, grenadeSpawn.transform.position, Camera.main.transform.rotation);
+        GameObject grenade =
+            Instantiate(grenadePrefab, grenadeSpawn.transform.position, Camera.main.transform.rotation);
         Rigidbody rb = grenade.GetComponent<Rigidbody>();
         rb.AddForce(cam.transform.forward * throwForce, ForceMode.VelocityChange);
         NetworkServer.Spawn(grenade);
@@ -316,7 +318,6 @@ public class WeaponAttack : AAttackBehaviour
             //wait length of animation (3.3 seconds)
             yield return new WaitForSeconds(3.3f);
             isReloading = false;
-
         }
     }
 
@@ -375,7 +376,11 @@ public class WeaponAttack : AAttackBehaviour
             var rootTransform = hitFromGun.collider.transform.root;
             if (rootTransform.CompareTag(PLAYER_TAG))
             {
-                createDamageText(rootTransform, weapons[selectedWeapon].damage);
+                float damage = hitFromGun.collider.name == "Head"
+                    ? weapons[selectedWeapon].damage * WeaponType.headshotMultiplier
+                    : weapons[selectedWeapon].damage;
+
+                createDamageText(rootTransform, damage, hitFromGun.collider.name == "Head");
                 CmdPlayerAttacked(rootTransform.name, weapons[selectedWeapon].damage);
             }
             else //if not a player
@@ -412,7 +417,7 @@ public class WeaponAttack : AAttackBehaviour
 
             if (hitFromGun.collider.CompareTag("Shield"))
             {
-                createDamageText(hitFromGun.transform, weapons[selectedWeapon].damage);
+                createDamageText(hitFromGun.transform, weapons[selectedWeapon].damage, false);
                 CmdShieldHit(hitFromGun.collider.gameObject, weapons[selectedWeapon].damage);
             }
         }
@@ -422,14 +427,14 @@ public class WeaponAttack : AAttackBehaviour
         }
     }
 
-    private void createDamageText(Transform hit, float damage)
+    private void createDamageText(Transform hit, float damage, bool isHeadShot)
     {
         Instantiate
         (
             damageTextIndicatorEffect,
             hit.position + hit.up * 10,
             hit.rotation
-        ).GetComponent<TextDamageIndicator>().setUp((int)damage);
+        ).GetComponent<TextDamageIndicator>().setUp((int) damage, false, isHeadShot);
     }
 
     public override void endAttack()

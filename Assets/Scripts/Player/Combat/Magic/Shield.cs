@@ -50,7 +50,7 @@ public class Shield : NetworkBehaviour
         }
         else
         {
-            Debug.LogError("null UI component");
+            Debug.LogError("Caster's UI is null");
         }
 
         // Move camera

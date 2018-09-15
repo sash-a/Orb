@@ -17,11 +17,11 @@ public class WeaponType
     public static readonly string EMPTY_SPECIAL = "Empty_Special";
 
     #endregion
-    
+
     #region WeaponStats
 
     public Transform shootPos;
-    
+
     public string name;
     public float damage;
     public float envDamage;
@@ -58,12 +58,14 @@ public class WeaponType
     public int upgradeCost;
     public int baseCost;
 
+    public static float headshotMultiplier = 1.5f;
+
     #endregion
 
     public Sprite uiEquippedBarImage;
     public Sprite uiWhealSprite;
     public Image uiWhealImage;
-    
+
     //digging tool constructor 
     public WeaponType(string name, float damage, float envDamage, float range, float fireRate, ParticleSystem digBeam)
     {
@@ -120,11 +122,11 @@ public class WeaponType
             return;
 
         level++;
-        
+
         modifier *= Mathf.Pow(1.2f, level);
         upgradeCost *= (int) Mathf.Pow(2, level);
-        
-        
+
+
         // TODO all relevant variables * modifier
     }
 }
