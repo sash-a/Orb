@@ -391,9 +391,10 @@ public class WeaponAttack : AAttackBehaviour
                 return; // Should never return
             }
 
+
             // if we hit a player
             var rootTransform = hitFromGun.collider.transform.root;
-            if (rootTransform.CompareTag(PLAYER_TAG))
+            if (rootTransform.CompareTag(PLAYER_TAG) && !hitFromGun.collider.CompareTag("Shield"))
             {
                 float damage = hitFromGun.collider.name == "Head"
                     ? weapons[selectedWeapon].damage * WeaponType.headshotMultiplier
@@ -437,7 +438,7 @@ public class WeaponAttack : AAttackBehaviour
 
             if (hitFromGun.collider.CompareTag("Shield"))
             {
-                createDamageText(hitFromGun.transform, weapons[selectedWeapon].damage, false);
+                createDamageText(hitFromGun.transform, weapons[selectedWeapon].damage, false, true);
                 CmdShieldHit(hitFromGun.collider.gameObject, weapons[selectedWeapon].damage);
             }
         }
@@ -447,14 +448,16 @@ public class WeaponAttack : AAttackBehaviour
         }
     }
 
-    private void createDamageText(Transform hit, float damage, bool isHeadShot)
+    private void createDamageText(Transform hit, float damage, bool isHeadShot, bool isShield = false)
     {
+        float posUp = isShield ? 10 : 15;
+
         Instantiate
         (
             damageTextIndicatorEffect,
-            hit.position + hit.up * 10,
+            hit.position + hit.up * posUp,
             hit.rotation
-        ).GetComponent<TextDamageIndicator>().setUp((int) damage, false, isHeadShot);
+        ).GetComponent<TextDamageIndicator>().setUp((int) damage, false, isHeadShot, isShield);
     }
 
     public override void endAttack()

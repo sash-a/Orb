@@ -32,7 +32,7 @@ public class Shield : NetworkBehaviour
         gameObject.layer = LayerMask.NameToLayer(PlayerSetup.REMOTE_LAYER_NAME);
     }
 
-    public void setCaster(Identifier id, float maxHealth)
+    public void setCaster(Identifier id, float maxHealth, float currentHealth)
     {
         caster = id;
 
@@ -50,6 +50,7 @@ public class Shield : NetworkBehaviour
 
         var netHealth = GetComponent<NetHealth>();
         netHealth.setInitialHealth(maxHealth);
+        netHealth.setHealth(currentHealth);
         if (caster.UI != null)
         {
             ((MagicianUI) caster.UI).onShieldUp(netHealth); // server error on cast

@@ -8,7 +8,7 @@ using UnityEngine.Networking;
 //Colab is a bitch
 public class MapAsset : NetworkBehaviour
 {
-    public enum Type { MAIN, SECONDARY, GRASS, ALTAR, CRITTERSPANWER, RESPAWNPORTAL };
+    public enum Type { MAIN, SECONDARY, ALTAR, CRITTERSPANWER, RESPAWNPORTAL };
     [SyncVar] Type type;
 
 
@@ -86,7 +86,7 @@ public class MapAsset : NetworkBehaviour
         {
             ass = spawnMainAsset(vox, side, tp);
         }
-        if (tp.Equals(Type.GRASS))
+        if (tp.Equals(Type.SECONDARY))
         {
             ass = spawnGrass(vox, side);
         }
@@ -111,9 +111,27 @@ public class MapAsset : NetworkBehaviour
 
     private static GameObject spawnGrass(Voxel vox, int side)
     {
-        string pref = (vox.layer == 0 ? "Prefabs/Map/MapAssets/Grass/Grass" : "Prefabs/Map/MapAssets/Grass/CaveGrass");
-        GameObject grass = (GameObject)Instantiate(Resources.Load<UnityEngine.Object>(pref), vox.worldCentreOfObject, Quaternion.identity);
-        grass.GetComponent<MapAsset>().type = Type.GRASS;
+        System.Random rand = new System.Random(vox.layer * vox.columnID + vox.columnID);
+        GameObject model = null;
+
+
+        string folder = "";
+        if (vox.layer == 0)
+        {
+            folder = "SecondarySurfaceAssets";
+        }
+        else
+        {
+            folder = "SecondaryCaveAssets";
+            //Debug.Log("placing cave floor asset");
+        }
+
+        UnityEngine.Object[] assets = Resources.LoadAll<GameObject>("Prefabs/Map/MapAssets/" + folder);
+        int idx = rand.Next(0, assets.Length);
+        GameObject grass = (GameObject)Instantiate(assets[idx], vox.worldCentreOfObject, Quaternion.identity);
+
+
+        grass.GetComponent<MapAsset>().type = Type.SECONDARY;
         grass.GetComponent<MapAsset>().united = true;
         return grass;
     }
@@ -257,7 +275,7 @@ public class MapAsset : NetworkBehaviour
             return;
         }
 
-        if (type.Equals(Type.GRASS))
+        if (type.Equals(Type.SECONDARY))
         {
             //Debug.Log("transforming grass");
         }
@@ -283,7 +301,7 @@ public class MapAsset : NetworkBehaviour
         Vector3 forward = getFoward(up);
         Vector3 right = Vector3.Cross(forward, up).normalized;
         System.Random rand = new System.Random(voxel.layer * voxel.columnID + voxel.columnID + seedVariable);
-        bool moveAlongFace = (type.Equals(Type.MAIN) && voxel.layer > 0) || type.Equals(Type.GRASS);
+        bool moveAlongFace = (type.Equals(Type.MAIN) && voxel.layer > 0) || type.Equals(Type.SECONDARY);
         if (moveAlongFace)
         {
             //Debug.Log("varying grass pos. pos before:  " + transform.position);
@@ -292,7 +310,7 @@ public class MapAsset : NetworkBehaviour
             //Debug.Log("pos after: " + transform.position);
         }
 
-        bool varySize = type.Equals(Type.MAIN) || type.Equals(Type.GRASS);
+        bool varySize = type.Equals(Type.MAIN) || type.Equals(Type.SECONDARY);
         float size;
         if (varySize)
         {
@@ -371,7 +389,7 @@ public class MapAsset : NetworkBehaviour
 
     private void Update()
     {
-        if ((voxel == null || voxel.isMelted) && type.Equals(Type.GRASS))
+        if ((voxel == null || voxel.isMelted) && type.Equals(Type.SECONDARY))
         {
             //Debug.Log("grass had vox removed - falling: " + falling + " ready: " + ready);
         }
@@ -381,14 +399,14 @@ public class MapAsset : NetworkBehaviour
             if (rb.isKinematic)
             {
                 rb.isKinematic = false;
-                if (type.Equals(Type.GRASS))
+                if (type.Equals(Type.SECONDARY))
                 {
                     //Debug.Log("assets voxel has been deleted");
                 }
             }
             else
             {
-                if (type.Equals(Type.GRASS))
+                if (type.Equals(Type.SECONDARY))
                 {
                     Destroy(gameObject);
                 }

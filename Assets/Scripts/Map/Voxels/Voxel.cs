@@ -44,11 +44,11 @@ public class Voxel : NetworkBehaviour
     public MapAsset mainAsset;
     public HashSet<MapAsset> secondaryAssets;//secondary assets are not network spawned - they do not fall over or collide with the player
 
-    public bool hasEnergy;
+    [SyncVar]  public bool hasEnergy;
     public bool isCaveFloor;
     public bool isCaveCeiling;
     public bool isCaveBorder;
-    public bool isMelted;
+    [SyncVar] public bool isMelted;
     public bool smoothed;
 
     private void Start()
@@ -176,7 +176,6 @@ public class Voxel : NetworkBehaviour
         }
     }
 
-   
 
     public void resetScale()
     {
@@ -199,7 +198,7 @@ public class Voxel : NetworkBehaviour
 
         while (grassLeft > 0 && tries > 0)
         {
-            MapAsset grass = MapAsset.createAsset(this, side, MapAsset.Type.GRASS);
+            MapAsset grass = MapAsset.createAsset(this, side, MapAsset.Type.SECONDARY);
             grass.seedVariable = (grassLeft + 5) * 30 + tries;
             grass.setParent();
             bool farEnough = true;
@@ -1522,5 +1521,18 @@ public class Voxel : NetworkBehaviour
         {
             gameObject.AddComponent<NetworkTransform>();
         }
+    }
+
+    [Command]
+    internal void CmdSetEnergy(bool energy)
+    {
+        RpcSetEnergy(energy);
+        hasEnergy = energy;
+    }
+
+    [ClientRpc]
+    private void RpcSetEnergy(bool energy)
+    {
+        hasEnergy = energy;
     }
 }

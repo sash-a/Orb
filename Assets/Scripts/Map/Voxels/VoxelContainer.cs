@@ -29,80 +29,20 @@ public class VoxelContainer : Voxel
         subVoxels = new ArrayList();
         rand = new System.Random(columnID * layer + columnID);
         isMelted = true;
+        hasEnergy = majorVoxel.hasEnergy;
         shatterLevel = majorVoxel.shatterLevel;
+        shatterCap = majorVoxel.shatterCap;
+
 
         createVoxelContainer(majorVoxel);
 
 
         lastHitRay = majorVoxel.lastHitRay;
         lastHitPosition = majorVoxel.lastHitPosition;
-        if (shatterLevel < MapManager.manager.shatters)
-        {
-            //damageContainer();
-        }
-        //Debug.Log("created container: " + this);
-
+      
     }
 
-    private void Start()
-    {
-        //gameObject.name = "Container";
-    }
-
-
-    private void damageContainer()
-    {
-        //if(v.gameObject.GetComponent<MeshCollider>().)
-        //Debug.Log("casting ray ");
-        RaycastHit hit;
-        bool found = false;
-        if (Physics.Raycast(lastHitRay, out hit))
-        {
-            //Debug.Log("rehit voxel with shatter level: " + hit.collider.gameObject.GetComponent<Voxel>().shatterLevel);
-            Voxel hitVox = hit.collider.gameObject.GetComponent<Voxel>();
-            if (subVoxels.Contains(hitVox))
-            {
-                lastHitPosition = hit.point;
-                hitVox.lastHitPosition = hit.point;
-                //Debug.Log("rehit subvoxel in same voxel");
-                if (shatterLevel < MapManager.manager.shatters - 1)
-                {
-                    //VoxelContainer vc = new VoxelContainer(hitVox);
-                }
-                Destroy(hitVox.gameObject);
-                found = true;
-            }
-
-        }
-        if (!found)
-        {
-            double d = Double.MaxValue;
-            Voxel closest = null;
-            foreach (Voxel v in subVoxels)
-            {
-                if (Vector3.Distance(v.worldCentreOfObject, lastHitPosition) < d)
-                {
-                    d = Vector3.Distance(v.worldCentreOfObject, lastHitPosition);
-                    closest = v;
-                }
-            }
-            if (closest != null)
-            {
-                //Debug.Log("settling for a closest solution");
-                if (shatterLevel < MapManager.manager.shatters - 1)
-                {
-                    //VoxelContainer vc = new VoxelContainer(closest);
-                }
-                Destroy(closest.gameObject);
-            }
-            else
-            {
-                //Debug.Log("couldnt find a closest");
-            }
-        }
-
-    }
-
+   
     public void createVoxelContainer(Voxel majorVoxel)
     {
         if (majorVoxel == null) {
@@ -159,6 +99,9 @@ public class VoxelContainer : Voxel
                 //subVoxelScript.isBottom = subVoxelScript.isBottom;
                 subVoxelScript.subVoxelID = majorVoxel.subVoxelID + "," + i;
                 subVoxelScript.info += "id: " + (subVoxelScript.subVoxelID);
+                if (majorVoxel.hasEnergy) {
+                    //subVoxelScript.CmdSetEnergy(majorVoxel.hasEnergy);
+                }
                 subVoxelScript.hasEnergy = majorVoxel.hasEnergy;
                 subVoxelScript.isCaveFloor = majorVoxel.isCaveFloor;
                 subVoxelScript.isCaveBorder = majorVoxel.isCaveBorder;

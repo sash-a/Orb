@@ -3183,7 +3183,7 @@ MonoBehaviour:
     isForcePush: 0
     isDigger: 0
     manaRegen: 100
-    headshotMultiplier: 0
+    headshotMultiplier: 1.5
     diggerDamage: 5
     diggerEnvDamage: 50
     diggerRange: 30
@@ -3196,7 +3196,8 @@ MonoBehaviour:
     attackMana: 10
     shieldMana: 5
     initialShieldMana: 15
-    shieldHealth: 150
+    maxShieldHealth: 150
+    currentShieldHealth: 150
     telekenMana: 10
     telekenRange: 100
   rightHand: {fileID: 4720825156490352}
@@ -3268,6 +3269,7 @@ MonoBehaviour:
   animator: {fileID: 95638754553782564}
   playerName: 
   playerNameTrans: {fileID: 4316922251517352}
+  spawned: 0
 --- !u!124 &124963876594173656
 Behaviour:
   m_ObjectHideFlags: 1

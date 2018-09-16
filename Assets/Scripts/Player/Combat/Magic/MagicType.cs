@@ -36,7 +36,8 @@ public class MagicType
     // Shield
     public float shieldMana;
     public float initialShieldMana;
-    public float shieldHealth;
+    public float maxShieldHealth;
+    public float currentShieldHealth;
 
     // Teleken
     public float telekenMana;
@@ -104,7 +105,7 @@ public class MagicType
             heal *= 1.8f;
             shieldMana *= 0.8f;
             initialShieldMana *= 1.2f;
-            shieldHealth *= 1.8f;
+            maxShieldHealth *= 1.8f;
 
             new UIMessage("heal speed and shield helth doubled!", 3);
 
@@ -137,7 +138,7 @@ public class MagicType
             heal /= 1.8f;
             shieldMana /= 1.2f;
             initialShieldMana /= 1.2f;
-            shieldHealth /= 1.8f;
+            maxShieldHealth /= 1.8f;
             // TODO shield type/size!
         }
         else if (artifactType == PickUpItem.ItemType.TELEPATH_ARTIFACT)

@@ -129,4 +129,9 @@ public class NetHealth : NetworkBehaviour
     {
         health = Mathf.Min(health + amout, maxHealth);
     }
+
+    public void setHealth(float amount)
+    {
+        health = amount;
+    }
 }

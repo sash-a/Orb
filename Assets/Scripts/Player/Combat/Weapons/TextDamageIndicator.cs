@@ -30,7 +30,7 @@ public class TextDamageIndicator : MonoBehaviour
         timeElapsed += Time.deltaTime;
     }
 
-    public void setUp(int damage, bool isHealing = false, bool isHeadShot = false)
+    public void setUp(int damage, bool isHealing = false, bool isHeadShot = false, bool isShield = false)
     {
         damageAmount.text = damage + "";
 
@@ -38,5 +38,7 @@ public class TextDamageIndicator : MonoBehaviour
             damageAmount.color = Color.red;
         else if (isHealing)
             damageAmount.color = Color.green;
+        else if (isShield) 
+            damageAmount.color = Color.blue;
     }
 }

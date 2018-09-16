@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Networking;
 
 [RequireComponent(typeof(ResourceManager))]
@@ -228,7 +229,6 @@ public class MagicAttack : AAttackBehaviour
                     CmdVoxelTeleken(voxel.columnID, voxel.layer, "NOTSUB");
                 }
 
-
                 //decrease look sense
             }
             else // Is player
@@ -418,6 +418,14 @@ public class MagicAttack : AAttackBehaviour
         // Mana gain
         if (!shieldUp && !isAttacking) resourceManager.gainEnery(attackStats.manaRegen * Time.deltaTime);
 
+        // Shield health gain
+        if (!shieldUp)
+        {
+            attackStats.currentShieldHealth =
+                Math.Min(attackStats.maxShieldHealth, attackStats.currentShieldHealth + Time.deltaTime / 3);
+        }
+
+        
         // Mana drain
         // Dig
         if (isDigging) resourceManager.useEnergy(attackStats.diggerMana * Time.deltaTime);
@@ -453,6 +461,8 @@ public class MagicAttack : AAttackBehaviour
 
         var rootTransform = hitFromHand.collider.transform.root;
 
+        Debug.Log("Hit: " + hitFromHand.collider.tag);
+
         if (hitFromHand.collider.CompareTag(VOXEL_TAG))
         {
             var voxel = hitFromHand.collider.gameObject.GetComponent<Voxel>();
@@ -471,10 +481,15 @@ public class MagicAttack : AAttackBehaviour
                 energyBlockEffectSpawner.spawnBlock();
             }
         }
-        else if (rootTransform.CompareTag(PLAYER_TAG) || hitFromHand.collider.CompareTag("Shield"))
+        else if (rootTransform.CompareTag(PLAYER_TAG) && !hitFromHand.collider.CompareTag("Shield"))
         {
             createDamageText(rootTransform, attackStats.diggerDamage);
-            CmdVoxelDamaged(rootTransform.gameObject, attackStats.diggerDamage);
+            CmdPlayerAttacked(rootTransform.gameObject.GetComponent<Identifier>().id, attackStats.diggerDamage);
+        }
+        else if (hitFromHand.collider.CompareTag("Shield"))
+        {
+            createDamageText(hitFromHand.transform, attackStats.diggerDamage, false, false, true);
+            CmdShieldHit(hitFromHand.transform.gameObject, attackStats.diggerDamage);
         }
     }
 
@@ -497,9 +512,11 @@ public class MagicAttack : AAttackBehaviour
         if (!Physics.Linecast(rightHand.position, hitFromCam.point + 2 * cam.transform.forward, out hitFromHand, mask))
             return; // This should never return
 
+        Debug.Log("Hit: " + hitFromHand.collider.tag);
+
         var rootTransform = hitFromHand.collider.transform.root;
 
-        if (rootTransform.CompareTag(PLAYER_TAG))
+        if (rootTransform.CompareTag(PLAYER_TAG) && !hitFromHand.collider.CompareTag("Shield"))
         {
             var character = rootTransform.gameObject.GetComponent<Identifier>().typePrefix;
             if (character == Identifier.magicianType) // Heal
@@ -524,7 +541,8 @@ public class MagicAttack : AAttackBehaviour
         }
         else if (hitFromHand.collider.CompareTag("Shield"))
         {
-            CmdShieldHit(hitFromHand.collider.gameObject, attackStats.attackShieldDamage * Time.deltaTime);
+            createDamageText(hitFromHand.transform, attackStats.heal, true, false, true);
+            CmdShieldHit(hitFromHand.collider.gameObject, attackStats.heal);
         }
     }
 
@@ -533,9 +551,13 @@ public class MagicAttack : AAttackBehaviour
     public void setUpShield(GameObject shieldInst)
     {
         currentShield = shieldInst.GetComponent<Shield>();
-        currentShield.GetComponent<NetHealth>().setInitialHealth(attackStats.shieldHealth);
+        var netHealth = currentShield.GetComponent<NetHealth>();
+        netHealth.setInitialHealth(attackStats.maxShieldHealth);
+        netHealth.setHealth(attackStats.currentShieldHealth);
+
         // Setting the caster to this magician and setting up UI
-        currentShield.setCaster(GetComponent<Identifier>(), attackStats.shieldHealth);
+        currentShield.setCaster(GetComponent<Identifier>(), attackStats.maxShieldHealth,
+            attackStats.currentShieldHealth);
 
         // Allowing it to move with the player
         currentShield.transform.parent = transform;
@@ -564,7 +586,8 @@ public class MagicAttack : AAttackBehaviour
         GameManager.getObject(shieldID).GetComponent<Shield>().setCaster
         (
             GameManager.getObject(casterID),
-            attackStats.shieldHealth
+            attackStats.maxShieldHealth,
+            attackStats.currentShieldHealth
         );
         GameManager.getObject(shieldID).transform.parent = GameManager.getObject(casterID).transform;
     }
@@ -787,12 +810,14 @@ public class MagicAttack : AAttackBehaviour
 
     #endregion
 
-    private void createDamageText(Transform hit, float damage, bool isHealing = false, bool isHeadshot = false)
+    private void createDamageText(Transform hit, float damage, bool isHealing = false, bool isHeadshot = false,
+        bool isShield = false)
     {
+        float posUp = isShield ? 10 : 15;
         Instantiate
         (
             damageTextIndicatorEffect,
-            hit.position + hit.up * 10,
+            hit.position + hit.up * posUp,
             hit.rotation
         ).GetComponent<TextDamageIndicator>().setUp((int) damage, isHealing, isHeadshot);
     }
