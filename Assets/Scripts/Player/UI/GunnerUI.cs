@@ -54,6 +54,9 @@ public class GunnerUI : PlayerUI
         {
             gunIcons[i].sprite = weapons.equippedWeapons[i].uiEquippedBarImage;
         }
+
+        weaponWheel.SetActive(true);
+        weaponWheel.SetActive(false);
     }
 
     public void setUp(GameObject localPlayer)
@@ -68,6 +71,7 @@ public class GunnerUI : PlayerUI
         health = player.GetComponent<NetHealth>();
         resourceManager = player.GetComponent<ResourceManager>();
         weapons = player.GetComponent<WeaponAttack>();
+        weapons.weaponWheel = weaponWheel.GetComponent<WeaponWheel>();
 
         setHealth(1);
         setShield(1);

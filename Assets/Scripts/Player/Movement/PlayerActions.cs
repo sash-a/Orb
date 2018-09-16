@@ -70,11 +70,17 @@ public class PlayerActions : NetworkBehaviour
         grav = GetComponent<Gravity>();
         isGroundPlanted = false;
         player = GetComponent<PlayerController>();
+    }
+
+    internal void deliverPlayerName()
+    {
         if (isLocalPlayer)
         {
-            //Debug.Log("init player name");
+            Debug.Log("init player name");
             CmdSetPlayerName(TeamManager.localPlayerName);
-            //player.playerName = TeamManager.localPlayerName;
+        }
+        else {
+            Debug.LogError("trying to deliver name from non local player");
         }
     }
 
@@ -92,20 +98,22 @@ public class PlayerActions : NetworkBehaviour
         if (transform.position.magnitude > MapManager.mapSize * 3.5f && MapManager.manager != null && MapManager.manager.mapDoneLocally)//if you fall out come back in
         {
             //transform.position = new Vector3(0, -10, 0);
-            player.respawnPlayer();
+            player.spawnOnMap();
             rb.velocity = Vector3.zero;
         }
 
-        if (grav == null) {
+        if (grav == null)
+        {
             grav = GetComponent<Gravity>();
         }
-        if (health == null) {
+        if (health == null)
+        {
             health = GetComponent<NetHealth>();
         }
 
-        if (grav != null && !grav.inSphere && health!=null && health.getHealth() > 0 && MapManager.manager!=null && MapManager.manager.mapDoneLocally)
+        if (grav != null && !grav.inSphere && health != null && health.getHealth() > 0 && MapManager.manager != null && MapManager.manager.mapDoneLocally && TeamManager.singleton != null && !TeamManager.localPlayer.spawned)
         {//should be in sphere but isnt
-            if (Time.time > 250)
+            if (GameEventManager.clockTime > 250)
             {//enough time has passed that the origonal spawning must have failed
                 Debug.LogError("having to respawn players manually after 250 seconds from game start");
                 BuildLog.writeLog("having to respawn players manually after 250 seconds from game start");
@@ -193,8 +201,9 @@ public class PlayerActions : NetworkBehaviour
     }
 
     [Command]
-   void CmdSetPlayerName(string name) {
-        //Debug.Log("cmd player name");
+    void CmdSetPlayerName(string name)
+    {
+        Debug.Log("cmd player name");
 
         RpcSetPlayerName(name);
         player.setPlayerName(name, isLocalPlayer);
@@ -202,9 +211,24 @@ public class PlayerActions : NetworkBehaviour
     }
 
     [ClientRpc]
-    void RpcSetPlayerName(string name) {
-        //Debug.Log("rpc player name");
-
-        player.setPlayerName(name, isLocalPlayer);
+    void RpcSetPlayerName(string name)
+    {
+        Debug.Log("rpc player name: " + name);
+        if (player == null)
+        {
+            player = GetComponent<PlayerController>();
+            if (player == null)
+            {
+                Debug.LogError("cannot find component player controller from player action script");
+            }
+        }
+        if (name != null)
+        {
+            player.setPlayerName(name, isLocalPlayer);
+        }
+        else
+        {
+            player.setPlayerName(gameObject.name, isLocalPlayer);
+        }
     }
 }

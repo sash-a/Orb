@@ -9,7 +9,8 @@ public class PickUpItem : MonoBehaviour
     public enum Class
     {
         GUNNER,
-        MAGICIAN
+        MAGICIAN,
+        BOTH
     };
 
     public Class itemClass;
@@ -20,6 +21,7 @@ public class PickUpItem : MonoBehaviour
         DAMAGE_ARTIFACT,
         HEALER_ARTIFACT,
         TELEPATH_ARTIFACT,
+        LESSER_ARTIFACT,
         EXPLOSIVE_CROSSBOW
     };
 

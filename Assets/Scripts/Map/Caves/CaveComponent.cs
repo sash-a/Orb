@@ -25,7 +25,7 @@ public abstract class CaveComponent
     {
         digger.layer -= 2;
         CaveBody body = new CaveBody(digger);
-        body.tier = 0;
+        body.tier = digger.tier;
         //Debug.Log("digger finished digging entrance - entrance length: " + Vector3.Distance(MapManager.manager.getPositionOf(0, columnID), digger.transform.position));
     }
 

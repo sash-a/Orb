@@ -656,11 +656,16 @@ public class MapManager : NetworkBehaviour
         {
             foreach (Voxel vox in voxels[i].Values)
             {
+                
                 if (!isDeleted(i, vox.columnID))
                 {
                     //try { 
                     if (Vector3.Distance(vox.worldCentreOfObject, shredOrigin) < nextShredRadius)
                     {
+                        if (vox == null)
+                        {
+                            Debug.LogError("found null voxel in map manager - which hasnt been deleted");
+                        }
                         chunk.addVoxel(vox);
                         count++;
                         center += vox.worldCentreOfObject;
@@ -738,6 +743,11 @@ public class MapManager : NetworkBehaviour
 
         for (int i = 1; i <= shatterLevel; i++)
         {
+            if (v == null)
+            {
+                Debug.LogError("found null voxel looking for subvoxel: " + layer + "," + columnID + "," + subID + " ; failed at level: " + i);
+                break;
+            }
             VoxelContainer vc = v.gameObject.GetComponent<VoxelContainer>();
             int id = -1;
             try

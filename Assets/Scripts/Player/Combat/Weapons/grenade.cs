@@ -9,7 +9,7 @@ public class grenade : AAttackBehaviour
     public float playerBlastRadius = 18f;
     public float mapBlastRadius = 6f;
 
-    public float damage = 10f;
+    public float damage = 100f;
     public float envDamage = 1000f;
 
     float countdown;

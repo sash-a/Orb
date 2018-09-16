@@ -23,6 +23,14 @@ public class GameEventManager : NetworkBehaviour
     private void Start()
     {
         singleton = this;
+        if (events == null)
+        {
+            events = new HashSet<GameEvent>();
+        }
+        if (countDownEvents == null)
+        {
+            countDownEvents = new List<GameEvent>();
+        }
     }
 
     // Use this for initialization
@@ -32,9 +40,13 @@ public class GameEventManager : NetworkBehaviour
 
         //Debug.Log("started game event manager");
         base.OnStartClient();
-        events = new HashSet<GameEvent>();
-
-        countDownEvents = new List<GameEvent>();
+        if (events == null)
+        {
+            events = new HashSet<GameEvent>();
+        }
+        if (countDownEvents == null) {
+            countDownEvents = new List<GameEvent>();
+        }
         namedEvents = new Dictionary<string, GameEvent>();
         singleton = this;
         //StartCoroutine(setUpStartGame());
@@ -159,6 +171,12 @@ public class GameEventManager : NetworkBehaviour
         }
         List<GameEvent> executedEvents = new List<GameEvent>();
         List<GameEvent> removedEvents = new List<GameEvent>();
+
+        if(events == null)
+        {
+            Debug.LogError("null events list");
+            return;
+        }
 
         foreach (GameEvent ev in events)
         {

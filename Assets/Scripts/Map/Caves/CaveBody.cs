@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -27,6 +28,10 @@ public class CaveBody : CaveComponent
         center = Vector3.zero;
         CaveManager.caves.Add(this);
         digger.setScale(10);
+
+        if (tier > 0) {
+            Debug.Log("creating cave with tier = " + tier);
+        }
 
     }
 
@@ -57,9 +62,7 @@ public class CaveBody : CaveComponent
         else
         {//shrink
             if (center == Vector3.zero) {
-                center = digger.transform.position;
-                centerColumnID = digger.colID;
-                centerDepth = digger.layer;
+                arrivedAtCenter();
             }
             if (digger.transform.localScale.magnitude > Digger.minSize)
             {
@@ -78,4 +81,12 @@ public class CaveBody : CaveComponent
 
     }
 
+    private void arrivedAtCenter()
+    {
+        center = digger.transform.position;
+        centerColumnID = digger.colID;
+        centerDepth = digger.layer;
+        //Voxel nextVox = MapManager.manager.voxels[digger.layer][digger.colID];
+
+    }
 }

@@ -14,6 +14,8 @@ public class WeaponAttack : AAttackBehaviour
     public GameObject explosionEffect;
     public EnergyBlockEffectSpawner energyBlockEffectSpawner;
     public GameObject damageTextIndicatorEffect;
+    private DestructionEffectSpawner destructionEffectSpawner;
+
     public PlayerController player;
 
 
@@ -61,10 +63,13 @@ public class WeaponAttack : AAttackBehaviour
     public int idealCamAngle;
     public Camera weaponCamera;
 
+    [SerializeField] private float pickupDistance;
+
 
     void Start()
     {
         resourceManager = GetComponent<ResourceManager>();
+        destructionEffectSpawner = GetComponent<DestructionEffectSpawner>();
         //energyBlockEffectSpawner = GetComponent<EnergyBlockEffectSpawner>();
         player = GetComponent<PlayerController>();
         equippedWeapons.Add(weapons[0]); // Digger
@@ -86,57 +91,7 @@ public class WeaponAttack : AAttackBehaviour
     {
         if (PlayerUI.isPaused) return;
 
-        if (Input.GetKey(KeyCode.Alpha1))
-        {
-            equippedWeapon = 0;
-        }
-
-        if (Input.GetKey(KeyCode.Alpha2))
-        {
-            equippedWeapon = 1;
-        }
-
-        if (Input.GetKey(KeyCode.Alpha3))
-        {
-            equippedWeapon = 2;
-        }
-
-        var scroll = Input.GetAxis("Mouse ScrollWheel");
-        //scroll up changes weapons
-        if (scroll < 0f && isLocalPlayer)
-        {
-            if (equippedWeapon >= equippedWeapons.Count - 1)
-            {
-                equippedWeapon = 0;
-            }
-            else
-            {
-                equippedWeapon++;
-            }
-        }
-
-        //scroll down changes weapons
-        if (scroll > 0f && isLocalPlayer)
-        {
-            if (equippedWeapon <= 0)
-            {
-                equippedWeapon = equippedWeapons.Count - 1;
-            }
-            else
-            {
-                equippedWeapon--;
-            }
-        }
-
-        //Find the correct selected weapon in weapons
-        for (int i = 0; i < weapons.Count; i++)
-        {
-            if (weapons[i].name == equippedWeapons[equippedWeapon].name)
-            {
-                selectedWeapon = i;
-                break;
-            }
-        }
+        SelectWeapon();
 
         //Attacking
         if (Input.GetButton("Fire1") && Time.time >= weapons[selectedWeapon].nextTimeToFire && !isReloading &&
@@ -205,8 +160,64 @@ public class WeaponAttack : AAttackBehaviour
             grenadeHoldLength = 0;
         }
 
+        if (Input.GetButtonDown("Use")) pickup();
 
         Animation();
+    }
+
+    private void SelectWeapon()
+    {
+        if (Input.GetKey(KeyCode.Alpha1))
+        {
+            equippedWeapon = 0;
+        }
+
+        if (Input.GetKey(KeyCode.Alpha2))
+        {
+            equippedWeapon = 1;
+        }
+
+        if (Input.GetKey(KeyCode.Alpha3))
+        {
+            equippedWeapon = 2;
+        }
+
+        var scroll = Input.GetAxis("Mouse ScrollWheel");
+        //scroll up changes weapons
+        if (scroll < 0f && isLocalPlayer)
+        {
+            if (equippedWeapon >= equippedWeapons.Count - 1)
+            {
+                equippedWeapon = 0;
+            }
+            else
+            {
+                equippedWeapon++;
+            }
+        }
+
+        //scroll down changes weapons
+        if (scroll > 0f && isLocalPlayer)
+        {
+            if (equippedWeapon <= 0)
+            {
+                equippedWeapon = equippedWeapons.Count - 1;
+            }
+            else
+            {
+                equippedWeapon--;
+            }
+        }
+
+        //Find the correct selected weapon in weapons
+        for (int i = 0; i < weapons.Count; i++)
+        {
+            if (weapons[i].name == equippedWeapons[equippedWeapon].name)
+            {
+                selectedWeapon = i;
+                break;
+            }
+        }
     }
 
     IEnumerator throwGrenade(float throwForce)
@@ -288,7 +299,6 @@ public class WeaponAttack : AAttackBehaviour
         NetworkServer.Spawn(grenade);
     }
 
-
     [Command]
     public void CmdShootBolt()
     {
@@ -334,6 +344,8 @@ public class WeaponAttack : AAttackBehaviour
             return;
         }
 
+        Debug.Log("attacking");
+
         //Crossbow
         if (weapons[selectedWeapon].name == WeaponType.EX_CROSSBOW)
         {
@@ -366,11 +378,18 @@ public class WeaponAttack : AAttackBehaviour
             RaycastHit hitFromCam;
             if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hitFromCam,
                 weapons[selectedWeapon].range, mask))
+            {
+                Debug.Log("ray cast from cam in cam dir failed");
                 return;
+            }
 
             RaycastHit hitFromGun;
-            if (!Physics.Linecast(weapons[selectedWeapon].shootPos.position, hitFromCam.point, out hitFromGun, mask))
+            if (!Physics.Linecast(weapons[selectedWeapon].shootPos.position,
+                hitFromCam.point + 2 * cam.transform.forward, out hitFromGun, mask))
+            {
+                Debug.Log("linecast from shootpos to hitCam point failed");
                 return; // Should never return
+            }
 
             // if we hit a player
             var rootTransform = hitFromGun.collider.transform.root;
@@ -396,12 +415,13 @@ public class WeaponAttack : AAttackBehaviour
             {
                 var voxel = hitFromGun.collider.GetComponent<Voxel>();
 
-                CmdVoxelDamaged(hitFromGun.collider.gameObject, weapons[selectedWeapon].envDamage);
+                // Playing the destruction effect
+                bool random = Random.Range(0, 7) == 1;
+                if (!voxel.hasEnergy &&
+                    voxel.GetComponent<NetHealth>().getHealth() <= weapons[selectedWeapon].envDamage && random)
+                    destructionEffectSpawner.play(hitFromGun.point, voxel);
 
-                if (!voxel.hasEnergy && hitFromGun.collider.GetComponent<NetHealth>().getHealth() <= 0)
-                {
-                    // TODO: Play voxel destruction effect    
-                }
+                CmdVoxelDamaged(hitFromGun.collider.gameObject, weapons[selectedWeapon].envDamage);
 
                 // Spawn energy blocks if shooting energy voxel
                 if (voxel.hasEnergy)
@@ -453,6 +473,23 @@ public class WeaponAttack : AAttackBehaviour
 
     public override void endSecondaryAttack()
     {
-        throw new System.NotImplementedException();
+    }
+
+    public void pickup()
+    {
+        RaycastHit hit;
+        if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, pickupDistance, mask))
+            return;
+
+        PickUpItem item = hit.transform.gameObject.GetComponentInChildren<PickUpItem>(); // Pickup item lives on parent
+
+        if (item == null) return;
+
+        if (item.itemType == PickUpItem.ItemType.EXPLOSIVE_CROSSBOW)
+        {
+            var xbow = weapons[5];
+            weaponWheel.onRecieveSpecialWeapon(xbow);
+            equippedWeapons[3] = xbow;
+        }
     }
 }

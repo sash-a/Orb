@@ -10,7 +10,7 @@ public class Portal : MapAsset
     Vector3 portalDims;
 
     GameObject supplyRoom;
-    private GameObject player;
+    public GameObject player;
 
     [SerializeField] private const int supplyTime = 10;
 
@@ -28,7 +28,7 @@ public class Portal : MapAsset
 
 
 
-    private void OnCollisionEnter(Collision collision)
+    public virtual void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.name.Contains("unner"))
         {

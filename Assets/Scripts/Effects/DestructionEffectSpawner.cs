@@ -14,7 +14,7 @@ public class DestructionEffectSpawner : NetworkBehaviour
     /// <param name="voxel">The voxel that was hit</param>
     /// <param name="minVoxels">Minimum number of voxels to spawn in the effect</param>
     /// <param name="maxVoxels">Minimum number of voxels to spawn in the effect</param>
-    public void play(Vector3 pos, Voxel voxel, int minVoxels = 5, int maxVoxels = 12)
+    public void play(Vector3 pos, Voxel voxel, int minVoxels = 3, int maxVoxels = 5)
     {
         CmdSpawnVoxels(pos, minVoxels, maxVoxels, voxel.layer);
     }

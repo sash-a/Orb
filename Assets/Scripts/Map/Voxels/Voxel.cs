@@ -154,6 +154,14 @@ public class Voxel : NetworkBehaviour
                     MapManager.manager.deviateSingleVoxel(this);
                 }
             }
+            if(voxelPositon == null)
+            {
+                voxelPositon = transform.GetChild(0);
+                if (voxelPositon == null)
+                {
+                    Debug.LogError("no voxel position transform attached to voxel " + this + " : " + layer + " , " + columnID);
+                }
+            }
             voxelPositon.position = worldCentreOfObject;
 
             //Debug.Log("renaming " + gameObject.name + " to trivoxel");
@@ -317,6 +325,7 @@ public class Voxel : NetworkBehaviour
 
     /// <summary>
     /// Adds an asset to this voxel so that when the voxel is destroyed so is the asset
+    /// side = -1   --> topside
     /// </summary>
     internal void addMainAsset(int side, MapAsset.Type type)
     {
@@ -389,6 +398,14 @@ public class Voxel : NetworkBehaviour
     [Command]
     internal void CmdDestroyVoxel()
     {
+
+        if (filter == null)
+        {
+            Debug.LogError("trying to destroy voxel without mesh filter - ismelted:" + isMelted);
+            return;
+        }
+        
+
         //Debug.Log("destroy voxel called");  
         if (mainAsset != null)
         {
@@ -724,6 +741,11 @@ public class Voxel : NetworkBehaviour
                 Debug.LogError("trying to create new vox from a voxel container");
             }
             return false;
+        }
+
+        if (GetComponent<MeshRenderer>() == null)
+        {
+            Debug.LogError("trying to create a new voxel from an old voxel without a mesh renderer");
         }
         //Debug.Log("creeating new voxel");
         int newVoxelLayer = layer + dir;

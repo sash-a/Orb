@@ -131,6 +131,36 @@ public class CaveManager : NetworkBehaviour
         foreach (Voxel vox in candidates) {
             placePortal(portalCandidates[vox], vox);
         }
+
+    }
+
+    private void placeSpawnPortals()
+    {
+        Debug.Log("trying to spawn spawner portals, cave bodies found: " + caves.Count);
+
+
+        foreach (CaveBody body in caves) {
+            if (body.tier == 1) {
+                //is tier 2 cave body
+                Debug.Log("found tier 2 cave body");
+                Voxel v = null;
+                int layer = body.centerDepth-4;
+                bool spawned = false;
+                while(v==null && layer<= MapManager.mapLayers && !spawned){//finds voxel directly beneath center
+                    if (MapManager.manager.doesVoxelExist(layer, body.centerColumnID) && !MapManager.manager.isDeleted(layer, body.centerColumnID) && MapManager.manager.voxels[layer][body.centerColumnID]!=null)
+                    {
+                        v = MapManager.manager.voxels[layer][body.centerColumnID];
+                        Debug.Log("spawning spawnerPortal");
+                        v.addMainAsset(-1,MapAsset.Type.RESPAWNPORTAL);
+                        spawned = true;
+                    }
+                    else {
+                        layer++;
+                    }
+
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -456,6 +486,9 @@ public class CaveManager : NetworkBehaviour
         NetworkMessagePasser.singleton.addSyncUIMessage("decorating map", true, 4);
 
         MapManager.manager.doneDigging = true;
+        manager.placeSpawnPortals();
+
+
         manager.RpcDoneDigging();
         if (MapManager.useHills)
         {

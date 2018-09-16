@@ -1,5 +1,4 @@
-﻿using System;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -66,8 +65,6 @@ public class WeaponWheel : MonoBehaviour
 
     private void Start()
     {
-        weapons.weaponWheel = this;
-
         weapons.equippedWeapons[1].ammoButton = ammo1;
         weapons.equippedWeapons[1].upgradeButton = upg1;
         weapons.equippedWeapons[1].uiWhealImage = equipLeftIcon;
@@ -121,7 +118,7 @@ public class WeaponWheel : MonoBehaviour
     public void onRecieveSpecialWeapon(WeaponType specialWeapon)
     {
         specialAmmo.interactable = true;
-        specialAmmo.GetComponentInChildren<Text>().text = specialWeapon.name + " ammo";
+        specialAmmo.GetComponentInChildren<TextMeshProUGUI>().text = specialWeapon.name + " ammo";
         specialAmmo.onClick.RemoveAllListeners();
         specialAmmo.onClick.AddListener(delegate { purchaseAmmo(specialWeapon.name); });
     }

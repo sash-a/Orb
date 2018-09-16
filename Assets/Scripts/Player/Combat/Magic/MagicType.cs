@@ -17,7 +17,7 @@ public class MagicType
     // Magic stats
     public float manaRegen;
 
-    public float headshotMultiplier;
+    public float headshotMultiplier = 1.5f;
     
     // Digger
     public float diggerDamage;

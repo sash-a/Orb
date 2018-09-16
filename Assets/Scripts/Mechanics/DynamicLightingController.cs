@@ -35,10 +35,24 @@ public class DynamicLightingController : MonoBehaviour
         if (localPlayer == null) {
             localPlayer = TeamManager.localPlayer;
             if (localPlayer == null) {
-                Debug.LogError("no local player found in lighting manager or team manager");
+                StartCoroutine(findLocalPlayer());
             }
         }
 
+    }
+
+    IEnumerator findLocalPlayer() {
+        for (int i = 0; i < 5; i++)
+        {
+            if (localPlayer == null)
+            {
+                localPlayer = TeamManager.localPlayer;
+            }
+            yield return new WaitForSecondsRealtime(1f);
+        }
+        if (localPlayer == null) {
+            Debug.LogError("no local player found in lighting manager or team manager");
+        }
     }
 
     // Update is called once per frame
@@ -57,6 +71,13 @@ public class DynamicLightingController : MonoBehaviour
         }
 
         ambientIntensity += (idealAmbientIntensity - ambientIntensity) * intensityChangeSpeed;
+        if (localPlayer == null) {
+            localPlayer = TeamManager.localPlayer;
+            if (localPlayer == null)
+            {
+                return;
+            }
+        }
         if (localPlayer.isInSphere())
         {
             RenderSettings.ambientLight = new Color(displayColour.r * ambientIntensity, displayColour.g * ambientIntensity, displayColour.b * ambientIntensity);

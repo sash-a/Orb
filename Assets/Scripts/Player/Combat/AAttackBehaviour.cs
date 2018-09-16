@@ -100,7 +100,7 @@ public abstract class AAttackBehaviour : NetworkBehaviour
             Debug.LogError("Voxel did not have health component");
             return;
         }
-        //Debug.Log("damaging voxel health");
+        Debug.Log("damaging voxel health");
         health.RpcDamage(damage);
     }
 

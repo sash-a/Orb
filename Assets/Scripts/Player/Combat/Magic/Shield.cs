@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.Networking;
 
 [RequireComponent(typeof(Identifier))]
@@ -8,9 +9,15 @@ public class Shield : NetworkBehaviour
 
     void Start()
     {
-        transform.localPosition += new Vector3(0, 4, 0);
-
-        if (!caster.gameObject.GetComponent<MagicAttack>().isLocalPlayer) assignRemoteLayer();
+        if (isLocalPlayer)
+        {
+            transform.localPosition = new Vector3(1, 5, 0);
+        }
+        else
+        {
+            assignRemoteLayer();
+            StartCoroutine(movePosition());
+        }
     }
 
     public override void OnStartClient()
@@ -35,7 +42,7 @@ public class Shield : NetworkBehaviour
         if (player.GetComponent<MagicAttack>().getAttackStats().artifactType == PickUpItem.ItemType.HEALER_ARTIFACT)
         {
             Debug.Log("Scaling");
-            transform.localScale = new Vector3(15f, 15, 15f);
+            transform.localScale = new Vector3(18f, 9, 18f);
         }
 
         // UI
@@ -47,10 +54,6 @@ public class Shield : NetworkBehaviour
         {
             ((MagicianUI) caster.UI).onShieldUp(netHealth); // server error on cast
             Debug.Log(GetComponent<NetHealth>().getHealth() + "/" + GetComponent<NetHealth>().maxHealth);
-        }
-        else
-        {
-            Debug.LogError("Caster's UI is null");
         }
 
         // Move camera
@@ -76,5 +79,11 @@ public class Shield : NetworkBehaviour
 
         // Remove from UI
         ((MagicianUI) caster.GetComponent<Identifier>().UI).onShieldDown(); // Server error on release
+    }
+
+    IEnumerator movePosition()
+    {
+        yield return new WaitForSeconds(0.5f);
+        transform.localPosition = new Vector3(1, 5, 0);
     }
 }

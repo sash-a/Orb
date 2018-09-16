@@ -6,8 +6,29 @@ Prefab:
   serializedVersion: 2
   m_Modification:
     m_TransformParent: {fileID: 0}
-    m_Modifications: []
-    m_RemovedComponents: []
+    m_Modifications:
+    - target: {fileID: 0}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: minForce
+      value: 150
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: maxForce
+      value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: m_Layer
+      value: 16
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: livingTime
+      value: 2
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 0}
   m_ParentPrefab: {fileID: 0}
   m_RootGameObject: {fileID: 1123705270456112}
   m_IsPrefabParent: 0
@@ -25,8 +46,7 @@ GameObject:
   - component: {fileID: 114318552671768796}
   - component: {fileID: 54679521018158004}
   - component: {fileID: 114968963313334212}
-  - component: {fileID: 114773465822000904}
-  m_Layer: 0
+  m_Layer: 16
   m_Name: EnvDestroyedEffect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -61,7 +81,7 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 2100000, guid: dd58237607b1c334fa14d4473ea27563, type: 2}
+  - {fileID: 2100000, guid: 091b363e397311a4793b78939b79707b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -126,41 +146,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d25463bba08969a45a9d692f0d62324c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minForce: 0
-  maxForce: 0
-  livingTime: 5
---- !u!114 &114773465822000904
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1123705270456112}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SceneId:
-    m_Value: 0
-  m_AssetId:
-    i0: 0
-    i1: 0
-    i2: 0
-    i3: 0
-    i4: 0
-    i5: 0
-    i6: 0
-    i7: 0
-    i8: 0
-    i9: 0
-    i10: 0
-    i11: 0
-    i12: 0
-    i13: 0
-    i14: 0
-    i15: 0
-  m_ServerOnly: 0
-  m_LocalPlayerAuthority: 0
+  minForce: 150
+  maxForce: 200
+  livingTime: 2
 --- !u!114 &114968963313334212
 MonoBehaviour:
   m_ObjectHideFlags: 1

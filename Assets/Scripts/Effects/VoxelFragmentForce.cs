@@ -17,12 +17,7 @@ public class VoxelFragmentForce : MonoBehaviour
             -Random.Range(minForce, maxForce) * (transform.position.normalized + Random.onUnitSphere).normalized,
             ForceMode.Impulse
         );
-        StartCoroutine(destroy());
-    }
-
-    IEnumerator destroy()
-    {
-        yield return new WaitForSeconds(livingTime);
-        NetworkServer.Destroy(gameObject);
+        
+        Destroy(gameObject, livingTime);
     }
 }

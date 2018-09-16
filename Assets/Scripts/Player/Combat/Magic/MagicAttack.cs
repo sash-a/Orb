@@ -60,6 +60,12 @@ public class MagicAttack : AAttackBehaviour
     float idealLookSensitivity;
     float telekenesisLookSensSlowDown = 0.4f;
 
+    public Transform cameraPivot;
+    Vector3 idealPivotLocalPosition;
+    float idealCamFieldOfView = 65f;
+    float pivotRetraction = 2.5f;
+    float FOVincrease = 1.4f;
+
     #endregion
 
 
@@ -76,7 +82,7 @@ public class MagicAttack : AAttackBehaviour
         currentWeapon = 0;
         shieldUp = false;
         isAttacking = false;
-
+        idealPivotLocalPosition = cameraPivot.localPosition;
         // Initial weapon selection
         attackStats.changeToDigger();
 
@@ -153,7 +159,13 @@ public class MagicAttack : AAttackBehaviour
         }
 
         player.lookSens += (idealLookSensitivity - player.lookSens) * 0.25f;
+        cameraPivot.localPosition += (idealPivotLocalPosition - cameraPivot.localPosition) * 0.15f;
+        Camera.main.fieldOfView += (idealCamFieldOfView - Camera.main.fieldOfView) * 0.15f;
         //Debug.Log("is tele: " + isTelekening + "  look sense: " + player.lookSens);
+        if (Input.GetKeyUp(KeyCode.H))
+        {
+            attackStats.upgrade(PickUpItem.ItemType.HEALER_ARTIFACT);
+        }
     }
 
     void Animation()
@@ -291,6 +303,12 @@ public class MagicAttack : AAttackBehaviour
 
             CmdSpawnShield(GetComponent<Identifier>().id);
             shieldUp = true;
+
+            if (getAttackStats().artifactType == PickUpItem.ItemType.HEALER_ARTIFACT)
+            {
+                idealPivotLocalPosition *= pivotRetraction;
+                idealCamFieldOfView *= FOVincrease;
+            }
         }
     }
 
@@ -305,6 +323,12 @@ public class MagicAttack : AAttackBehaviour
         {
             CmdDestroyShield();
             shieldUp = false;
+
+            if (getAttackStats().artifactType == PickUpItem.ItemType.HEALER_ARTIFACT)
+            {
+                idealPivotLocalPosition /= pivotRetraction;
+                idealCamFieldOfView /= FOVincrease;
+            }
         }
     }
 
@@ -424,7 +448,7 @@ public class MagicAttack : AAttackBehaviour
 
         // Shoot ray from hand to hit position
         RaycastHit hitFromHand;
-        if (!Physics.Linecast(rightHand.position, hitFromCam.point, out hitFromHand, mask))
+        if (!Physics.Linecast(rightHand.position, hitFromCam.point + 2 * cam.transform.forward, out hitFromHand, mask))
             return; // this should never return
 
         var rootTransform = hitFromHand.collider.transform.root;
@@ -434,8 +458,7 @@ public class MagicAttack : AAttackBehaviour
             var voxel = hitFromHand.collider.gameObject.GetComponent<Voxel>();
 
             // If voxel is about to die
-            if (!voxel.hasEnergy &&
-                voxel.GetComponent<NetHealth>().getHealth() <= attackStats.diggerEnvDamage)
+            if (!voxel.hasEnergy && voxel.GetComponent<NetHealth>().getHealth() <= attackStats.diggerEnvDamage)
                 destructionEffectSpawner.play(hitFromHand.point, voxel);
 
 
@@ -471,7 +494,7 @@ public class MagicAttack : AAttackBehaviour
 
         // Shoot ray from hand to hit position
         RaycastHit hitFromHand;
-        if (!Physics.Linecast(rightHand.position, hitFromCam.point, out hitFromHand, mask))
+        if (!Physics.Linecast(rightHand.position, hitFromCam.point + 2 * cam.transform.forward, out hitFromHand, mask))
             return; // This should never return
 
         var rootTransform = hitFromHand.collider.transform.root;
@@ -524,7 +547,8 @@ public class MagicAttack : AAttackBehaviour
     [Command]
     public void CmdSpawnShield(string casterID)
     {
-        var shieldInst = Instantiate(shield, transform.position, transform.rotation);
+        var shieldInst =
+            Instantiate(shield, transform.position + transform.up * 5 + transform.right * 1, transform.rotation);
         NetworkServer.Spawn(shieldInst);
         // Servers current shield is not neccaserily the servers instance of shield (is likely local clients instance)
         setUpShield(shieldInst);

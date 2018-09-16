@@ -8,7 +8,7 @@ using UnityEngine.Networking;
 //Colab is a bitch
 public class MapAsset : NetworkBehaviour
 {
-    public enum Type { MAIN, SECONDARY, GRASS, ALTAR, CRITTERSPANWER };
+    public enum Type { MAIN, SECONDARY, GRASS, ALTAR, CRITTERSPANWER, RESPAWNPORTAL };
     [SyncVar] Type type;
 
 
@@ -18,7 +18,7 @@ public class MapAsset : NetworkBehaviour
 
     Rigidbody rb;
     GameObject asset;
-     public Voxel voxel;
+    public Voxel voxel;
     [SyncVar] int layer;
     [SyncVar] int colID;
     [SyncVar] public int voxSide;//which side of the voxel this assset is attached to
@@ -33,11 +33,20 @@ public class MapAsset : NetworkBehaviour
 
     void Start()
     {
-        united = !(type.Equals(Type.MAIN) || type.Equals(Type.ALTAR));
-        if (type.Equals(Type.MAIN) || type.Equals(Type.ALTAR))
+
+
+        united = !(type.Equals(Type.MAIN) || type.Equals(Type.ALTAR) || type.Equals(Type.RESPAWNPORTAL));
+        if (type.Equals(Type.MAIN) || type.Equals(Type.ALTAR) || type.Equals(Type.RESPAWNPORTAL))
         {
             //Debug.Log("setting asset to voxel");
-            MapManager.manager.voxels[layer][colID].mainAsset = this;
+            if (!MapManager.manager.voxels[layer].ContainsKey(colID))
+            {
+                Debug.LogError("no voxel at: " + layer + " , " + colID + " cannot assign voxels main asset ");
+            }
+            else
+            {
+                MapManager.manager.voxels[layer][colID].mainAsset = this;
+            }
             united = isServer;//server side assets are united by default
         }
 
@@ -54,7 +63,10 @@ public class MapAsset : NetworkBehaviour
             //}
             rb.isKinematic = true;
         }
-        catch { }
+        catch (Exception e)
+        {
+            Debug.LogError(e.Message);
+        }
         //Debug.Log("starting map asset at: " + transform.position);
         gameObject.tag = "MapAsset";
         if (isServer)//if client - the asset uniter will indicate when it is time to prepare this asset
@@ -69,8 +81,8 @@ public class MapAsset : NetworkBehaviour
         GameObject ass = null;
 
 
-            //ass = Instantiate(Resources.Load<GameObject>("Prefabs/Map/MapAssets/Palm_Tree"), vox.worldCentreOfObject, Quaternion.identity);
-            if (tp.Equals(Type.MAIN) || tp.Equals(Type.ALTAR) || tp.Equals(Type.CRITTERSPANWER))
+        //ass = Instantiate(Resources.Load<GameObject>("Prefabs/Map/MapAssets/Palm_Tree"), vox.worldCentreOfObject, Quaternion.identity);
+        if (tp.Equals(Type.MAIN) || tp.Equals(Type.ALTAR) || tp.Equals(Type.CRITTERSPANWER) || tp.Equals(Type.RESPAWNPORTAL))
         {
             ass = spawnMainAsset(vox, side, tp);
         }
@@ -86,15 +98,15 @@ public class MapAsset : NetworkBehaviour
         ass.GetComponent<MapAsset>().voxSide = side;
 
 
-        if (tp.Equals(Type.MAIN) || tp.Equals(Type.ALTAR))
+        if (tp.Equals(Type.MAIN) || tp.Equals(Type.ALTAR) || tp.Equals(Type.RESPAWNPORTAL) || tp.Equals(Type.CRITTERSPANWER))
         {
             NetworkServer.Spawn(ass);
         }
 
-        
 
 
-            return ass.GetComponent<MapAsset>();
+
+        return ass.GetComponent<MapAsset>();
     }
 
     private static GameObject spawnGrass(Voxel vox, int side)
@@ -108,16 +120,7 @@ public class MapAsset : NetworkBehaviour
 
     private static GameObject spawnMainAsset(Voxel vox, int side, Type tp)
     {
-        string folder = "";
-        if (vox.layer == 0)
-        {
-            folder = "MainSurfaceAssets";
-        }
-        else
-        {
-            folder = "MainCaveFloorAssets";
-            //Debug.Log("placing cave floor asset");
-        }
+       
 
 
         System.Random rand = new System.Random(vox.layer * vox.columnID + vox.columnID);
@@ -125,6 +128,17 @@ public class MapAsset : NetworkBehaviour
         GameObject ass = (GameObject)Instantiate(Resources.Load<UnityEngine.Object>("Prefabs/Map/MapAssets/MainAsset"), vox.worldCentreOfObject, Quaternion.identity);
         if (tp.Equals(Type.MAIN))
         {
+            string folder = "";
+            if (vox.layer == 0)
+            {
+                folder = "MainSurfaceAssets";
+            }
+            else
+            {
+                folder = "MainCaveFloorAssets";
+                //Debug.Log("placing cave floor asset");
+            }
+
             UnityEngine.Object[] assets = Resources.LoadAll<GameObject>("Prefabs/Map/MapAssets/" + folder);
             int idx = rand.Next(0, assets.Length);
             model = (GameObject)Instantiate(assets[idx], vox.worldCentreOfObject, Quaternion.identity);
@@ -139,7 +153,8 @@ public class MapAsset : NetworkBehaviour
                 {
                     MapManager.manager.altars.Add(a);
                 }
-                else {
+                else
+                {
                     Debug.LogError("spawned altar object withoiut altar script");
                 }
 
@@ -148,6 +163,22 @@ public class MapAsset : NetworkBehaviour
         if (tp.Equals(Type.CRITTERSPANWER))
         {
             model = (GameObject)Instantiate(Resources.Load<GameObject>("Prefabs/Map/MapAssets/CritterSpawner"), vox.worldCentreOfObject, Quaternion.identity);
+        }
+        if (tp.Equals(Type.RESPAWNPORTAL)) {
+            model = (GameObject)Instantiate(Resources.Load<GameObject>("Prefabs/Map/RespawnPortal"), vox.worldCentreOfObject, Quaternion.identity);
+            if (tp.Equals(Type.ALTAR))
+            {
+                Altar a = model.GetComponent<Altar>();
+                if (a != null)
+                {
+                    MapManager.manager.altars.Add(a);
+                }
+                else
+                {
+                    Debug.LogError("spawned altar object withoiut altar script");
+                }
+
+            }
         }
         ass.GetComponent<MapAsset>().type = tp;
         ass.GetComponent<MapAsset>().united = false;

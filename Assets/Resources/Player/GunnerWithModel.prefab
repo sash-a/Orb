@@ -1442,6 +1442,7 @@ GameObject:
   - component: {fileID: 114406981523820792}
   - component: {fileID: 114204149103748308}
   - component: {fileID: 114280457617170028}
+  - component: {fileID: 114940970674119396}
   - component: {fileID: 114497519043578382}
   - component: {fileID: 95345444210390770}
   - component: {fileID: 114755291329041874}
@@ -3929,15 +3930,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_TransformSyncMode: 3
-  m_SendInterval: 0.1
+  m_SendInterval: 0.05882353
   m_SyncRotationAxis: 7
   m_RotationSyncCompression: 0
   m_SyncSpin: 0
   m_MovementTheshold: 0.001
   m_VelocityThreshold: 0.0001
-  m_SnapThreshold: 5
+  m_SnapThreshold: 15
   m_InterpolateRotation: 10
-  m_InterpolateMovement: 1
+  m_InterpolateMovement: 0.4
 --- !u!114 &114158762346196602
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -4396,6 +4397,7 @@ MonoBehaviour:
   sniperScope: {fileID: 114512659578669254}
   idealCamAngle: 0
   weaponCamera: {fileID: 20511666612732806}
+  pickupDistance: 20
 --- !u!114 &114497519043578382
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -4480,6 +4482,7 @@ MonoBehaviour:
   animator: {fileID: 95862667050278438}
   playerName: 
   playerNameTrans: {fileID: 4983216921300196}
+  spawned: 0
 --- !u!114 &114755291329041874
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -4539,6 +4542,21 @@ MonoBehaviour:
   m_MovementThreshold: 0.001
   m_InterpolateRotation: 0.3
   m_InterpolateMovement: 0
+--- !u!114 &114940970674119396
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1779332119490236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 984f8a841bbfd544d9ae38508c1aff98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  destructionBlock: {fileID: 1123705270456112, guid: 29325a669b3c7c54bb52015a9b02d28c,
+    type: 2}
+  grass: {fileID: 2100000, guid: dd58237607b1c334fa14d4473ea27563, type: 2}
+  ground: {fileID: 2100000, guid: 091b363e397311a4793b78939b79707b, type: 2}
 --- !u!114 &114955699568096988
 MonoBehaviour:
   m_ObjectHideFlags: 1

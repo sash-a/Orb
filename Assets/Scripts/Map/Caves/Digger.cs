@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 
 public class Digger : NetworkBehaviour
 {
-    static int speed = 70;//150
+    static int speed = 50;//150
 
     public int gradient;//number of neighbours it will bouonce to before increasing the layer
     public int neighbourCount;//the count for number of runs without rise

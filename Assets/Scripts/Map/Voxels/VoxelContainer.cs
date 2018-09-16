@@ -28,7 +28,7 @@ public class VoxelContainer : Voxel
         subVoxelID = majorVoxel.subVoxelID;
         subVoxels = new ArrayList();
         rand = new System.Random(columnID * layer + columnID);
-
+        isMelted = true;
         shatterLevel = majorVoxel.shatterLevel;
 
         createVoxelContainer(majorVoxel);
@@ -105,9 +105,16 @@ public class VoxelContainer : Voxel
 
     public void createVoxelContainer(Voxel majorVoxel)
     {
-
+        if (majorVoxel == null) {
+            Debug.LogError("trying to create a voxel container from a null or deleted voxel");
+            return;
+        }
         Mesh majorMesh = majorVoxel.filter.mesh;
-        if (majorVoxel.deletedPoints.Count == 0 || shatterSmoothedVoxels)
+        if (majorVoxel.deletedPoints == null) {
+            Debug.LogError("trying to create voc container with non nul voxel which has a null or deleted points array");
+        }
+
+        if (majorVoxel.deletedPoints == null || majorVoxel.deletedPoints.Count == 0 || shatterSmoothedVoxels)
         {//is a full voxel
             //need to construct 6 submeshes using the major mesh data
             Vector3[] centerPoints = getCenterPoints(majorMesh, majorVoxel);//0 bottom; 1 middle; 2 top

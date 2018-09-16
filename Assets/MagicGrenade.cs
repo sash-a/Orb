@@ -43,7 +43,7 @@ public class MagicGrenade : NetworkBehaviour
         AOE.transform.position = transform.position;
         AreaOfEffectDamage a = AOE.GetComponent<AreaOfEffectDamage>();
         a.duration = 0.5f;
-        a.damage = 140;
+        a.damage = 420;
         a.radius = 10;
         a.mapRadius = 10;
         a.damageGunners = true;

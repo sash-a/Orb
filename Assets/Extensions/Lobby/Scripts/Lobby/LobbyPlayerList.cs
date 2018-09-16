@@ -44,7 +44,7 @@ namespace Prototype.NetworkLobby
                 return;
 
             _players.Add(player);
-            TeamManager.playerCount++;
+            //TeamManager.playerCount++;
 
             //Debug.Log("adding player in lobby");
 
@@ -68,6 +68,8 @@ namespace Prototype.NetworkLobby
                 p.OnPlayerListChanged(i);
                 ++i;
             }
+            TeamManager.playerCount = _players.Count;
+
         }
     }
 }

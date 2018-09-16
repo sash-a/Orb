@@ -31,6 +31,8 @@ public class PlayerController : MonoBehaviour
     InGameTextObject playerNameText;
     public Transform playerNameTrans;
 
+    public bool spawned;
+
     internal bool isInSphere()
     {
         return gravity.inSphere;
@@ -111,14 +113,17 @@ public class PlayerController : MonoBehaviour
 
     }
 
+  
+
     internal void sendToSpawnRoom()
     {
+        spawned = true;
         GetComponent<Gravity>().inSphere = false;
         transform.position = team.getSpawnRoom().transform.position;
         transform.rotation = Quaternion.LookRotation(new Vector3(transform.position.x, 0, transform.position.z), Vector3.up);
     }
 
-    public void respawnPlayer()
+    public void spawnOnMap()
     {
         transform.position = team.getSpawnRoom().transform.position * 0.9f;
     }
@@ -186,6 +191,10 @@ public class PlayerController : MonoBehaviour
         playerName = name;
         if (!isLocalPlayer || false) {//dont put someones own name on their head
             //Debug.Log("objcect player name");
+
+            if (TeamManager.localPlayer.gameObject.name.Contains("unner") == gameObject.name.Contains("unner")) {
+                //if this player is of the same class as the local player
+            }
 
             GameObject text = Instantiate(Resources.Load<GameObject>("Prefabs/UI/InGameTextObject"));
             playerNameText = text.GetComponent<InGameTextObject>();

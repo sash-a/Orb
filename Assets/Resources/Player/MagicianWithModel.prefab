@@ -1576,7 +1576,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1334428464654612}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.59, y: 7.8, z: 0.22}
+  m_LocalPosition: {x: 2.68, y: 8.18, z: -1.34}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4701793842046852}
@@ -2343,7 +2343,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1890847923782124}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.05, y: 0.62, z: -5.9}
+  m_LocalPosition: {x: 1.74, y: 1.4, z: -6.41}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4505894572954432}
@@ -2550,7 +2550,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1195965313534168}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -7.71, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4850440907203114}
@@ -3092,15 +3092,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_TransformSyncMode: 3
-  m_SendInterval: 0.1
+  m_SendInterval: 0.05882353
   m_SyncRotationAxis: 7
   m_RotationSyncCompression: 0
   m_SyncSpin: 0
   m_MovementTheshold: 0.001
   m_VelocityThreshold: 0.0001
-  m_SnapThreshold: 5
+  m_SnapThreshold: 15
   m_InterpolateRotation: 10
-  m_InterpolateMovement: 1
+  m_InterpolateMovement: 0.4
 --- !u!114 &114472336736598466
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3183,12 +3183,13 @@ MonoBehaviour:
     isForcePush: 0
     isDigger: 0
     manaRegen: 100
+    headshotMultiplier: 0
     diggerDamage: 5
     diggerEnvDamage: 50
     diggerRange: 30
     diggerMana: 2
-    attackDamage: 40
-    attackEnvDamage: 10
+    attackDamage: 15
+    attackEnvDamage: 5
     attackShieldDamage: 0
     heal: 15
     attackRange: 200
@@ -3213,6 +3214,7 @@ MonoBehaviour:
   currentWeapon: 0
   pickupDistance: 20
   animator: {fileID: 95638754553782564}
+  cameraPivot: {fileID: 4090603448813962}
 --- !u!114 &114756109489538120
 MonoBehaviour:
   m_ObjectHideFlags: 1

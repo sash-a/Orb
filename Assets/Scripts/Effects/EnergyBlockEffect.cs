@@ -18,25 +18,26 @@ public class EnergyBlockEffect : MonoBehaviour
     {
         if (rb == null || target == null) return;
 
-        rb.MovePosition(transform.position + (target.position - transform.position) * speed * Time.deltaTime);
+        rb.MovePosition(transform.position +
+                        (target.position + target.up * 4 - transform.position) * speed * Time.deltaTime);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.name == target.name)
+        var rootTransform = other.transform.root;
+        if (rootTransform.name == target.name)
         {
             // Get energy
             Debug.Log("Get energy");
-            if (other.gameObject.GetComponent<Identifier>().typePrefix == Identifier.magicianType)
+            if (rootTransform.GetComponent<Identifier>().typePrefix == Identifier.magicianType)
             {
-                other.gameObject.GetComponent<MagicAttack>().getResourceManager().gainEnery(1); 
+                rootTransform.GetComponent<MagicAttack>().getResourceManager().gainEnery(1);
             }
             else
             {
-                Debug.Log("Gunner");
-                other.gameObject.GetComponent<WeaponAttack>().getResourceManager().gainEnery(1);
+                rootTransform.GetComponent<WeaponAttack>().getResourceManager().gainEnery(1);
             }
-            
+
             NetworkServer.Destroy(gameObject);
         }
     }
