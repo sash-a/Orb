@@ -46,7 +46,6 @@ public class MapManager : NetworkBehaviour
 
  
 
-    public HashSet<Portal> portals;
 
     public static Voxel DeletedVoxel;
 
@@ -56,9 +55,12 @@ public class MapManager : NetworkBehaviour
 
     public HashSet<Altar> altars;
     public HashSet<PickUpItem> collectables;
+    public HashSet<Portal> portals;
 
-    public GameObject shreddingShell;
-    public GameObject warningShell;
+
+    public static ShredManager shredManager;
+
+
 
 
 
@@ -91,14 +93,10 @@ public class MapManager : NetworkBehaviour
 
     }
 
-
-    private void Update()
+    private void setUpShredManager()
     {
-
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            CmdShredMap();
-        }
+        shredManager = GetComponent<ShredManager>();
+        shredManager.setProperties(this, isServer, voxels);
     }
 
     internal void replaceSubVoxel(Voxel spawnedVox)
@@ -240,12 +238,10 @@ public class MapManager : NetworkBehaviour
         mapDoneLocally = true;
         SmoothVoxels();
         CaveManager.manager.placeCavePortalsArtefacts();
-        //finishAssets();
-        //LobbyManager.s_Singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
-        //        NetworkManager.singleton.playerPrefab.transform.position = new Vector3(0, -30, 0);
-        //GameEventManager.singleton.CmdPassMessage("waitForMapCompletion", "mapCompleted");
-        //GameEventManager.singleton.passMessage("waitForMapCompletion", "mapCompleted");
-        //localPlayer.transform.position = new Vector3(0, -30, 0);
+
+        setUpShredManager();
+
+
         GetComponent<MapAssetManager>().genAssets();
         BuildLog.writeLog("Map finished locally - sent cmd pass message that map was completed");
         Debug.Log("Map finished locally on (server = " + isServer + ")");
@@ -540,23 +536,8 @@ public class MapManager : NetworkBehaviour
     private void RpcInformDeleted(int layer, int columnID)
     {
         voxels[layer][columnID] = MapManager.DeletedVoxel;
-
-        foreach (int n in neighboursMap[columnID])
-        {
-            if (doesVoxelExist(layer, n))
-            {
-                voxels[layer][n].smoothBlockInPlace();
-            }
-        }
-
-        if (doesVoxelExist(layer + 1, columnID))
-        {
-            voxels[layer + 1][columnID].smoothBlockInPlace();
-        }
-
-        if (doesVoxelExist(layer - 1, columnID))
-        {
-            voxels[layer - 1][columnID].smoothBlockInPlace();
+        if (!isServer) {
+            Debug.Log("client side mapmanager got informed of a deleted voxel on the server");
         }
     }
 
@@ -617,123 +598,8 @@ public class MapManager : NetworkBehaviour
         }
     }
 
+  
 
-    Vector3 shredOrigin = new Vector3(0, mapSize * 2, 0);
-    int shredNo = 0;
-    float nextShredRadius = mapSize * 1.6f;
-
-    [Command]
-    public void CmdShredMap()
-    {
-        //StartCoroutine(ShredMap());
-        ShredMapNext();
-        RpcUpdateShreddingShell(nextShredRadius *1.9f,shredOrigin);
-    }
-
-    void ShredMapNext()
-    {
-        //yield return new WaitForSecondsRealtime(0.1f);
-
-        if (nextShredRadius > mapSize * 2.5)
-        {//reached max shredding
-            return;
-        }
-
-        //Debug.Log("shredding map");
-        if (shredNo == 0)
-        {
-            shredOrigin = new Vector3(0, mapSize * 2, 0);
-            nextShredRadius = mapSize * 1.6f;
-        }
-
-        GameObject mapChunk = Instantiate(Resources.Load<GameObject>("Prefabs/Map/MapChunk"));
-        MapChunk chunk = mapChunk.GetComponent<MapChunk>();
-        //Debug.Log("chunk: " + chunk);
-        Vector3 center = Vector3.zero;
-        int count = 0;
-
-        for (int i = 0; i < mapLayers; i++)
-        {
-            foreach (Voxel vox in voxels[i].Values)
-            {
-                
-                if (!isDeleted(i, vox.columnID))
-                {
-                    //try { 
-                    if (Vector3.Distance(vox.worldCentreOfObject, shredOrigin) < nextShredRadius)
-                    {
-                        if (vox == null)
-                        {
-                            Debug.LogError("found null voxel in map manager - which hasnt been deleted");
-                        }
-                        chunk.addVoxel(vox);
-                        count++;
-                        center += vox.worldCentreOfObject;
-                    }
-                    /*
-                }
-                catch(Exception e)
-                {
-                    Debug.Log("world cent: " + vox.worldCentreOfObject + " origin: " + shredOrigin);
-                    Debug.Log(e.Message + "\n vox: " + vox + " shredNo: " + shredNo );
-                }
-                */
-                }
-            }
-        }
-
-        mapChunk.transform.position = center / count;
-        chunk.finishChunk(shredOrigin, nextShredRadius);
-        shredNo++;
-        nextShredRadius += mapSize * 0.2f;
-    }
-
-    [ClientRpc]
-    void RpcUpdateShreddingShell(float radius, Vector3 origin) {
-        if (shreddingShell == null) {
-            shreddingShell = (GameObject)Instantiate<UnityEngine.Object>(Resources.Load("Prefabs/Map/ShreddingShell"));
-            shreddingShell.transform.position = origin;
-        }
-        shreddingShell.transform.localScale = new Vector3(radius, radius, radius);
-
-    }
-
-    [Command]
-    internal void CmdCreateWarningShell()
-    {
-        RpcCreateWarningShell(nextShredRadius * 2f, shredOrigin);
-        StartCoroutine(placeWarningShell(nextShredRadius * 2f, shredOrigin));
-    }
-
-    [ClientRpc]
-    void RpcCreateWarningShell(float radius, Vector3 origin) {
-        StartCoroutine(placeWarningShell(radius, origin));
-    }
-
-
-    IEnumerator placeWarningShell(float radius, Vector3 origin) {
-        if (warningShell == null)
-        {
-            warningShell = (GameObject)Instantiate<UnityEngine.Object>(Resources.Load("Prefabs/Map/ShreddingWarningShell"));
-            warningShell.transform.localScale = new Vector3(radius, radius, radius);
-            warningShell.transform.position = origin;
-
-            yield return new WaitForSecondsRealtime(ShredMap.countDown);
-            Destroy(warningShell);
-        }
-
-    }
-
-
-    internal bool isInWarningZone(Vector3 position)
-    {
-        double distance = Vector3.Distance(shredOrigin, position);
-        if (distance < nextShredRadius)
-        {
-            return true;
-        }
-        return false;
-    }
 
     public Voxel getSubVoxelAt(int layer, int columnID, String subID)
     {

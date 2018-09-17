@@ -16,13 +16,13 @@ public class Scope : MonoBehaviour {
 
     public bool isLocalPlayer=false;
 
-   public WeaponAttack playerAttack;
+    public WeaponAttack playerAttack;
 
     private void Start()
     {
         //weaponCamera.SetActive(false);
         if (mainCamera == null) {
-            Debug.LogError("no main camera attached to sniper scsope script");
+            Debug.LogError("no main camera attached to sniper scope script");
         }
     }
 

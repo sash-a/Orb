@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 
 public class GameEventManager : NetworkBehaviour
 {
-    public static int gameLength = 450;//number of seconds before max map shredding
+    public static int gameLength = 150;//number of seconds before max map shredding
 
 
     public static float clockTime;

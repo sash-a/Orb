@@ -44,22 +44,29 @@ public class InGameTextObject : MonoBehaviour
     {
         if (anchor != null)
         {
-            started = true;
-            //Debug.Log(Camera.main.transform.position);
+            if (Vector3.Dot(Camera.main.transform.forward, (anchor.position - Camera.main.transform.position)) > 0)
+            {
+                text.enabled = true;
+                started = true;
+                //Debug.Log(Camera.main.transform.position);
 
-            double distance = Vector3.Distance(anchor.position, Camera.main.transform.position);
-            //Vector3 screenPos = Camera.main.WorldToScreenPoint(anchor.position);
-            Vector3 screenPos = Camera.main.WorldToViewportPoint(anchor.position);
-            screenPos.z = 0;
-            //Debug.Log("sending " + gameObject.name + " to screen pos: " + screenPos); 
+                double distance = Vector3.Distance(anchor.position, Camera.main.transform.position);
+                //Vector3 screenPos = Camera.main.WorldToScreenPoint(anchor.position);
+                Vector3 screenPos = Camera.main.WorldToViewportPoint(anchor.position);
+                screenPos.z = 0;
+                //Debug.Log("sending " + gameObject.name + " to screen pos: " + screenPos); 
 
-            //pos.anchoredPosition.Set(screenPos.x, screenPos.y + 1f);
-            // pos.anchoredPosition3D = screenPos;
-            pos.transform.position = // screenPos;
-                Camera.main.ViewportToScreenPoint(screenPos);
-            //pos.z
-            float fontSize = Mathf.Max(Mathf.Min(maxTextSize, 100 / Mathf.Pow((float) distance / 30, 3f)), minTextSize);
-            text.fontSize = fontSize * size;
+                //pos.anchoredPosition.Set(screenPos.x, screenPos.y + 1f);
+                // pos.anchoredPosition3D = screenPos;
+                pos.transform.position = // screenPos;
+                    Camera.main.ViewportToScreenPoint(screenPos);
+                //pos.z
+                float fontSize = Mathf.Max(Mathf.Min(maxTextSize, 100 / Mathf.Pow((float)distance / 30, 3f)), minTextSize);
+                text.fontSize = fontSize * size;
+            }
+            else {
+                text.enabled = false;
+            }
         }
         else
         {

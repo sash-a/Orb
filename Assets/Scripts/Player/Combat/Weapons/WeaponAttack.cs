@@ -18,7 +18,6 @@ public class WeaponAttack : AAttackBehaviour
 
     public PlayerController player;
 
-
     public int selectedWeapon = 0;
 
     public int equippedWeapon = 0;
@@ -74,7 +73,7 @@ public class WeaponAttack : AAttackBehaviour
         player = GetComponent<PlayerController>();
         equippedWeapons.Add(weapons[0]); // Digger
         equippedWeapons.Add(weapons[1]); // Pistol
-        equippedWeapons.Add(weapons[2]); // Assalt rifle
+        equippedWeapons.Add(weapons[2]); // Assault rifle
         equippedWeapons.Add(weapons[6]); // Empty special
 
         if (sniperScope != null)
@@ -90,9 +89,11 @@ public class WeaponAttack : AAttackBehaviour
     private void Update()
     {
         if (PlayerUI.isPaused) return;
-
-        SelectWeapon();
-
+        if (!isReloading)
+        {
+            SelectWeapon();
+        }
+        
         //Attacking
         if (Input.GetButton("Fire1") && Time.time >= weapons[selectedWeapon].nextTimeToFire && !isReloading &&
             !isThrowingGrenade && !Input.GetKey(KeyCode.LeftShift))
@@ -129,7 +130,7 @@ public class WeaponAttack : AAttackBehaviour
         //Debug.Log("cam angle: " + cam.fieldOfView);
 
         //Reload
-        if (Input.GetKey(KeyCode.R) && weapons[selectedWeapon].name != WeaponType.DIGGING_TOOL)
+        if ((Input.GetKey(KeyCode.R) && weapons[selectedWeapon].name != WeaponType.DIGGING_TOOL) || weapons[selectedWeapon].ammunition.getMagAmmo() == 0 && !isReloading)
         {
             //Debug.Log("Reload!");
             StartCoroutine(Reload(weapons[selectedWeapon].ammunition));
@@ -322,12 +323,14 @@ public class WeaponAttack : AAttackBehaviour
         {
             audioSource.PlayOneShot(reloadClip, 0.7f);
 
-            resourceManager.reloadMagazine(A.getMagSize() - A.getMagAmmo(), A);
-
             isReloading = true;
             //wait length of animation (3.3 seconds)
             yield return new WaitForSeconds(3.3f);
             isReloading = false;
+
+            resourceManager.reloadMagazine(A.getMagSize() - A.getMagAmmo(), A);
+
+            
         }
     }
 
@@ -347,7 +350,7 @@ public class WeaponAttack : AAttackBehaviour
         Debug.Log("attacking");
 
         //Crossbow
-        if (weapons[selectedWeapon].name == WeaponType.EX_CROSSBOW)
+        if (weapons[selectedWeapon].name == WeaponType.EX_CROSSBOW && weapons[selectedWeapon].ammunition.getMagAmmo() > 0)
         {
             CmdShootBolt();
             resourceManager.useMagazineAmmo(1, weapons[selectedWeapon].ammunition);

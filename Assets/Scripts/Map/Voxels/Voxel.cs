@@ -10,6 +10,7 @@ public class Voxel : NetworkBehaviour
     [SyncVar] public String subVoxelID;
     [SyncVar] public int shatterLevel;
     [SyncVar] public int shatterCap = -1;//by default is set to MaxShatters - can be lowered externally to stop certain voxels from splitting all the way
+    public bool isInChunk=false;
     public Ray lastHitRay;
     public Vector3 lastHitPosition;
 
@@ -193,6 +194,15 @@ public class Voxel : NetworkBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (isInChunk && isServer) {
+            if (transform.position.magnitude > MapManager.mapSize *1.5f) {
+                //Debug.Log("destroying voxel due to distance before chunk can");
+                CmdDestroyVoxelNoShatter(false);
+            }
+        }
+    }
 
     public void resetScale()
     {
@@ -270,7 +280,7 @@ public class Voxel : NetworkBehaviour
             if (triesRemaining <= 0)
             {
                 Debug.LogError("failed to fix inverse voxel mesh");
-                CmdDestroyVoxelNoShatter();
+                CmdDestroyVoxelNoShatter(true);
             }
         }
     }
@@ -457,7 +467,7 @@ public class Voxel : NetworkBehaviour
         }
         else
         {
-            CmdDestroyVoxelNoShatter();
+            CmdDestroyVoxelNoShatter(true);
         }
 
     }
@@ -511,16 +521,21 @@ public class Voxel : NetworkBehaviour
     }
 
     [Command]
-    internal void CmdDestroyVoxelNoShatter()
+    internal void CmdDestroyVoxelNoShatter(bool showNeighs)
     {
         if (!isServer)
         {
             Debug.LogError("destroy vox called from in vox");
         }
 
+        MapManager.manager.CmdInformDeleted(layer, columnID);//rpcs to all clients
 
         //Debug.Log("destroying voxel at layer: " + layer + "  no shattering");
-        showNeighbours(true);
+        if (showNeighs)
+        {
+            showNeighbours(true);
+        }
+
         if (mainAsset != null)
         {
             //Debug.Log("destroying voxels asset");
@@ -529,13 +544,6 @@ public class Voxel : NetworkBehaviour
         }
 
         NetworkServer.Destroy(gameObject);
-
-
-        if (mainAsset != null)
-        {
-            mainAsset.voxel = null;
-            mainAsset = null;
-        }
 
     }
 

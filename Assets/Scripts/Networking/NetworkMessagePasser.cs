@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -24,12 +25,25 @@ public class NetworkMessagePasser : NetworkBehaviour
         }
     }
 
+
+    struct Instruction
+    {
+        public string message;
+
+        public Instruction(string mess)
+        {
+            message = mess;
+        }
+    }
+
     List<Message> syncedUIMessages;
+    List<Instruction> instructions;
 
 
     private void Start()
     {
         syncedUIMessages = new List<Message>();
+        instructions = new List<Instruction>();
         if (isLocalPlayer)
         {
             singleton = this;
@@ -48,6 +62,53 @@ public class NetworkMessagePasser : NetworkBehaviour
             //this.enabled = false;
         }
 
+        AttendToUIMessage();
+        AttendToInstructions();
+
+    }
+
+    private void AttendToInstructions()
+    {
+        for (int i = 0; i < instructions.Count; i++)
+        {
+            Instruction inst = instructions[i];
+            executeInstruction(inst);
+            instructions.RemoveAt(i);
+            i--;
+        }
+    }
+
+    private bool executeInstruction(Instruction inst)
+    {
+        string message = inst.message;
+        bool executed = false;
+
+        if (message == "shred_map")
+        {
+            //Debug.Log("sending cmd shred map");
+            CmdShredMap();
+            executed = true;
+        }
+
+        return executed;
+    }
+
+    [Command]
+    private void CmdShredMap()
+    {
+        //Debug.Log("CmdShredMap");
+        RpcShredMap();
+    }
+
+    [ClientRpc]
+    private void RpcShredMap()
+    {
+        //Debug.Log("RpcShredMap");
+        ShredManager.singleton.ShredMapNext();
+    }
+
+    private void AttendToUIMessage()
+    {
         for (int i = 0; i < syncedUIMessages.Count; i++)
         {
             CmdPassUIMessageToClients(syncedUIMessages[i].mess, syncedUIMessages[i].showOnServer, syncedUIMessages[i].duration);
@@ -55,6 +116,17 @@ public class NetworkMessagePasser : NetworkBehaviour
             i--;
         }
     }
+
+    public void addSyncUIMessage(string message, bool show, int dur)
+    {
+        syncedUIMessages.Add(new Message(message, show, dur));
+    }
+
+    public void addSyncInstruction(string mess)
+    {
+        instructions.Add(new Instruction(mess));
+    }
+
 
     [Command]
     void CmdInformMapDoneLocally()
@@ -79,8 +151,5 @@ public class NetworkMessagePasser : NetworkBehaviour
         }
     }
 
-    public void addSyncUIMessage(string message, bool show, int dur)
-    {
-        syncedUIMessages.Add(new Message(message, show, dur));
-    }
+
 }

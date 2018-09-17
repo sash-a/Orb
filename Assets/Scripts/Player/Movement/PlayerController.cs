@@ -101,19 +101,17 @@ public class PlayerController : MonoBehaviour
         //Animation
         MovementAnimation(velocity);
 
-        if (MapManager.manager != null && MapManager.manager.warningShell != null)
+
+        if (ShredManager.isInWarningZone(transform.position))
         {
-            if (MapManager.manager.isInWarningZone(transform.position))
-            {
-                new UIMessage("WARNING! You are in the shredding zone!", 1);
-                DynamicLightingController.singleton.informInShredZone();
-                //Debug.Log("player is in warning zone!");
-            }
+            new UIMessage("WARNING! You are in the shredding zone!", 1);
+            DynamicLightingController.singleton.informInShredZone();
+            //Debug.Log("player is in warning zone!");
         }
 
     }
 
-  
+
 
     internal void sendToSpawnRoom()
     {
@@ -189,10 +187,12 @@ public class PlayerController : MonoBehaviour
     public void setPlayerName(string name, bool isLocalPlayer)
     {
         playerName = name;
-        if (!isLocalPlayer || false) {//dont put someones own name on their head
+        if (!isLocalPlayer || false)
+        {//dont put someones own name on their head
             //Debug.Log("objcect player name");
 
-            if (TeamManager.localPlayer.gameObject.name.Contains("unner") == gameObject.name.Contains("unner")) {
+            if (TeamManager.localPlayer.gameObject.name.Contains("unner") == gameObject.name.Contains("unner"))
+            {
                 //if this player is of the same class as the local player
             }
 
@@ -206,15 +206,18 @@ public class PlayerController : MonoBehaviour
                     {
                         playerNameText.setValues(Color.red, name, playerNameTrans);
                     }
-                    else {
+                    else
+                    {
                         playerNameText.setValues(Color.red, gameObject.name, playerNameTrans);
                     }
                 }
-                else {
+                else
+                {
                     Debug.LogError("no player name text transform attached to player: " + gameObject.name);
                 }
             }
-            else {
+            else
+            {
                 Debug.LogError("no in game text object attached to prefab text object");
             }
         }

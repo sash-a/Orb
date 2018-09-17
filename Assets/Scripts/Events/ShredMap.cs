@@ -23,7 +23,7 @@ public class ShredMap : GameEvent
     {
         //yield return new WaitForEndOfFrame();
         //Debug.Log("automatically shredding map");
-        MapManager.manager.CmdShredMap();
+        NetworkMessagePasser.singleton.addSyncInstruction("shred_map");
     }
 
     public override bool hook()
@@ -45,10 +45,7 @@ public class ShredMap : GameEvent
     {
         if (GameEventManager.clockTime <= startTime && GameEventManager.clockTime >= startTime - countDownPeriod && isTimeBased)
         {
-            if (MapManager.manager.warningShell == null)
-            {
-                MapManager.manager.CmdCreateWarningShell();
-            }
+            ShredManager.createWarningShell();
             return Mathf.RoundToInt(startTime - GameEventManager.clockTime);
 
         }

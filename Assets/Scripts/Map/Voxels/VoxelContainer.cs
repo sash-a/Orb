@@ -54,6 +54,11 @@ public class VoxelContainer : Voxel
             Debug.LogError("trying to create voc container with non nul voxel which has a null or deleted points array");
         }
 
+        if (majorMesh == null)
+        {
+            Debug.LogError("cannot extract mesh from vox " + majorVoxel + " ;" + majorVoxel.gameObject + " while trying to create voxel container");
+        }
+
         if (majorVoxel.deletedPoints == null || majorVoxel.deletedPoints.Count == 0 || shatterSmoothedVoxels)
         {//is a full voxel
             //need to construct 6 submeshes using the major mesh data
@@ -259,17 +264,23 @@ public class VoxelContainer : Voxel
 
     private Vector3[] getCenterPoints(Mesh mesh, Voxel majorVox)
     {
+
         float heightVar = 0.4f;//proportion of the height the middle cnter can move up and down along 
         Vector3[] res = new Vector3[] { Vector3.zero, Vector3.zero, Vector3.zero };
         //Debug.Log("getting centers - orig mesh has " + mesh.vertices.Length + " verts");
-        res[0] = (mesh.vertices[(majorVox.deletedPoints.Contains(0)?3:0)] + mesh.vertices[(majorVox.deletedPoints.Contains(1) ? 4 : 1)] + mesh.vertices[(majorVox.deletedPoints.Contains(2) ? 5 : 2)]) / 3.0f;
-        res[2] = (mesh.vertices[(majorVox.deletedPoints.Contains(3) ? 0 : 3)] + mesh.vertices[(majorVox.deletedPoints.Contains(4) ? 1 : 4)] + mesh.vertices[(majorVox.deletedPoints.Contains(5) ? 2 : 5)]) / 3.0f;
+        bool noDeletedPointsArray = majorVox.deletedPoints == null;
+
+        res[0] = (mesh.vertices[(!noDeletedPointsArray && !noDeletedPointsArray && majorVox.deletedPoints.Contains(0) ?3:0)] + mesh.vertices[(!noDeletedPointsArray && majorVox.deletedPoints.Contains(1) ? 4 : 1)] + mesh.vertices[(!noDeletedPointsArray && majorVox.deletedPoints.Contains(2) ? 5 : 2)]) / 3.0f;
+        res[2] = (mesh.vertices[(majorVox.deletedPoints.Contains(3) ? 0 : 3)] + mesh.vertices[(!noDeletedPointsArray && majorVox.deletedPoints.Contains(4) ? 1 : 4)] + mesh.vertices[(!noDeletedPointsArray && majorVox.deletedPoints.Contains(5) ? 2 : 5)]) / 3.0f;
         res[1] = res[0] + (res[2] - res[0]) * (0.5f - heightVar / 2.0f + (float)(rand.NextDouble() * heightVar));
 
         float len = (res[2] - res[0]).magnitude;//to make deviation relative to vox size
         float variationFac = 0.5f;
 
-        Vector3 variationDir = ((mesh.vertices[(majorVox.deletedPoints.Contains(0) ? 3 : 0)] - mesh.vertices[(majorVox.deletedPoints.Contains(1) ? 4 : 1)]) * (float)rand.NextDouble() + (mesh.vertices[(majorVox.deletedPoints.Contains(1) ? 4 : 1)] - mesh.vertices[(majorVox.deletedPoints.Contains(2) ? 5 : 2)]) * (float)rand.NextDouble() + (mesh.vertices[(majorVox.deletedPoints.Contains(0) ? 5 : 2)] - mesh.vertices[(majorVox.deletedPoints.Contains(0) ? 3 : 0)]) * (float)rand.NextDouble()).normalized;
+        Vector3 variationDir = ((mesh.vertices[(!noDeletedPointsArray && majorVox.deletedPoints.Contains(0) ? 3 : 0)] 
+            - mesh.vertices[(!noDeletedPointsArray && majorVox.deletedPoints.Contains(1) ? 4 : 1)]) * (float)rand.NextDouble() 
+            + (mesh.vertices[(!noDeletedPointsArray && majorVox.deletedPoints.Contains(1) ? 4 : 1)] - mesh.vertices[(!noDeletedPointsArray && majorVox.deletedPoints.Contains(2) ? 5 : 2)]) * (float)rand.NextDouble() 
+            + (mesh.vertices[(!noDeletedPointsArray && majorVox.deletedPoints.Contains(0) ? 5 : 2)] - mesh.vertices[(!noDeletedPointsArray && majorVox.deletedPoints.Contains(0) ? 3 : 0)]) * (float)rand.NextDouble()).normalized;
 
         for (int i = 0; i < 3; i++)
         {

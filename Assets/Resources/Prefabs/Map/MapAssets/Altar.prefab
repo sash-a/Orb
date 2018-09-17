@@ -178,7 +178,7 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 14
   m_SkinWidth: 0.01
   m_Mesh: {fileID: 4300062, guid: 1e4b37dee538fa643a1b61b19e1ff33c, type: 3}
@@ -356,6 +356,8 @@ MonoBehaviour:
   defaultColour: {r: 0.41606537, g: 0.2031417, b: 0.7830189, a: 0}
   defaultText: altar
   size: 1
+  minTextSize: 0
+  maxTextSize: 0
 --- !u!114 &114910501365448996
 MonoBehaviour:
   m_ObjectHideFlags: 1

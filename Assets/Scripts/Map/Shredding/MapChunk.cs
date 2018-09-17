@@ -6,7 +6,7 @@ using UnityEngine.Networking;
 public class MapChunk : MonoBehaviour
 {
     HashSet<Voxel> containedVoxels;
-    Vector3 chunkOrigin;
+    public Vector3 chunkOrigin;
     float chunkRadius;
 
     int columnsRemaining = 0;
@@ -21,7 +21,7 @@ public class MapChunk : MonoBehaviour
         }
     }
 
-    private void destroyChunk()
+    public void destroyChunk()
     {
         foreach (Voxel vox in containedVoxels)
         {
