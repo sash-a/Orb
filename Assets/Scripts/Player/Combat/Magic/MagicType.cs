@@ -38,6 +38,8 @@ public class MagicType
     public float initialShieldMana;
     public float maxShieldHealth;
     public float currentShieldHealth;
+    public float shieldCooldownTime;
+    public float shieldHealRate;
 
     // Teleken
     public float telekenMana;

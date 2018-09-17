@@ -136,13 +136,13 @@ public class CaveManager : NetworkBehaviour
 
     private void placeSpawnPortals()
     {
-        Debug.Log("trying to spawn spawner portals, cave bodies found: " + caves.Count);
+        //Debug.Log("trying to spawn spawner portals, cave bodies found: " + caves.Count);
 
 
         foreach (CaveBody body in caves) {
             if (body.tier == 1) {
                 //is tier 2 cave body
-                Debug.Log("found tier 2 cave body");
+                //Debug.Log("found tier 2 cave body");
                 Voxel v = null;
                 int layer = body.centerDepth-4;
                 bool spawned = false;
@@ -150,7 +150,7 @@ public class CaveManager : NetworkBehaviour
                     if (MapManager.manager.doesVoxelExist(layer, body.centerColumnID) && !MapManager.manager.isDeleted(layer, body.centerColumnID) && MapManager.manager.voxels[layer][body.centerColumnID]!=null)
                     {
                         v = MapManager.manager.voxels[layer][body.centerColumnID];
-                        Debug.Log("spawning spawnerPortal");
+                        //Debug.Log("spawning spawnerPortal");
                         v.addMainAsset(-1,MapAsset.Type.RESPAWNPORTAL);
                         spawned = true;
                     }

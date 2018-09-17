@@ -185,7 +185,7 @@ public class MapChunk : MonoBehaviour
             if (!MapManager.manager.isDeleted(i, v.columnID))
             {
                 Voxel vox = MapManager.manager.voxels[i][v.columnID];
-                if (vox != null)
+                if (vox != null    && !vox.isMelted) 
                 {
                     //
                     addVoxel(vox);
@@ -206,6 +206,11 @@ public class MapChunk : MonoBehaviour
                         batchCount++;
                     }
                 }
+                else
+                {
+                    //todo - deal with voxel containers
+                }
+                
             }
         }
         columnsRemaining--;

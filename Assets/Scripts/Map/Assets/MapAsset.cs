@@ -6,6 +6,10 @@ using UnityEngine.Networking;
 
 //Used to orientate a gameObject with a rigidBody correctly in the circle
 //Colab is a bitch
+[RequireComponent( typeof(NetworkIdentity))]
+[RequireComponent(typeof(Rigidbody))]
+
+
 public class MapAsset : NetworkBehaviour
 {
     public enum Type { MAIN, SECONDARY, ALTAR, CRITTERSPANWER, RESPAWNPORTAL };
@@ -51,6 +55,7 @@ public class MapAsset : NetworkBehaviour
         }
 
         rb = GetComponent<Rigidbody>();
+        rb.useGravity = false;
         Vector3 forward = getFoward(-transform.position);
 
         try

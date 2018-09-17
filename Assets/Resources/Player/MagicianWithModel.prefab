@@ -3198,6 +3198,8 @@ MonoBehaviour:
     initialShieldMana: 15
     maxShieldHealth: 150
     currentShieldHealth: 150
+    shieldCooldownTime: 2
+    shieldHealRate: 6
     telekenMana: 10
     telekenRange: 100
   rightHand: {fileID: 4720825156490352}
@@ -3287,7 +3289,7 @@ SphereCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 1.8383086
+  m_Radius: 1.5
   m_Center: {x: 0, y: 1.5, z: 0.5}
 --- !u!136 &136063435761093086
 CapsuleCollider:
@@ -3376,10 +3378,10 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 1.6603394
-  m_Height: 4.506279
+  m_Radius: 1.5
+  m_Height: 4
   m_Direction: 1
-  m_Center: {x: -0.07525635, y: 5.35194, z: 0.22203326}
+  m_Center: {x: -0.07525635, y: 5.8296247, z: 0.22203326}
 --- !u!136 &136625290790341306
 CapsuleCollider:
   m_ObjectHideFlags: 1

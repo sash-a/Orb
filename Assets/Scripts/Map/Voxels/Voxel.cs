@@ -63,7 +63,14 @@ public class Voxel : NetworkBehaviour
         }
         if (centreOfObject.Equals(Vector3.zero))
         {
-            recalcCenters();
+            if (filter != null)
+            {
+                recalcCenters();
+            }
+            else
+            {
+                Debug.LogError("no filter component on fresh voxel - " + gameObject + ", " + this);
+            }
         }
 
         if (rand == null)
@@ -71,8 +78,18 @@ public class Voxel : NetworkBehaviour
             rand = new System.Random(layer * columnID + columnID);
         }
 
-        GetComponent<MeshRenderer>().receiveShadows = false;
-        GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        MeshRenderer r = GetComponent<MeshRenderer>();
+        if (r != null)
+        {
+            GetComponent<MeshRenderer>().receiveShadows = false;
+            GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        }
+        else
+        {
+            Debug.LogError("created new voxel from voxel without mesh renderer");
+        }
+        
+       
 
         gameObject.tag = "TriVoxel";
         MapManager man = MapManager.manager;
@@ -745,6 +762,7 @@ public class Voxel : NetworkBehaviour
         if (GetComponent<MeshRenderer>() == null)
         {
             Debug.LogError("trying to create a new voxel from an old voxel without a mesh renderer");
+            return false;
         }
         //Debug.Log("creeating new voxel");
         int newVoxelLayer = layer + dir;
@@ -788,9 +806,18 @@ public class Voxel : NetworkBehaviour
 
     public void cloneMeshFilter()
     {
+        
         MeshFilter mf = GetComponent<MeshFilter>();
-        Mesh meshCopy = Mesh.Instantiate(mf.sharedMesh) as Mesh; //make a deep copy
-        GetComponent<MeshFilter>().mesh = meshCopy;
+        if (mf != null)
+        {
+            Mesh meshCopy = Mesh.Instantiate(mf.sharedMesh) as Mesh; //make a deep copy
+            GetComponent<MeshFilter>().mesh = meshCopy;
+        }
+        else
+        {
+            Debug.LogError("cannot clone mesh filter - voxel has none " + gameObject);
+        }
+        
     }
 
     internal void smoothBlockInPlace()
@@ -1496,6 +1523,13 @@ public class Voxel : NetworkBehaviour
 
     public void recalcCenters()
     {
+
+        if (filter == null || filter.mesh == null )
+        {
+            Debug.LogError("no filter (" + filter+") attached to voxel - cannot calculate voxel("+ this +") center  " + gameObject);
+            return;
+        }
+
         Vector3[] vertices = filter.mesh.vertices;
         Vector3 av = new Vector3(0, 0, 0);
         for (int i = 0; i < vertices.Length; i++)

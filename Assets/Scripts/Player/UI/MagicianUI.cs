@@ -102,17 +102,16 @@ public class MagicianUI : PlayerUI
 
     void setShield()
     {
-//        if (shieldHealth == null)
-//        {
-//            shieldBar.localScale = new Vector3(1f, 0, 1f);
-//            return;
-//        }
+        Debug.Log("Displaying net health: " + (shieldHealth == null));
+        if (shieldHealth == null)
+        {
+            shieldBar.localScale = new Vector3
+                (1f, magic.getAttackStats().currentShieldHealth / magic.getAttackStats().maxShieldHealth, 1f);
+            return;
+        }
 
-//        if (shieldHealth.maxHealth != 0)
-//            shieldBar.localScale = new Vector3(1f, shieldHealth.getHealth() / shieldHealth.maxHealth, 1f);
-
-        shieldBar.localScale =
-            new Vector3(1f, magic.getAttackStats().currentShieldHealth / magic.getAttackStats().maxShieldHealth, 1f);
+        if (shieldHealth.maxHealth != 0)
+            shieldBar.localScale = new Vector3(1f, shieldHealth.getHealth() / shieldHealth.maxHealth, 1f);
     }
 
     void setEnergy(float amount, float maxEnergy)

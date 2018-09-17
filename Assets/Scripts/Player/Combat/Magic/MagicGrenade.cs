@@ -17,6 +17,7 @@ public class MagicGrenade : NetworkBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
+        // Do nothing if hit the caster
         var id = other.gameObject.GetComponent<Identifier>();
         if (id != null && id.id == caster.id)
             return;

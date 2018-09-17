@@ -52,11 +52,11 @@ public class Gravity : MonoBehaviour
         {
             if (Vector3.Distance(transform.position, oldPos) < 0.25f && age > 20 && rb.velocity.magnitude < 0.18f)
             {
-                try
+                if(gameObject.GetComponent<NetworkIdentity>() != null)
                 {
                     NetworkServer.Destroy(gameObject);
                 }
-                catch
+                else
                 {
                     Destroy(gameObject);
                 }

@@ -36,47 +36,37 @@ public class Shield : NetworkBehaviour
     {
         caster = id;
 
-        var player = GameManager.getObject(caster.id);
-        //Debug.Log(player.GetComponent<MagicAttack>().getAttackStats().artifactType);
-        // if owns artifact
-        if (player.GetComponent<MagicAttack>().getAttackStats().artifactType == PickUpItem.ItemType.HEALER_ARTIFACT)
-        {
-            Debug.Log("Scaling");
+        var player = caster.gameObject.GetComponent<MagicAttack>();
+        // if owns artifact make the shield larger
+        if (player.getAttackStats().artifactType == PickUpItem.ItemType.HEALER_ARTIFACT)
             transform.localScale = new Vector3(18f, 9, 18f);
-        }
 
-        // UI
-        if (isServer) return;
+        // Setting the health of the shield needs to be done locally (for UI) and server side (for sync var)
+        if (!(player.isLocalPlayer || player.isServer))
+            return;
 
         var netHealth = GetComponent<NetHealth>();
         netHealth.setInitialHealth(maxHealth);
         netHealth.setHealth(currentHealth);
-        if (caster.UI != null)
-        {
-            ((MagicianUI) caster.UI).onShieldUp(netHealth); // server error on cast
-            Debug.Log(GetComponent<NetHealth>().getHealth() + "/" + GetComponent<NetHealth>().maxHealth);
-        }
 
-        // Move camera
-//        var camPivot = GameManager.getObject(caster.id).GetComponentInChildren<Camera>().transform.parent.transform;
-//        Debug.Log("moving cam " + camPivot.position);
-//        camPivot.position += camPivot.up * 2;
-//        Debug.Log("moved cam " + camPivot.position);
+        // UI
+        if (player.isLocalPlayer && caster.UI != null)
+            ((MagicianUI) caster.UI).onShieldUp(netHealth); // server error on cast
     }
 
 
     private void OnDisable()
     {
-        if (!isLocalPlayer)
-        {
-            GameManager.deregister(transform.name);
-            return;
-        }
+        Debug.Log("In shield on disable...");
 
-        Debug.Log("Looking for magician: " + caster.id);
+        GameManager.deregister(transform.name);
+        if (!caster.gameObject.GetComponent<MagicAttack>().isLocalPlayer)
+            return;
+
         var magic = GameManager.getObject(caster.id).GetComponent<MagicAttack>(); // Client error on release
 
-        magic.shieldDown();
+        Debug.Log("Calling shield down: " + GetComponent<NetHealth>().getHealth());
+        magic.shieldDown(GetComponent<NetHealth>().getHealth());
 
         // Remove from UI
         ((MagicianUI) caster.GetComponent<Identifier>().UI).onShieldDown(); // Server error on release

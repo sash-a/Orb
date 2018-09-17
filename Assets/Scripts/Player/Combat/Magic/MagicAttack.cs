@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -23,6 +24,7 @@ public class MagicAttack : AAttackBehaviour
     private Shield currentShield; // The current instance of shield
     [SerializeField] private GameObject shield;
     private bool shieldUp; // True if the player is currently using a shield
+    private bool isShieldCoolingdown;
 
     // Telekenesis
     private bool isTelekening;
@@ -141,10 +143,13 @@ public class MagicAttack : AAttackBehaviour
         if (Input.GetButtonDown("Use")) pickup();
 
         // Throw grenade
-        if (Input.GetKeyDown(KeyCode.G))
+        if (Input.GetKeyDown(KeyCode.G)) CmdSpawnGrenade();
+
+
+        if (Input.GetKeyDown(KeyCode.L))
         {
-            //Debug.Log("Spawning grenade");
-            CmdSpawnGrenade();
+            Debug.Log("Damaging shield");
+            CmdShieldHit(currentShield.gameObject, 10);
         }
 
         //Animation:
@@ -219,26 +224,14 @@ public class MagicAttack : AAttackBehaviour
                 isTelekening = true;
 
                 if (voxel.shatterLevel >= 1)
-                {
-                    //Debug.Log("Sub");
                     CmdVoxelTeleken(voxel.columnID, voxel.layer, voxel.subVoxelID);
-                }
                 else
-                {
-                    //Debug.Log("not sub");
                     CmdVoxelTeleken(voxel.columnID, voxel.layer, "NOTSUB");
-                }
-
-                //decrease look sense
             }
             else // Is player
             {
-                Debug.Log("Human teleken");
 //                CmdEnableTeleken(hitFromHand.transform.root.gameObject);
             }
-        }
-        else if (attackStats.isForcePush) // This is not yet working
-        {
         }
         else if (attackStats.isDigger)
         {
@@ -297,7 +290,8 @@ public class MagicAttack : AAttackBehaviour
     {
         if (!isLocalPlayer) return;
 
-        if (resourceManager.getEnergy() > attackStats.initialShieldMana && attackStats.isShield && !shieldUp)
+        if (resourceManager.getEnergy() > attackStats.initialShieldMana && attackStats.isShield && !shieldUp &&
+            !isShieldCoolingdown)
         {
             resourceManager.useEnergy(attackStats.initialShieldMana);
 
@@ -419,13 +413,16 @@ public class MagicAttack : AAttackBehaviour
         if (!shieldUp && !isAttacking) resourceManager.gainEnery(attackStats.manaRegen * Time.deltaTime);
 
         // Shield health gain
-        if (!shieldUp)
+        if (!shieldUp && !isShieldCoolingdown)
         {
-            attackStats.currentShieldHealth =
-                Math.Min(attackStats.maxShieldHealth, attackStats.currentShieldHealth + Time.deltaTime / 3);
+            attackStats.currentShieldHealth = Math.Min
+            (
+                attackStats.maxShieldHealth,
+                attackStats.currentShieldHealth + Time.deltaTime * attackStats.shieldHealRate
+            );
         }
 
-        
+
         // Mana drain
         // Dig
         if (isDigging) resourceManager.useEnergy(attackStats.diggerMana * Time.deltaTime);
@@ -548,21 +545,6 @@ public class MagicAttack : AAttackBehaviour
 
     #region shield
 
-    public void setUpShield(GameObject shieldInst)
-    {
-        currentShield = shieldInst.GetComponent<Shield>();
-        var netHealth = currentShield.GetComponent<NetHealth>();
-        netHealth.setInitialHealth(attackStats.maxShieldHealth);
-        netHealth.setHealth(attackStats.currentShieldHealth);
-
-        // Setting the caster to this magician and setting up UI
-        currentShield.setCaster(GetComponent<Identifier>(), attackStats.maxShieldHealth,
-            attackStats.currentShieldHealth);
-
-        // Allowing it to move with the player
-        currentShield.transform.parent = transform;
-    }
-
     /// <summary>
     /// Called on the server to spawn a shield for the local player
     /// </summary>
@@ -574,14 +556,44 @@ public class MagicAttack : AAttackBehaviour
         NetworkServer.Spawn(shieldInst);
         // Servers current shield is not neccaserily the servers instance of shield (is likely local clients instance)
         setUpShield(shieldInst);
-        RpcSetUpShieldUI(casterID, shieldInst.GetComponent<Identifier>().id);
+
+        var shieldID = shieldInst.GetComponent<Identifier>().id;
+
+        setUpShieldUI(casterID, shieldID);
+        RpcSetUpShieldUI(casterID, shieldID, shieldInst);
+    }
+
+    public void setUpShield(GameObject shieldInst)
+    {
+        currentShield = shieldInst.GetComponent<Shield>();
+        var netHealth = currentShield.GetComponent<NetHealth>();
+        netHealth.setInitialHealth(attackStats.maxShieldHealth);
+        netHealth.setHealth(attackStats.currentShieldHealth);
+
+        // Setting the caster to this magician and setting up UI
+        currentShield.setCaster
+        (
+            GetComponent<Identifier>(),
+            attackStats.maxShieldHealth,
+            attackStats.currentShieldHealth
+        );
+
+        // Allowing it to move with the player
+        currentShield.transform.parent = transform;
     }
 
     /// <summary>
     /// Makes the shield a child of the local player on all clients
     /// </summary>
     [ClientRpc]
-    private void RpcSetUpShieldUI(string casterID, string shieldID)
+    private void RpcSetUpShieldUI(string casterID, string shieldID, GameObject shieldInst)
+    {
+        // This is not a UI element but is required on all clients for UI to work
+        currentShield = shieldInst.GetComponent<Shield>();
+        setUpShieldUI(casterID, shieldID);
+    }
+
+    private void setUpShieldUI(string casterID, string shieldID)
     {
         GameManager.getObject(shieldID).GetComponent<Shield>().setCaster
         (
@@ -607,9 +619,20 @@ public class MagicAttack : AAttackBehaviour
     /// <summary>
     /// Sets <code>shieldUp</code> to false
     /// </summary>
-    public void shieldDown()
+    public void shieldDown(float shieldHealth)
     {
         shieldUp = false;
+        attackStats.currentShieldHealth = Mathf.Max(0, shieldHealth);
+
+        if (attackStats.currentShieldHealth <= 0)
+            StartCoroutine(shieldCooldown());
+    }
+
+    private IEnumerator shieldCooldown()
+    {
+        isShieldCoolingdown = true;
+        yield return new WaitForSeconds(attackStats.shieldCooldownTime);
+        isShieldCoolingdown = false;
     }
 
     #endregion
