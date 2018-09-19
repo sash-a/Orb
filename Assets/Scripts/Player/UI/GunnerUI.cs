@@ -42,8 +42,6 @@ public class GunnerUI : PlayerUI
 
     private void Start()
     {
-        base.Start();
-
         if (player != null && player.GetComponent<Identifier>().typePrefix != Identifier.gunnerType)
         {
             Debug.LogError("Displaying incorrect HUD");
@@ -116,13 +114,6 @@ public class GunnerUI : PlayerUI
             weaponWheelToggle = !weaponWheelToggle;
             weaponWheel.SetActive(weaponWheelToggle);
             togglePauseMenu();
-            if (weaponWheelToggle)
-            {
-                localPlayerUI.setCursorState(CursorLockMode.Confined, true);
-            }
-            else {
-                localPlayerUI.setCursorState(CursorLockMode.Locked, false);
-            }
         }
 
         //if (Input.GetKeyUp(KeyCode.Q))

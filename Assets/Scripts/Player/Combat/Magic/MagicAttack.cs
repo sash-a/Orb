@@ -71,6 +71,7 @@ public class MagicAttack : AAttackBehaviour
 
     #endregion
 
+    public DamageType dmg;
 
     void Start()
     {
@@ -195,7 +196,8 @@ public class MagicAttack : AAttackBehaviour
         if (attackStats.isDamage)
         {
             isDamaging = true;
-            playDamageEffect(true);
+//            playDamageEffect(true);
+            dmg.startAttack();
         }
         else if (attackStats.isTelekenetic)
         {
@@ -270,7 +272,8 @@ public class MagicAttack : AAttackBehaviour
         else if (attackStats.isDamage)
         {
             isDamaging = false;
-            playDamageEffect(false);
+//            playDamageEffect(false);
+            dmg.endAttack();
         }
         else if (attackStats.isDigger)
         {
@@ -500,47 +503,50 @@ public class MagicAttack : AAttackBehaviour
         if (timePassed < waitTime)
             return;
         timePassed = 0;
+        
+        dmg.attack();
 
-        // Checking range, need high distance in raycast to orient effect
-        if (Mathf.Abs(Vector3.Distance(hitFromCam.point, transform.position)) > attackStats.attackRange) return;
-
-        // Shoot ray from hand to hit position
-        RaycastHit hitFromHand;
-        if (!Physics.Linecast(rightHand.position, hitFromCam.point + 2 * cam.transform.forward, out hitFromHand, mask))
-            return; // This should never return
-
-        Debug.Log("Hit: " + hitFromHand.collider.tag);
-
-        var rootTransform = hitFromHand.collider.transform.root;
-
-        if (rootTransform.CompareTag(PLAYER_TAG) && !hitFromHand.collider.CompareTag("Shield"))
-        {
-            var character = rootTransform.gameObject.GetComponent<Identifier>().typePrefix;
-            if (character == Identifier.magicianType) // Heal
-            {
-                createDamageText(rootTransform, attackStats.heal, true);
-                CmdPlayerAttacked(rootTransform.name, -attackStats.heal);
-            }
-            else // Damage
-            {
-                Debug.Log("Hit head: " + (hitFromHand.collider.name == "Head"));
-                float damage = hitFromHand.collider.name == "Head"
-                    ? attackStats.attackDamage * attackStats.headshotMultiplier
-                    : attackStats.attackDamage;
-
-                createDamageText(rootTransform, damage, false, hitFromHand.collider.name == "Head");
-                CmdPlayerAttacked(rootTransform.name, damage);
-            }
-        }
-        else if (hitFromHand.collider.CompareTag(VOXEL_TAG))
-        {
-            CmdVoxelDamaged(hitFromHand.collider.gameObject, attackStats.attackEnvDamage);
-        }
-        else if (hitFromHand.collider.CompareTag("Shield"))
-        {
-            createDamageText(hitFromHand.transform, attackStats.heal, true, false, true);
-            CmdShieldHit(hitFromHand.collider.gameObject, attackStats.heal);
-        }
+//
+//        // Checking range, need high distance in raycast to orient effect
+//        if (Mathf.Abs(Vector3.Distance(hitFromCam.point, transform.position)) > attackStats.attackRange) return;
+//
+//        // Shoot ray from hand to hit position
+//        RaycastHit hitFromHand;
+//        if (!Physics.Linecast(rightHand.position, hitFromCam.point + 2 * cam.transform.forward, out hitFromHand, mask))
+//            return; // This should never return
+//
+//        Debug.Log("Hit: " + hitFromHand.collider.tag);
+//
+//        var rootTransform = hitFromHand.collider.transform.root;
+//
+//        if (rootTransform.CompareTag(PLAYER_TAG) && !hitFromHand.collider.CompareTag("Shield"))
+//        {
+//            var character = rootTransform.gameObject.GetComponent<Identifier>().typePrefix;
+//            if (character == Identifier.magicianType) // Heal
+//            {
+//                createDamageText(rootTransform, attackStats.heal, true);
+//                CmdPlayerAttacked(rootTransform.name, -attackStats.heal);
+//            }
+//            else // Damage
+//            {
+//                Debug.Log("Hit head: " + (hitFromHand.collider.name == "Head"));
+//                float damage = hitFromHand.collider.name == "Head"
+//                    ? attackStats.attackDamage * attackStats.headshotMultiplier
+//                    : attackStats.attackDamage;
+//
+//                createDamageText(rootTransform, damage, false, hitFromHand.collider.name == "Head");
+//                CmdPlayerAttacked(rootTransform.name, damage);
+//            }
+//        }
+//        else if (hitFromHand.collider.CompareTag(VOXEL_TAG))
+//        {
+//            CmdVoxelDamaged(hitFromHand.collider.gameObject, attackStats.attackEnvDamage);
+//        }
+//        else if (hitFromHand.collider.CompareTag("Shield"))
+//        {
+//            createDamageText(hitFromHand.transform, attackStats.heal, true, false, true);
+//            CmdShieldHit(hitFromHand.collider.gameObject, attackStats.heal);
+//        }
     }
 
     #region shield

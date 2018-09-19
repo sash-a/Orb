@@ -378,7 +378,7 @@ GameObject:
   - component: {fileID: 114322111051155298}
   m_Layer: 8
   m_Name: MagicianWithModel
-  m_TagString: Player
+  m_TagString: Magician
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3218,6 +3218,33 @@ MonoBehaviour:
   pickupDistance: 20
   animator: {fileID: 95638754553782564}
   cameraPivot: {fileID: 4090603448813962}
+  dmg:
+    player: {fileID: 4828850647062346}
+    magic: {fileID: 114685611026119682}
+    range: 200
+    mana: 5
+    isActive: 0
+    fx: {fileID: 198019004327870092}
+    handFx: {fileID: 198975176742124356}
+    cam: {fileID: 20564090809857192}
+    mask:
+      serializedVersion: 2
+      m_Bits: 4294835967
+    rightHand: {fileID: 4720825156490352}
+    damageNames:
+    - Magician
+    - Gunner
+    - TriVoxel
+    - Head
+    - Shield
+    damageValues:
+    - -7
+    - 10
+    - 3
+    - 1.5
+    - -5
+    damageText: {fileID: 1248568831543154, guid: 45276698013b05e4ba597fed8590ae33,
+      type: 2}
 --- !u!114 &114756109489538120
 MonoBehaviour:
   m_ObjectHideFlags: 1

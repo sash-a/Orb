@@ -44,7 +44,7 @@ public class WaitForAllMapsToComplete : GameEvent
         //Debug.Log("executing wait for maps");
         TeamManager.singleton.CmdSpawnAllPlayers();
         GameEventManager.singleton.CmdAddShredEvents();
-
+        TeamManager.localPlayer.GetComponent<PlayerActions>().deliverPlayerName();
     }
 
     int triesLeft = 1000;

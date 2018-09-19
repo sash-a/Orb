@@ -187,9 +187,9 @@ public class PlayerController : MonoBehaviour
     public void setPlayerName(string name, bool isLocalPlayer)
     {
         playerName = name;
-        if (!isLocalPlayer|| true)
+        if (!isLocalPlayer || false)
         {//dont put someones own name on their head
-            Debug.Log("set player name: " + name);
+            //Debug.Log("objcect player name");
 
             if (TeamManager.localPlayer.gameObject.name.Contains("unner") == gameObject.name.Contains("unner"))
             {
@@ -202,7 +202,7 @@ public class PlayerController : MonoBehaviour
             {
                 if (playerNameTrans != null)
                 {
-                    if (name != null && name.Length>0)
+                    if (name != null)
                     {
                         playerNameText.setValues(Color.red, name, playerNameTrans);
                     }

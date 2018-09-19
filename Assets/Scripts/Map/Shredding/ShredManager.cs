@@ -30,23 +30,14 @@ public class ShredManager : MonoBehaviour
         singleton = this;
     }
 
-    private void Update()
-    {
-        if (shredNo == 4 && warningShell != null)
-        {
-            Destroy(warningShell);
-        }
-    }
 
-
-    public void ShredMapNext()//has local player authority
+    public void ShredMapNext()
     {
         if (warningShell != null)
         {
             Destroy(warningShell);
         }
-        else
-        {
+        else {
             Debug.LogError("no warning shell - but trying to shred");
         }
 
@@ -65,24 +56,22 @@ public class ShredManager : MonoBehaviour
 
         shredNo++;
         updateShreddingShell();
-        nextShredRadius += sizeIncrease;
+        nextShredRadius += sizeIncrease; 
     }
 
     private void createNextMapChunk()
     {
-        if (chunk != null)
-        {
+        if (chunk != null) {
             chunk.destroyChunk();
         }
 
         StartCoroutine(createMapChunkIncrementally());
-
+        
     }
 
     int batchCount = 0;
 
-    IEnumerator createMapChunkIncrementally()
-    {
+    IEnumerator createMapChunkIncrementally() {
 
         //Debug.Log("started creating map chunk : " + shredNo);
 
@@ -141,7 +130,7 @@ public class ShredManager : MonoBehaviour
             batchCount++;
         }
 
-        chunk.finishChunk(nextShredRadius);
+        //chunk.finishChunk(shredOrigin, nextShredRadius);
 
         //Debug.Log("finished creating map chunk : " + (shredNo - 1));
 
@@ -154,7 +143,7 @@ public class ShredManager : MonoBehaviour
             shreddingShell = (GameObject)Instantiate<UnityEngine.Object>(Resources.Load("Prefabs/Map/ShreddingShell"));
             shreddingShell.transform.position = shredOrigin;
         }
-        shreddingShell.transform.localScale = new Vector3(2.1f * nextShredRadius, 2.1f * nextShredRadius, 2.1f * nextShredRadius);
+        shreddingShell.transform.localScale = new Vector3(2.1f*nextShredRadius, 2.1f*nextShredRadius,2.1f* nextShredRadius);
     }
 
 
@@ -174,14 +163,12 @@ public class ShredManager : MonoBehaviour
 
     internal static bool isInWarningZone(Vector3 position)
     {
-        if (singleton == null)
-        {
+        if (singleton == null) {
             //Debug.Log("singleton is null");
             return false;
         }
 
-        if (singleton.warningShell == null)
-        {
+        if (singleton.warningShell == null) {
             //Debug.Log("no warning shell");
             return false;
         }
@@ -197,7 +184,7 @@ public class ShredManager : MonoBehaviour
         return false;
     }
 
-    internal void setProperties(MapManager mapManager, bool isServer, Dictionary<int, Dictionary<int, Voxel>> voxs)
+    internal void setProperties(MapManager mapManager, bool isServer , Dictionary<int, Dictionary<int, Voxel>> voxs)
     {
         voxels = voxs;
         manager = mapManager;

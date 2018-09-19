@@ -238,8 +238,8 @@ public class MapManager : NetworkBehaviour
         mapDoneLocally = true;
         SmoothVoxels();
         CaveManager.manager.placeCavePortalsArtefacts();
+
         setUpShredManager();
-        NetworkMessagePasser.singleton.addSyncInstruction("deliver_player_name");
 
 
         GetComponent<MapAssetManager>().genAssets();
@@ -525,10 +525,11 @@ public class MapManager : NetworkBehaviour
         }
     }
 
-    [Command]//should only be called from network message passer
+    [Command]
     internal void CmdInformDeleted(int layer, int columnID) //block at layer columnID
     {
         RpcInformDeleted(layer, columnID);
+        //manager.StartCoroutine(informNeighbours(layer, columnID));
     }
 
     [ClientRpc]
