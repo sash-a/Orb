@@ -33,29 +33,29 @@ public class DamageType : SpellType
 
         var rootTransform = hitFromHand.collider.transform.root;
 
-        if (hitFromHand.collider.CompareTag(SHIELD_TAG))
+        if (hitFromHand.collider.name.ToLower().Contains(SHIELD))
         {
-            createDamageText(hitFromHand.transform, getDamageValue(SHIELD_TAG), true, false, true);
-            magic.CmdShieldHit(hitFromHand.collider.gameObject, getDamageValue(SHIELD_TAG));
+            createDamageText(hitFromHand.transform, getDamageValue(SHIELD), true, false, true);
+            magic.CmdShieldHit(hitFromHand.collider.gameObject, getDamageValue(SHIELD));
         }
-        else if (rootTransform.CompareTag(GUNNER_TAG))
+        else if (rootTransform.name.ToLower().Contains(GUNNER))
         {
             Debug.Log("Hit head: " + (hitFromHand.collider.name == HEAD));
             float damage = hitFromHand.collider.name == HEAD
-                ? getDamageValue(GUNNER_TAG) * getDamageValue(HEAD)
-                : getDamageValue(GUNNER_TAG);
+                ? getDamageValue(GUNNER) * getDamageValue(HEAD)
+                : getDamageValue(GUNNER);
 
             createDamageText(rootTransform, damage, false, hitFromHand.collider.name == HEAD);
             magic.CmdPlayerAttacked(rootTransform.GetComponent<Identifier>().id, damage);
         }
-        else if (rootTransform.CompareTag(MAGICIAN_TAG))
+        else if (rootTransform.name.ToLower().Contains(MAGICIAN))
         {
-            createDamageText(rootTransform, getDamageValue(MAGICIAN_TAG), true);
-            magic.CmdPlayerAttacked(rootTransform.GetComponent<Identifier>().id, getDamageValue(MAGICIAN_TAG));
+            createDamageText(rootTransform, getDamageValue(MAGICIAN), true);
+            magic.CmdPlayerAttacked(rootTransform.GetComponent<Identifier>().id, getDamageValue(MAGICIAN));
         }
-        else if (hitFromHand.collider.CompareTag(VOXEL_TAG))
+        else if (hitFromHand.collider.name.ToLower().Contains(VOXEL))
         {
-            magic.CmdVoxelDamaged(hitFromHand.collider.gameObject, getDamageValue(VOXEL_TAG));
+            magic.CmdVoxelDamaged(hitFromHand.collider.gameObject, getDamageValue(VOXEL));
         }
     }
 

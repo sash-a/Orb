@@ -5,10 +5,10 @@ using UnityEngine;
 public abstract class SpellType
 {
 	public const string PLAYER_TAG = "Player";
-	public const string VOXEL_TAG = "TriVoxel";
-	public const string MAGICIAN_TAG = "Magician";
-	public const string GUNNER_TAG = "Gunner";
-	public const string SHIELD_TAG = "Shield";
+	public const string VOXEL = "voxel";
+	public const string MAGICIAN = "magician";
+	public const string GUNNER = "gunner";
+	public const string SHIELD = "shield";
     
 	public Transform player;
 	public MagicAttack magic;

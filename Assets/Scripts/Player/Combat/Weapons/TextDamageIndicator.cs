@@ -32,13 +32,16 @@ public class TextDamageIndicator : MonoBehaviour
 
     public void setUp(int damage, bool isHealing = false, bool isHeadShot = false, bool isShield = false)
     {
+        if (isHealing)
+            damage = -damage;
+
         damageAmount.text = damage + "";
 
         if (isHeadShot)
             damageAmount.color = Color.red;
         else if (isHealing)
             damageAmount.color = Color.green;
-        else if (isShield) 
+        else if (isShield)
             damageAmount.color = Color.blue;
     }
 }
