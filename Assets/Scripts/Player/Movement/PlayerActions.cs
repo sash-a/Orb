@@ -7,6 +7,8 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerActions : NetworkBehaviour
 {
+    public static PlayerActions localActions;
+
     Vector3 velocity;
     Vector3 rotation;
 
@@ -39,6 +41,9 @@ public class PlayerActions : NetworkBehaviour
         }
         else
         {
+            if (localActions == null) {
+                localActions = this;
+            }
             PlayerController player = GetComponent<PlayerController>();
             if (player != null)
             {
@@ -72,17 +77,6 @@ public class PlayerActions : NetworkBehaviour
         player = GetComponent<PlayerController>();
     }
 
-    internal void deliverPlayerName()
-    {
-        if (isLocalPlayer)
-        {
-            Debug.Log("init player name");
-            CmdSetPlayerName(TeamManager.localPlayerName);
-        }
-        else {
-            Debug.LogError("trying to deliver name from non local player");
-        }
-    }
 
     void FixedUpdate()
     {
@@ -201,9 +195,9 @@ public class PlayerActions : NetworkBehaviour
     }
 
     [Command]
-    void CmdSetPlayerName(string name)
+    public void CmdSetPlayerName(string name)
     {
-        Debug.Log("cmd player name");
+        //Debug.Log("cmd player name : " + name);
 
         RpcSetPlayerName(name);
         player.setPlayerName(name, isLocalPlayer);
@@ -213,7 +207,7 @@ public class PlayerActions : NetworkBehaviour
     [ClientRpc]
     void RpcSetPlayerName(string name)
     {
-        Debug.Log("rpc player name: " + name);
+        //Debug.Log("rpc player name: " + name);
         if (player == null)
         {
             player = GetComponent<PlayerController>();
@@ -222,6 +216,7 @@ public class PlayerActions : NetworkBehaviour
                 Debug.LogError("cannot find component player controller from player action script");
             }
         }
+
         if (name != null)
         {
             player.setPlayerName(name, isLocalPlayer);

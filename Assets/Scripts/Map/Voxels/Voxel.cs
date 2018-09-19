@@ -5,12 +5,12 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 public class Voxel : NetworkBehaviour
-{    
+{
     [SyncVar] public bool isBottom;
     [SyncVar] public String subVoxelID;
     [SyncVar] public int shatterLevel;
     [SyncVar] public int shatterCap = -1;//by default is set to MaxShatters - can be lowered externally to stop certain voxels from splitting all the way
-    public bool isInChunk=false;
+    public bool isInChunk = false;
     public Ray lastHitRay;
     public Vector3 lastHitPosition;
 
@@ -45,7 +45,7 @@ public class Voxel : NetworkBehaviour
     public MapAsset mainAsset;
     public HashSet<MapAsset> secondaryAssets;//secondary assets are not network spawned - they do not fall over or collide with the player
 
-    [SyncVar]  public bool hasEnergy;
+    [SyncVar] public bool hasEnergy;
     public bool isCaveFloor;
     public bool isCaveCeiling;
     public bool isCaveBorder;
@@ -89,8 +89,8 @@ public class Voxel : NetworkBehaviour
         {
             Debug.LogError("created new voxel from voxel without mesh renderer");
         }
-        
-       
+
+
 
         gameObject.tag = "TriVoxel";
         MapManager man = MapManager.manager;
@@ -172,7 +172,7 @@ public class Voxel : NetworkBehaviour
                     MapManager.manager.deviateSingleVoxel(this);
                 }
             }
-            if(voxelPositon == null)
+            if (voxelPositon == null)
             {
                 voxelPositon = transform.GetChild(0);
                 if (voxelPositon == null)
@@ -196,8 +196,10 @@ public class Voxel : NetworkBehaviour
 
     private void Update()
     {
-        if (isInChunk && isServer) {
-            if (transform.position.magnitude > MapManager.mapSize *1.5f) {
+        if (isInChunk && isServer)
+        {
+            if (transform.position.magnitude > MapManager.mapSize * 1.5f)
+            {
                 //Debug.Log("destroying voxel due to distance before chunk can");
                 CmdDestroyVoxelNoShatter(false);
             }
@@ -430,7 +432,7 @@ public class Voxel : NetworkBehaviour
             Debug.LogError("trying to destroy voxel without mesh filter - ismelted:" + isMelted);
             return;
         }
-        
+
 
         //Debug.Log("destroy voxel called");  
         if (mainAsset != null)
@@ -443,7 +445,7 @@ public class Voxel : NetworkBehaviour
         }
 
 
-        if (shatterCap > 0 && MapManager.manager.shatters>0) //using shattering
+        if (shatterCap > 0 && MapManager.manager.shatters > 0) //using shattering
         {
             if (gameObject.name != "SubVoxel") //not subvoxel - regular voxel
             {
@@ -528,7 +530,10 @@ public class Voxel : NetworkBehaviour
             Debug.LogError("destroy vox called from in vox");
         }
 
-        MapManager.manager.CmdInformDeleted(layer, columnID);//rpcs to all clients
+        if (shatterLevel == 0)
+        {
+            NetworkMessagePasser.singleton.informDeleted(layer, columnID);
+        }
 
         //Debug.Log("destroying voxel at layer: " + layer + "  no shattering");
         if (showNeighs)
@@ -695,11 +700,15 @@ public class Voxel : NetworkBehaviour
 
     public void showNeighbours(bool deleted)
     {
+        if (shatterLevel > 0) {
+            Debug.LogError("trying to create new voxels from shattered voxel");
+        }
+
         if (!isServer)
         {
             if (deleted)
             {
-                MapManager.manager.CmdInformDeleted(layer, columnID);
+                NetworkMessagePasser.singleton.informDeleted(layer, columnID);
             }
             //Debug.Log("show neighbours called on client");
             return;
@@ -749,7 +758,7 @@ public class Voxel : NetworkBehaviour
 
         if (deleted)
         {
-            MapManager.manager.CmdInformDeleted(layer, columnID);
+            NetworkMessagePasser.singleton.informDeleted(layer, columnID);
         }
     }
 
@@ -761,7 +770,8 @@ public class Voxel : NetworkBehaviour
     {
         if (!isServer || isMelted)
         {
-            if (isMelted) {
+            if (isMelted)
+            {
                 Debug.LogError("trying to create new vox from a voxel container");
             }
             return false;
@@ -814,7 +824,7 @@ public class Voxel : NetworkBehaviour
 
     public void cloneMeshFilter()
     {
-        
+
         MeshFilter mf = GetComponent<MeshFilter>();
         if (mf != null)
         {
@@ -825,7 +835,7 @@ public class Voxel : NetworkBehaviour
         {
             Debug.LogError("cannot clone mesh filter - voxel has none " + gameObject);
         }
-        
+
     }
 
     internal void smoothBlockInPlace()
@@ -1532,9 +1542,9 @@ public class Voxel : NetworkBehaviour
     public void recalcCenters()
     {
 
-        if (filter == null || filter.mesh == null )
+        if (filter == null || filter.mesh == null)
         {
-            Debug.LogError("no filter (" + filter+") attached to voxel - cannot calculate voxel("+ this +") center  " + gameObject);
+            Debug.LogError("no filter (" + filter + ") attached to voxel - cannot calculate voxel(" + this + ") center  " + gameObject);
             return;
         }
 

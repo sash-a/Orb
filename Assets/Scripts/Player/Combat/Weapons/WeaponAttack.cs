@@ -65,7 +65,7 @@ public class WeaponAttack : AAttackBehaviour
     [SerializeField] private float pickupDistance;
 
 
-    void Start()
+   public void Start()
     {
         resourceManager = GetComponent<ResourceManager>();
         destructionEffectSpawner = GetComponent<DestructionEffectSpawner>();
