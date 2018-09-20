@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
+using System.Collections;
+using System.Collections.Generic;
 
 //[RequireComponent(typeof(ResourceManager))] //not sure if this is neccesary
 public class grenade : AAttackBehaviour
@@ -19,6 +21,8 @@ public class grenade : AAttackBehaviour
     public GameObject explosionEffect;
 
     public static UnityEngine.Object AOEDamage;
+
+    public AudioSource audioSource;
 
     // Use this for initialization
     void Start()
@@ -47,11 +51,18 @@ public class grenade : AAttackBehaviour
         GameObject explosion = Instantiate(explosionEffect, transform.position + (transform.position.normalized), Quaternion.identity);
         explosion.transform.localScale *= playerBlastRadius;
         NetworkServer.Spawn(explosion);
+        audioSource.Play();
+        StartCoroutine(Destroy());
+    }
+
+    IEnumerator Destroy()
+    {
+        yield return new WaitForSecondsRealtime(4.0f);
         Destroy(gameObject);
     }
 
-    //EXPLOSION
-    [Client]
+   //EXPLOSION
+   [Client]
     public override void attack()
     {
         if (!isServer) return;

@@ -48,6 +48,11 @@ public class MagicianUI : PlayerUI
 
     public void setUp(GameObject localPlayer)
     {
+        if (localPlayer == null)
+        {
+            Debug.LogError("passed null local player");
+            return;
+        }
         player = localPlayer;
         if (player != null && player.GetComponent<Identifier>().typePrefix != Identifier.magicianType)
         {
@@ -60,7 +65,7 @@ public class MagicianUI : PlayerUI
         magic = player.GetComponent<MagicAttack>();
 
         setHealth(1);
-        setShield();
+//        setShield();
 
         isPaused = false;
     }
@@ -104,8 +109,8 @@ public class MagicianUI : PlayerUI
     {
         if (shieldHealth == null)
         {
-            shieldBar.localScale = new Vector3
-                (1f, magic.getAttackStats().currentShieldHealth / magic.getAttackStats().maxShieldHealth, 1f);
+            shieldBar.localScale =
+                new Vector3(1f, magic.shieldManager.currentHealth / magic.shieldManager.maxHealth, 1f);
             return;
         }
 
@@ -115,7 +120,7 @@ public class MagicianUI : PlayerUI
 
     void setEnergy(float amount, float maxEnergy)
     {
-        energyCount.text = (int) amount + "";
+        energyCount.text = (int)amount + "";
         energyBar.localScale = new Vector3(1f, amount / maxEnergy, 1f);
     }
 

@@ -44,7 +44,7 @@ public class MapManager : NetworkBehaviour
     // maps column id's onto a set of all column ids that that column is adjacent to
     public Dictionary<int, HashSet<int>> neighboursMap;
 
- 
+
 
 
     public static Voxel DeletedVoxel;
@@ -234,7 +234,7 @@ public class MapManager : NetworkBehaviour
 
     public void finishMapLocally()
     {
-        
+
         mapDoneLocally = true;
         SmoothVoxels();
         CaveManager.manager.placeCavePortalsArtefacts();
@@ -441,13 +441,14 @@ public class MapManager : NetworkBehaviour
             {
                 maxHeight = height;
             }
-            else {
+            else
+            {
                 if (height < minHeight)
                 {
                     minHeight = height;
                 }
             }
-            
+
         }
         //Debug.Log("recaulculating voxel stuff");
         if (vox.mainAsset != null)
@@ -458,7 +459,8 @@ public class MapManager : NetworkBehaviour
 
         //needs to work with actual points
         Vector3 heightNormal = Vector3.Cross(new Vector3(0, heights[0], 0) - new Vector3(0, heights[1], 0), new Vector3(0, heights[1], 0) - new Vector3(0, heights[2], 0));
-        if (Vector3.Dot(heightNormal,Vector3.up) < 0) {
+        if (Vector3.Dot(heightNormal, Vector3.up) < 0)
+        {
             heightNormal *= -1;
         }
         float grad = 90f - (float)Math.Acos(Vector3.Dot(vox.worldCentreOfObject.normalized, heightNormal.normalized));
@@ -478,7 +480,7 @@ public class MapManager : NetworkBehaviour
         if (vox.mainAsset != null)
         {
             //Debug.Log("deformed vox with main asset");
-            Vector3[]  facePoints = vox.getMainFaceAtLayer(vox.mainAsset.voxSide);
+            Vector3[] facePoints = vox.getMainFaceAtLayer(vox.mainAsset.voxSide);
             Vector3 pos = (facePoints[0] + facePoints[1] + facePoints[2]) / 3f;
             vox.mainAsset.CmdMoveTo(pos * (float)(Math.Pow(Voxel.scaleRatio, Math.Abs(vox.layer))) * MapManager.mapSize);
             //vox.mainAsset.CmdMoveBy((pos-oldPos)* Math.Abs(maxHeight-minHeight)*10000);
@@ -536,105 +538,49 @@ public class MapManager : NetworkBehaviour
     private void RpcInformDeleted(int layer, int columnID)
     {
         voxels[layer][columnID] = MapManager.DeletedVoxel;
-        if (!isServer) {
+        if (!isServer)
+        {
             Debug.Log("client side mapmanager got informed of a deleted voxel on the server");
         }
     }
 
-
-    IEnumerator informNeighbours(int layer, int columnID)
-    {
-        yield return new WaitForSeconds(0.15f);
-        Vector3 centre = voxels[layer][columnID].centreOfObject;
-        voxels[layer][columnID] = MapManager.DeletedVoxel;
-
-        foreach (int n in neighboursMap[columnID])
-        {
-            if (doesVoxelExist(layer, n))
-            {
-                voxels[layer][n].smoothBlockInPlace();
-            }
-        }
-
-        if (doesVoxelExist(layer + 1, columnID))
-        {
-            voxels[layer + 1][columnID].smoothBlockInPlace();
-        }
-
-        if (doesVoxelExist(layer - 1, columnID))
-        {
-            voxels[layer - 1][columnID].smoothBlockInPlace();
-        }
-    }
-
-
-    [ClientRpc]
-    public void RpcDestroyNextSubvoxel(int layer, int columnID, String subID)
-    {
-        //Debug.Log("client rpc destroy next subvoxel");
-        FinalDestroyNextSubVoxel(layer, columnID, subID);
-    }
-
-    int destroyID = 0; //local
-
-    void FinalDestroyNextSubVoxel(int layer, int columnID, String subID)
-    {
-        //Debug.Log("finally destroying sub: '" + subID + "' determines shatter level: " + (subID.Split(',').Length - 1));
-
-        Voxel v = getSubVoxelAt(layer, columnID, subID);
-
-        if (v.shatterLevel < MapManager.manager.shatters)
-        {
-            //can shatter more
-            //Debug.Log("destroyed subvoxel being made a new container");
-            v.gameObject.AddComponent<VoxelContainer>();
-            VoxelContainer vc = v.gameObject.GetComponent<VoxelContainer>();
-            vc.start(v);
-            StartCoroutine(v.Melt());
-        }
-        else
-        {
-            Destroy(v.gameObject);
-        }
-    }
-
-  
-
-
     public Voxel getSubVoxelAt(int layer, int columnID, String subID)
     {
+        
+
         // v should be a voxel container for this to be a valid call to destroy subvoxel
         Voxel v = voxels[layer][columnID];
+        if (!v.isContainer)
+        {
+            Debug.LogError("base voxel of given layer, col: " + layer + "," + columnID + " is not a container. cannot find id: " + subID);
+            return null;
+        }
         int shatterLevel = subID.Split(',').Length - 1;
 
-        for (int i = 1; i <= shatterLevel; i++)
+        if (subID.ToCharArray()[0] == ',') {
+            subID = subID.Substring(1);
+        }
+
+        string[] ids = subID.Split(',');
+
+        for (int i = 0; i <= ids.Length; i++)
         {
             if (v == null)
             {
                 Debug.LogError("found null voxel looking for subvoxel: " + layer + "," + columnID + "," + subID + " ; failed at level: " + i);
-                break;
-            }
-            VoxelContainer vc = v.gameObject.GetComponent<VoxelContainer>();
-            int id = -1;
-            try
-            {
-                id = int.Parse(subID.Split(',')[i]);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e.Message);
-                Debug.LogError("trying to get subvoxel at " + subID + " failed at shatterlevel " + i);
-            }
-            try
-            {
-                v = (Voxel)vc.subVoxels[id]; // TODO try catch, this isn't working every time
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e.Message);
-                Debug.LogError("trying to get subvoxel at " + subID + " failed at shatterlevel " + i + " id = " + id + " num subvoxels = " + vc.subVoxels.Count);
+                return null;
             }
 
+            VoxelContainer vc = v.gameObject.GetComponent<VoxelContainer>();
+            if (vc == null)
+            {
+                Debug.LogError("no voxel container comp attached to contained voxel: " + v.gameObject + " trying to get sub id: " + subID);
+            }
+
+            int id = -1;
+            id = int.Parse(subID.Split(',')[i]);
+
+            v = (Voxel)vc.subVoxels[id];
         }
 
         return v;

@@ -55,6 +55,8 @@ public class WeaponAttack : AAttackBehaviour
     public AudioSource audioSource;
     public AudioClip gunShotClip;
     public AudioClip reloadClip;
+    public AudioClip pullingPinClip;
+    public AudioClip throwingGrenadeClip;
 
     public WeaponWheel weaponWheel;
 
@@ -149,6 +151,7 @@ public class WeaponAttack : AAttackBehaviour
             if (Input.GetKeyUp(KeyCode.G))
             {
                 //throw
+                StartCoroutine(throwGrenadeSound());
 
                 //wait for grenade animation to reach apex of throw
                 //Debug.Log("throwing grenade with hold length = " + grenadeHoldLength);
@@ -164,6 +167,13 @@ public class WeaponAttack : AAttackBehaviour
         if (Input.GetButtonDown("Use")) pickup();
 
         Animation();
+    }
+
+    IEnumerator throwGrenadeSound()
+    {
+        audioSource.PlayOneShot(pullingPinClip);
+        yield return new WaitForSecondsRealtime(1.0f);
+        audioSource.PlayOneShot(throwingGrenadeClip);
     }
 
     private void SelectWeapon()
@@ -227,13 +237,11 @@ public class WeaponAttack : AAttackBehaviour
         animator.SetTrigger("throwGrenade");
         //Debug.Log(isThrowingGrenade);
         yield return new WaitForSecondsRealtime(1.80f);
-        //StartCoroutine(wait(1.50f));
         //Spawn Grenade
         CmdthrowGrenade(throwForce);
         resourceManager.useGrenade(1, grenade.ammunition);
         //Wait for rest of animation to finish
         yield return new WaitForSecondsRealtime(1.80f);
-        //StartCoroutine(wait(1.80f));
         isThrowingGrenade = false;
     }
 
@@ -321,15 +329,18 @@ public class WeaponAttack : AAttackBehaviour
     {
         if (A.getMagAmmo() != A.getMagSize() && A.getPrimaryAmmo() != 0)
         {
-            audioSource.PlayOneShot(reloadClip, 0.7f);
-
+            if (!isReloading)
+            {
+                audioSource.PlayOneShot(reloadClip, 0.7f);
+            }
+            
+  
             isReloading = true;
             //wait length of animation (3.3 seconds)
             yield return new WaitForSeconds(3.3f);
             isReloading = false;
 
             resourceManager.reloadMagazine(A.getMagSize() - A.getMagAmmo(), A);
-
             
         }
     }
@@ -337,9 +348,7 @@ public class WeaponAttack : AAttackBehaviour
     [Client]
     public override void attack()
     {
-        //audioSource.pitch = 0.5f;
-        audioSource.PlayOneShot(gunShotClip, 0.7f);
-        //audioSource.pitch = 1;
+        
 
         if (!MapManager.manager.mapDoneLocally)
         {
@@ -347,7 +356,7 @@ public class WeaponAttack : AAttackBehaviour
             return;
         }
 
-        Debug.Log("attacking");
+       //Debug.Log("attacking");
 
         //Crossbow
         if (weapons[selectedWeapon].name == WeaponType.EX_CROSSBOW && weapons[selectedWeapon].ammunition.getMagAmmo() > 0)
@@ -366,6 +375,11 @@ public class WeaponAttack : AAttackBehaviour
                 //only works when the particle effect is dragged in directly from the gun's children for some reason 
                 //its because: it can't be prefab needs to specifically be particle effect
                 weapons[selectedWeapon].muzzleFlash.Play();
+
+                //Add some random pitch and volum to each gunshot:
+                audioSource.volume = UnityEngine.Random.Range(0.8f, 1);
+                audioSource.pitch = UnityEngine.Random.Range(0.95f, 1.05f);
+                audioSource.PlayOneShot(gunShotClip);
 
                 //Relevant to ammo
                 resourceManager.useMagazineAmmo(1, weapons[selectedWeapon].ammunition);
@@ -449,6 +463,10 @@ public class WeaponAttack : AAttackBehaviour
         {
             //can play a sound or something (empty mag)
         }
+
+        //reset to normal
+        audioSource.volume = 1.0f;
+        audioSource.pitch = 1.0f;
     }
 
     private void createDamageText(Transform hit, float damage, bool isHeadShot, bool isShield = false)

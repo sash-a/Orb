@@ -61,6 +61,10 @@ public class GunnerUI : PlayerUI
 
     public void setUp(GameObject localPlayer)
     {
+        if (localPlayer == null) {
+            Debug.LogError("passed null local player");
+            return;
+        }
         player = localPlayer;
         if (player != null && player.GetComponent<Identifier>().typePrefix != Identifier.gunnerType)
         {

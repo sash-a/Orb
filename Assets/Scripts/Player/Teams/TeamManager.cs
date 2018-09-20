@@ -106,7 +106,7 @@ public class TeamManager : NetworkBehaviour
         {
             Voxel seed = MapManager.manager.voxels[0][rand.Next(0, MapManager.manager.voxels[0].Count)];
             int triesRemaining = 20;
-            while ((seed.isMelted || seed.mainAsset != null || !seedFarEnough(seed, clearingCandidates)) && triesRemaining>0)
+            while ((seed.isContainer || seed.mainAsset != null || !seedFarEnough(seed, clearingCandidates)) && triesRemaining>0)
             {
                 seed = MapManager.manager.voxels[0][rand.Next(0, MapManager.manager.voxels[0].Count)];
                 triesRemaining--;
@@ -158,7 +158,7 @@ public class TeamManager : NetworkBehaviour
     {
         foreach (Voxel v in MapManager.manager.voxels[0].Values)
         {
-            if (v.mainAsset != null || v.isMelted || MapManager.manager.isDeleted(v.layer, v.columnID))
+            if (v.mainAsset != null || v.isContainer || MapManager.manager.isDeleted(v.layer, v.columnID))
             {
                 if (Vector3.Distance(v.worldCentreOfObject, seed.worldCentreOfObject) < 26)
                 {

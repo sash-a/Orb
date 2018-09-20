@@ -8,52 +8,61 @@ public class SubVoxel : NetworkBehaviour
 {
     public Transform voxelPosition;
 
-    private void Start()
+
+
+    public  void Start()
     {
         // Set the position to the world centre of the voxel so that its position can be tracked
         voxelPosition.position = GetComponent<Voxel>().worldCentreOfObject;
-    }
 
-    public override void OnStartClient()
-    {
         if (!MapManager.manager.mapDoneLocally)
         {
             Debug.LogError("spawning subvoxel before map has been completed");
         }
 
-        Voxel spawnedVox = gameObject.GetComponent<Voxel>();
-        //Debug.Log("a spawned voxel has a pos: " + spawnedVox.layer + " , " + spawnedVox.columnID);
-        Voxel foundVox = MapManager.manager.getSubVoxelAt(spawnedVox.layer, spawnedVox.columnID, spawnedVox.subVoxelID);
-        if (foundVox != spawnedVox)
-        {
-            GetComponent<MeshFilter>().mesh.vertices = foundVox.GetComponent<MeshFilter>().mesh.vertices;
-            GetComponent<MeshFilter>().mesh.triangles = foundVox.GetComponent<MeshFilter>().mesh.triangles;
-            GetComponent<MeshFilter>().mesh.uv = foundVox.GetComponent<MeshFilter>().mesh.uv;
+        if (!isServer) {
+            //if this voxel was spawned on a client - it has no properties, it must find the locally created subvoxel and 
+            //inherrit its properties before switching out the local version with this network synced version
 
-            spawnedVox.cloneMeshFilter();
-
-            GetComponent<MeshFilter>().mesh.RecalculateNormals();
-
-            spawnedVox.delegateTexture();
-            GetComponent<MeshCollider>().sharedMesh = GetComponent<MeshFilter>().mesh;
-            GetComponent<MeshCollider>().convex = false;
-
-
-            double scale = Math.Pow(Voxel.scaleRatio, Math.Abs(spawnedVox.layer)) * MapManager.mapSize;
-            transform.localScale = Vector3.one * (float) scale;
-            //Debug.Log("absorbing found vox into spawned vox ; making scale: " + scale);
-
-            if (spawnedVox.shatterLevel == 0)
+            Voxel spawnedVox = gameObject.GetComponent<Voxel>();
+            //Debug.Log("a spawned voxel has a pos: " + spawnedVox.layer + " , " + spawnedVox.columnID);
+            Voxel foundVox = MapManager.manager.getSubVoxelAt(spawnedVox.layer, spawnedVox.columnID, spawnedVox.subVoxelID);
+            if (foundVox != spawnedVox)
             {
-                MapManager.manager.voxels[spawnedVox.layer][spawnedVox.columnID] = spawnedVox;
-            }
-            else
-            {
-                MapManager.manager.replaceSubVoxel(spawnedVox);
-            }
+                GetComponent<MeshFilter>().mesh.vertices = foundVox.GetComponent<MeshFilter>().mesh.vertices;
+                GetComponent<MeshFilter>().mesh.triangles = foundVox.GetComponent<MeshFilter>().mesh.triangles;
+                GetComponent<MeshFilter>().mesh.uv = foundVox.GetComponent<MeshFilter>().mesh.uv;
 
-            Destroy(foundVox.gameObject);
+                spawnedVox.cloneMeshFilter();
+
+                GetComponent<MeshFilter>().mesh.RecalculateNormals();
+
+                spawnedVox.delegateTexture();
+                GetComponent<MeshCollider>().sharedMesh = GetComponent<MeshFilter>().mesh;
+                GetComponent<MeshCollider>().convex = false;
+
+
+                double scale = Math.Pow(Voxel.scaleRatio, Math.Abs(spawnedVox.layer)) * MapManager.mapSize;
+                transform.localScale = Vector3.one * (float)scale;
+                //Debug.Log("absorbing found vox into spawned vox ; making scale: " + scale);
+
+                if (spawnedVox.shatterLevel == 0)
+                {
+                    MapManager.manager.voxels[spawnedVox.layer][spawnedVox.columnID] = spawnedVox;
+                }
+                else
+                {
+                    MapManager.manager.replaceSubVoxel(spawnedVox);
+                }
+
+                Destroy(foundVox.gameObject);
+            }
+            else {
+                Debug.LogError("identical found and spawned sub vox on server = " + isServer);
+            }
         }
+
+        
     }
 
     // Update is called once per frame

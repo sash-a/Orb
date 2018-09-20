@@ -22,13 +22,17 @@ public class NetworkMapGen : NetworkBehaviour
 
         mapGen = this;
 
-        spawnVoxelsOnServer(MapManager.splits);
+        if (isServer)
+        {
+            StartCoroutine(spawnVoxelsOnServer(MapManager.splits));
+        }
+
     }
 
 
-    private void spawnVoxelsOnServer(int splits)
-    {
-        if (!isServer) return;
+    IEnumerator spawnVoxelsOnServer(int splits) {
+
+        yield return new WaitForSecondsRealtime(5);//waits for onlineGame scenes to load on all systems before spawning begins
 
         Object[] voxels = Resources.LoadAll("Voxels/Prefabs/Split" + splits, typeof(GameObject));
 
@@ -39,7 +43,7 @@ public class NetworkMapGen : NetworkBehaviour
         int count = 0;
         foreach (var voxel in voxels)
         {
-            var voxelGameObj = (GameObject) voxel;
+            var voxelGameObj = (GameObject)voxel;
             voxelGameObj.GetComponent<Voxel>().columnID = count;
             voxelDict.Add(count, voxelGameObj.GetComponent<Voxel>());
             count++;
@@ -50,14 +54,15 @@ public class NetworkMapGen : NetworkBehaviour
             GameObject inst = Instantiate(voxelDict[colID].gameObject);
             inst.GetComponent<Voxel>().setColumnID(colID);
             inst.name = "Voxel" + colID;
-            
+
 
             NetworkServer.Spawn(inst);
         }
 
         // Calling server side only
-//        MapManager.manager.voxelsLoaded();
+        //        MapManager.manager.voxelsLoaded();
     }
+
 
     /// <summary>
     /// Checks if all voxels have spawned client and server side
@@ -76,6 +81,8 @@ public class NetworkMapGen : NetworkBehaviour
     /// <returns></returns>
     IEnumerator CountSpawnedVoxels()
     {
+        yield return new WaitForSecondsRealtime(5);//accounts for spawn wait
+
         bool loaded = false;
         int maxTries = 60;
         float waitTime = 2f;

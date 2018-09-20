@@ -4,10 +4,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
+/// <summary>
+/// attached to player objects - only runs on local player
+/// act as cmd tool to map utilities mostly
+/// messages and instructions are passed to this class, it then uses its local player authority to send commands to the server appropriately
+/// </summary>
+
 public class NetworkMessagePasser : NetworkBehaviour
 {
     private bool informedMapDoneLocally = false;
-
 
     public static NetworkMessagePasser singleton;
 
@@ -29,10 +34,18 @@ public class NetworkMessagePasser : NetworkBehaviour
     struct Instruction
     {
         public string message;
+        public int[] args;
 
         public Instruction(string mess)
         {
             message = mess;
+            args = new int[0];
+        }
+
+        public Instruction(string mess , params int[] numbers)
+        {
+            message = mess;
+            args = numbers;
         }
     }
 
@@ -89,6 +102,20 @@ public class NetworkMessagePasser : NetworkBehaviour
             CmdShredMap();
             executed = true;
         }
+
+        if (message == "deliver_player_name")
+        {
+            //Debug.Log("sending cmd shred map");
+            PlayerActions.localActions.CmdSetPlayerName(TeamManager.localPlayerName);
+            executed = true;
+        }
+
+        if (message == "delete_voxel_at")
+        {
+            MapManager.manager.CmdInformDeleted(inst.args[0], inst.args[1]);
+            executed = true;
+        }
+
 
         return executed;
     }
@@ -151,5 +178,9 @@ public class NetworkMessagePasser : NetworkBehaviour
         }
     }
 
-
+    internal void informDeleted(int layer, int columnID)
+    {
+        MapManager.manager.CmdInformDeleted(layer, columnID);//instant reponse on local caller side
+        instructions.Add(new Instruction("delete_voxel_at", layer, columnID));
+    }
 }

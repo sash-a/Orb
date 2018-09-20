@@ -1,7 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+
+//colab is kak
 
 public class MapChunk : MonoBehaviour
 {
@@ -10,48 +13,11 @@ public class MapChunk : MonoBehaviour
     float chunkRadius;
 
     int columnsRemaining = 0;
+    int skipFrames = 90;
 
     private void Update()
     {
-        transform.position += transform.position.normalized * 50;
-        if (transform.position.magnitude > MapManager.mapSize * 10)
-        {
-            Debug.Log("destroyed chunk");
-            destroyChunk();
-        }
-    }
-
-    public void destroyChunk()
-    {
-        foreach (Voxel vox in containedVoxels)
-        {
-            if (vox.mainAsset != null)
-            {
-                NetworkServer.Destroy(vox.mainAsset.gameObject);
-            }
-
-
-            if (vox != null)
-            {
-                NetworkServer.Destroy(vox.gameObject);
-            }
-        }
-
-        Destroy(gameObject);
-    }
-
-    private void separateChunk()
-    {
-        foreach (Voxel vox in containedVoxels)
-        {
-            //Destroy(vox.GetComponent<MeshCollider>());
-
-            if (vox.mainAsset != null)
-            {
-                vox.mainAsset.gameObject.transform.parent = transform;
-            }
-            MapManager.manager.CmdInformDeleted(vox.layer, vox.columnID);
-        }
+        transform.position += chunkOrigin.normalized * 30;//moves away until it is deleted when the next shred is scheduled to occur
     }
 
     public void addVoxel(Voxel v)
@@ -61,6 +27,17 @@ public class MapChunk : MonoBehaviour
             Debug.LogError("null voxel being added to map chunk " + v);
             return;
         }
+
+        if (v.isContainer)
+        {
+            addVoxelContainer(v);
+            return;
+        }
+        
+
+        v.isInChunk = true;
+        v.gameObject.transform.parent = gameObject.transform;
+
 
         if (containedVoxels == null)
         {
@@ -83,13 +60,32 @@ public class MapChunk : MonoBehaviour
 
         if (v.mainAsset != null)
         {
-            //v.asset.changeParent(gameObject.transform);
+            v.mainAsset.gameObject.transform.parent = transform;
         }
     }
 
-    public void finishChunk(Vector3 origin, float radius)
+    private void addVoxelContainer(Voxel v)
     {
-        chunkOrigin = origin;
+        VoxelContainer vc = v.GetComponent<VoxelContainer>();
+        if (vc != null)
+        {
+            foreach (Voxel subVox in vc.subVoxels) {
+                if (subVox.isContainer)
+                {
+                    addVoxelContainer(subVox);
+                }
+                else {
+                    addVoxel(subVox);
+                }
+            }
+        }
+        else {
+            Debug.LogError("no voxel container attached to voxel (" + v.gameObject+ ") with isContainer = " + v.isContainer);
+        }
+    }
+
+    public void finishChunk( float radius)//has local player authority
+    {
         chunkRadius = radius;
 
         HashSet<Voxel> suspectedEdges = new HashSet<Voxel>();
@@ -101,7 +97,6 @@ public class MapChunk : MonoBehaviour
                 suspectedEdges.Add(v);
             }
 
-            v.gameObject.transform.parent = gameObject.transform;
         }
 
         int edgeCount = 0;
@@ -135,37 +130,11 @@ public class MapChunk : MonoBehaviour
                 edgeCount++;
             }
         }
-
-        separateChunk();
-        // Debug.Log("suspected  " + suspectedEdges.Count + "/" + containedVoxels.Count + " voxels of being on edge | actually " + edgeCount + " edges  |  radius: " + radius);
     }
 
-    private void createPillar(Voxel v)
-    {
-        for (int i = 1; i < MapManager.mapLayers; i++)
-        {
-            v.createNewVoxel(i - v.layer);
-            if (!MapManager.manager.isDeleted(i, v.columnID))
-            {
-                Voxel vox = MapManager.manager.voxels[i][v.columnID];
-                if (vox != null)
-                {
-                    //
-                    addVoxel(vox);
-                    vox.gameObject.transform.parent = gameObject.transform;
-                    //Debug.Log("adding new column voxel to map chunk - parent name: " + vox.gameObject.transform.parent.gameObject.name);
-                    vox.showNeighbours(false);
-                    MapManager.manager.CmdInformDeleted(vox.layer, vox.columnID);
-                    checkNeighbours(vox);
-                }
-            }
-        }
-    }
+
     int batchCount = 0;
-    int skipFrames = 60;
-
-
-    IEnumerator createPillarIncrementally(Voxel v)
+    IEnumerator createPillarIncrementally(Voxel v)//has local player authority
     {
         int batchSize = 1;
         int framesLeft = UnityEngine.Random.Range(0, skipFrames);//offsets the different pillars
@@ -185,14 +154,14 @@ public class MapChunk : MonoBehaviour
             if (!MapManager.manager.isDeleted(i, v.columnID))
             {
                 Voxel vox = MapManager.manager.voxels[i][v.columnID];
-                if (vox != null    && !vox.isMelted) 
+                if (vox != null && !vox.isContainer)
                 {
                     //
                     addVoxel(vox);
                     vox.gameObject.transform.parent = gameObject.transform;
                     //Debug.Log("adding new column voxel to map chunk - parent name: " + vox.gameObject.transform.parent.gameObject.name);
                     vox.showNeighbours(false);
-                    MapManager.manager.CmdInformDeleted(vox.layer, vox.columnID);
+                    MapManager.manager.CmdInformDeleted(vox.layer, vox.columnID);//has local player authority
                     checkNeighbours(vox);
 
                     if (batchCount >= batchSize)
@@ -210,10 +179,32 @@ public class MapChunk : MonoBehaviour
                 {
                     //todo - deal with voxel containers
                 }
-                
+
             }
         }
         columnsRemaining--;
+    }
+
+
+    public void destroyChunk()
+    {
+
+        //Debug.Log("destroying chunk");
+        foreach (Voxel vox in containedVoxels)
+        {
+            if (vox.mainAsset != null)
+            {
+                NetworkServer.Destroy(vox.mainAsset.gameObject);
+            }
+
+
+            if (vox != null)
+            {
+                NetworkServer.Destroy(vox.gameObject);
+            }
+        }
+
+        Destroy(gameObject);
     }
 
     private void checkNeighbours(Voxel vox)
@@ -222,7 +213,7 @@ public class MapChunk : MonoBehaviour
         {
             if (!MapManager.manager.isDeleted(vox.layer, n))
             {
-                if (vox != null && MapManager.manager.doesVoxelExist(vox.layer,n))
+                if (vox != null && MapManager.manager.doesVoxelExist(vox.layer, n))
                 {
                     Voxel v = MapManager.manager.voxels[vox.layer][n];
                     if (Vector3.Distance(v.worldCentreOfObject, chunkOrigin) < chunkRadius * 0.98f)

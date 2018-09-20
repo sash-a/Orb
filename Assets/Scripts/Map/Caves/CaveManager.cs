@@ -264,7 +264,7 @@ public class CaveManager : NetworkBehaviour
         {
             foreach (Voxel vox in MapManager.manager.voxels[i].Values)
             {
-                if (vox.isMelted)
+                if (vox.isContainer)
                 {
                     continue;
                 }

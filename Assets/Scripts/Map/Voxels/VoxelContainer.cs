@@ -17,8 +17,13 @@ public class VoxelContainer : Voxel
     bool shatterSmoothedVoxels = false;
 
 
+    public override void Start()
+    {
+        
+    }
+
     //NB: the old voxel object should be deleted once this voxel container has been created
-    public void start(Voxel majorVoxel)
+    public void createContainerFrom(Voxel majorVoxel)
     {//creates the voxel container from the old voxel scripts data - then replaces it in the mapManager
         //Debug.Log("creating voxel container");
         gameObject.name = "Container";
@@ -28,18 +33,13 @@ public class VoxelContainer : Voxel
         subVoxelID = majorVoxel.subVoxelID;
         subVoxels = new ArrayList();
         rand = new System.Random(columnID * layer + columnID);
-        isMelted = true;
+        isContainer = true;
         hasEnergy = majorVoxel.hasEnergy;
         shatterLevel = majorVoxel.shatterLevel;
         shatterCap = majorVoxel.shatterCap;
 
 
-        createVoxelContainer(majorVoxel);
-
-
-        lastHitRay = majorVoxel.lastHitRay;
-        lastHitPosition = majorVoxel.lastHitPosition;
-      
+        createVoxelContainer(majorVoxel);      
     }
 
    
@@ -104,9 +104,7 @@ public class VoxelContainer : Voxel
                 //subVoxelScript.isBottom = subVoxelScript.isBottom;
                 subVoxelScript.subVoxelID = majorVoxel.subVoxelID + "," + i;
                 subVoxelScript.info += "id: " + (subVoxelScript.subVoxelID);
-                if (majorVoxel.hasEnergy) {
-                    //subVoxelScript.CmdSetEnergy(majorVoxel.hasEnergy);
-                }
+
                 subVoxelScript.hasEnergy = majorVoxel.hasEnergy;
                 subVoxelScript.isCaveFloor = majorVoxel.isCaveFloor;
                 subVoxelScript.isCaveBorder = majorVoxel.isCaveBorder;

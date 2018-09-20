@@ -394,12 +394,12 @@ public class MapAsset : NetworkBehaviour
 
     private void Update()
     {
-        if ((voxel == null || voxel.isMelted) && type.Equals(Type.SECONDARY))
+        if ((voxel == null || voxel.isContainer) && type.Equals(Type.SECONDARY))
         {
             //Debug.Log("grass had vox removed - falling: " + falling + " ready: " + ready);
         }
 
-        if ((voxel == null || voxel.isMelted) && !falling && ready)
+        if ((voxel == null || voxel.isContainer) && !falling && ready)
         {
             if (rb.isKinematic)
             {
