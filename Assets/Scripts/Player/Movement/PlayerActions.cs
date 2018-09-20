@@ -7,8 +7,14 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerActions : NetworkBehaviour
 {
+    public static PlayerActions localActions;
+    
     Vector3 velocity;
     Vector3 rotation;
+
+    [SerializeField] private float pickupDistance;
+    private AAttackBehaviour attackScript;
+    private Identifier id;
 
     [SerializeField] private float camRotLimitX = 180f;
     private float camRotationX;
@@ -20,7 +26,7 @@ public class PlayerActions : NetworkBehaviour
     Gravity grav;
     NetHealth health;
 
-    Vector3 pivotPoint;//the local position of the cam pivot vs the player on start time - before any controls
+    Vector3 pivotPoint; //the local position of the cam pivot vs the player on start time - before any controls
 
     private bool isGroundPlanted;
     private bool isJumping = false;
@@ -44,21 +50,18 @@ public class PlayerActions : NetworkBehaviour
             {
                 TeamManager.localPlayer = player;
                 DynamicLightingController.localPlayer = player;
-
             }
             else
             {
                 Debug.Log("failed to find player controller component from player action script");
             }
-
-
         }
+
         if (transform.name.Contains("agician"))
         {
             float y = pivotPoint.y;
             //pivotPoint *= 1.2f;//makes magicians camera further away as theyre bigger
         }
-
     }
 
     private void initVars()
@@ -68,8 +71,15 @@ public class PlayerActions : NetworkBehaviour
         rb = GetComponent<Rigidbody>();
         health = GetComponent<NetHealth>();
         grav = GetComponent<Gravity>();
-        isGroundPlanted = false;
         player = GetComponent<PlayerController>();
+        id = GetComponent<Identifier>();
+
+        if (id.typePrefix == Identifier.magicianType)
+            attackScript = GetComponent<MagicAttack>();
+        else
+            attackScript = GetComponent<WeaponAttack>();
+
+        isGroundPlanted = false;
     }
 
     internal void deliverPlayerName()
@@ -79,7 +89,8 @@ public class PlayerActions : NetworkBehaviour
             Debug.Log("init player name");
             CmdSetPlayerName(TeamManager.localPlayerName);
         }
-        else {
+        else
+        {
             Debug.LogError("trying to deliver name from non local player");
         }
     }
@@ -95,7 +106,8 @@ public class PlayerActions : NetworkBehaviour
         doMovement();
         doRotations();
 
-        if (transform.position.magnitude > MapManager.mapSize * 3.5f && MapManager.manager != null && MapManager.manager.mapDoneLocally)//if you fall out come back in
+        if (transform.position.magnitude > MapManager.mapSize * 3.5f && MapManager.manager != null &&
+            MapManager.manager.mapDoneLocally) //if you fall out come back in
         {
             //transform.position = new Vector3(0, -10, 0);
             player.spawnOnMap();
@@ -106,15 +118,19 @@ public class PlayerActions : NetworkBehaviour
         {
             grav = GetComponent<Gravity>();
         }
+
         if (health == null)
         {
             health = GetComponent<NetHealth>();
         }
 
-        if (grav != null && !grav.inSphere && health != null && health.getHealth() > 0 && MapManager.manager != null && MapManager.manager.mapDoneLocally && TeamManager.singleton != null && !TeamManager.localPlayer.spawned)
-        {//should be in sphere but isnt
+        if (grav != null && !grav.inSphere && health != null && health.getHealth() > 0 && MapManager.manager != null &&
+            MapManager.manager.mapDoneLocally && TeamManager.singleton != null && !TeamManager.localPlayer.spawned)
+        {
+            //should be in sphere but isnt
             if (GameEventManager.clockTime > 250)
-            {//enough time has passed that the origonal spawning must have failed
+            {
+                //enough time has passed that the origonal spawning must have failed
                 Debug.LogError("having to respawn players manually after 250 seconds from game start");
                 BuildLog.writeLog("having to respawn players manually after 250 seconds from game start");
 
@@ -168,7 +184,6 @@ public class PlayerActions : NetworkBehaviour
         //pivot.localPosition = pivotPoint -grav.getDownDir() * currentCamRotX * 0.1f;
         //pivot.localPosition = pivotPoint - transform.position.normalized * currentCamRotX * 0.1f;
         pivot.localPosition = pivotPoint - Vector3.down * currentCamRotX * 0.1f;
-
     }
 
     public void jump(float jumpForce)
@@ -189,6 +204,45 @@ public class PlayerActions : NetworkBehaviour
         }
     }
 
+    public void pickup()
+    {
+        var isMagician = id.typePrefix == Identifier.magicianType;
+        Debug.Log("in pick is magician: " + isMagician);
+
+        RaycastHit hit;
+        if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, pickupDistance,
+            attackScript.getLayerMask()))
+            return;
+        
+        Debug.Log("hit " + hit.transform.name);
+        
+        PickUpItem item = hit.transform.gameObject.GetComponentInChildren<PickUpItem>(); // Pickup item lives on parent
+
+        if (item == null) return;
+
+        if (item.itemClass == PickUpItem.Class.MAGICIAN && isMagician)
+        {
+            MagicAttack magic = (MagicAttack) attackScript;
+
+            if (item.itemType != PickUpItem.ItemType.LESSER_ARTIFACT)
+            {
+                Debug.Log("lesser");
+                magic.shieldManager.downgrade();
+                magic.spells.ForEach(spell => spell.downgrade());
+            }
+
+            magic.spells.ForEach(spell => spell.upgrade(item.itemType));
+            magic.shieldManager.upgrade(item.itemType);
+
+            Debug.Log("picked up");
+            item.pickedUp();
+        }
+        else if (item.itemClass == PickUpItem.Class.GUNNER && !isMagician)
+        {
+            // TODO gunner pickup   
+        }
+    }
+
     void OnCollisionEnter(Collision other)
     {
         isGroundPlanted = other.gameObject.CompareTag("TriVoxel");
@@ -200,13 +254,12 @@ public class PlayerActions : NetworkBehaviour
     }
 
     [Command]
-    void CmdSetPlayerName(string name)
+    public void CmdSetPlayerName(string name)
     {
         Debug.Log("cmd player name");
 
         RpcSetPlayerName(name);
         player.setPlayerName(name, isLocalPlayer);
-
     }
 
     [ClientRpc]
@@ -221,6 +274,7 @@ public class PlayerActions : NetworkBehaviour
                 Debug.LogError("cannot find component player controller from player action script");
             }
         }
+
         if (name != null)
         {
             player.setPlayerName(name, isLocalPlayer);

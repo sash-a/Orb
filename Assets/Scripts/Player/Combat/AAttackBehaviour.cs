@@ -100,6 +100,7 @@ public abstract class AAttackBehaviour : NetworkBehaviour
             Debug.LogError("Voxel did not have health component");
             return;
         }
+
         Debug.Log("damaging voxel health");
         health.RpcDamage(damage);
     }
@@ -151,5 +152,10 @@ public abstract class AAttackBehaviour : NetworkBehaviour
             Debug.Log("Hit magician");
             shot.GetComponent<MagicAttack>().damageIndicator.hit(shooter.transform);
         }
+    }
+
+    public LayerMask getLayerMask()
+    {
+        return mask;
     }
 }

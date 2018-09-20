@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 
-public class ShieldSpawner : NetworkBehaviour
+public class ShieldManager : NetworkBehaviour
 {
     public GameObject shieldPrefab;
     public Shield currentShield;
@@ -12,9 +12,14 @@ public class ShieldSpawner : NetworkBehaviour
 
     public bool isShieldCoolingdown { get; private set; }
 
-    [SerializeField] private float maxHealth;
-    [SerializeField] private float currentHealth;
-    [SerializeField] private float cooldownTime;
+    public float maxHealth;
+    public float currentHealth;
+    public float healRate;
+    public float cooldownTime;
+    public float initialMana;
+    public float mana;
+
+    public bool hasArtifact;
 
     public void spawnShield(string casterID)
     {
@@ -27,6 +32,42 @@ public class ShieldSpawner : NetworkBehaviour
         CmdDestroyShield();
         isShielding = false;
     }
+
+    public void upgrade(PickUpItem.ItemType artifactType)
+    {
+        if (artifactType != PickUpItem.ItemType.HEALER_ARTIFACT || artifactType != PickUpItem.ItemType.LESSER_ARTIFACT)
+            return;
+
+        hasArtifact = artifactType == PickUpItem.ItemType.HEALER_ARTIFACT;
+        float modifier = 1.3f;
+
+        if (artifactType == PickUpItem.ItemType.LESSER_ARTIFACT)
+            modifier = 1.1f;
+
+
+        maxHealth *= modifier;
+        currentHealth = maxHealth;
+        initialMana /= modifier;
+        healRate *= modifier;
+        mana /= modifier;
+        cooldownTime /= modifier;
+    }
+
+    public void downgrade()
+    {
+        if (!hasArtifact)
+            return;
+
+        hasArtifact = false;
+        float modifier = 1.3f;
+
+        maxHealth /= modifier;
+        initialMana *= modifier;
+        healRate /= modifier;
+        mana *= modifier;
+        cooldownTime *= modifier;
+    }
+
 
     /// <summary>
     /// Called on the server to spawn a shield for the local player

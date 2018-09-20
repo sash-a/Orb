@@ -11,6 +11,9 @@ namespace Player.Combat.Magic.Attacks
 
         public Transform targetPos;
 
+        public float colisionDamage;
+
+
         public override void attack()
         {
         }
@@ -48,6 +51,25 @@ namespace Player.Combat.Magic.Attacks
         {
             isActive = false;
             netHelper.CmdEndTeleken();
+        }
+
+        public override void upgrade(PickUpItem.ItemType artifactType)
+        {
+            if (artifactType != PickUpItem.ItemType.LESSER_ARTIFACT ||
+                artifactType != PickUpItem.ItemType.TELEPATH_ARTIFACT)
+                return;
+
+            hasArtifact = artifactType == PickUpItem.ItemType.TELEPATH_ARTIFACT;
+            colisionDamage *= 1.5f;
+        }
+
+        public override void downgrade()
+        {
+            if (!hasArtifact)
+                return;
+
+            hasArtifact = false;
+            colisionDamage /= 1.5f;
         }
 
         /// <summary>

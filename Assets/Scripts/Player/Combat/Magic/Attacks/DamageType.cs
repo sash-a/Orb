@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Player.Combat.Magic.Attacks
@@ -14,7 +15,7 @@ namespace Player.Combat.Magic.Attacks
         public GameObject damageText;
 
         [SerializeField] private DamageNetHelper netHelper;
-        
+
         //FX
         [SerializeField] private NetworkFXPlayer fxPlayer;
         [SerializeField] private EnergyBlockEffectSpawner energyBlockEffectSpawner;
@@ -33,7 +34,8 @@ namespace Player.Combat.Magic.Attacks
 
             // Shoot ray from hand to hit position
             RaycastHit hitFromHand;
-            if (!Physics.Linecast(magic.rightHand.position, hitFromCam.point + 2 * cam.transform.forward, out hitFromHand,
+            if (!Physics.Linecast(magic.rightHand.position, hitFromCam.point + 2 * cam.transform.forward,
+                out hitFromHand,
                 mask))
                 return; // This should never return
 
@@ -89,6 +91,34 @@ namespace Player.Combat.Magic.Attacks
             isActive = false;
             netHelper.CmdSetSpellActive(false, equippedIndex);
             fxPlayer.play(false, equippedIndex);
+        }
+
+        public override void upgrade(PickUpItem.ItemType artifactType)
+        {
+            if (artifactType != PickUpItem.ItemType.LESSER_ARTIFACT ||
+                artifactType != PickUpItem.ItemType.DAMAGE_ARTIFACT)
+                return;
+
+            hasArtifact = name == ATTACK_TYPE && artifactType == PickUpItem.ItemType.DAMAGE_ARTIFACT;
+
+            float modifier = 1.5f;
+            if (artifactType == PickUpItem.ItemType.LESSER_ARTIFACT)
+                modifier = 1.2f;
+
+            for (int i = 0; i < damageValues.Count; i++)
+                damageValues[i] *= modifier;
+        }
+
+        public override void downgrade()
+        {
+            if (!hasArtifact) return;
+            
+            hasArtifact = false;
+
+            float modifier = 1.5f;
+
+            for (int i = 0; i < damageValues.Count; i++)
+                damageValues[i] /= modifier;
         }
 
         private void createDamageText(Transform hit, float damage, bool isHealing = false, bool isHeadshot = false,

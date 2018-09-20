@@ -9,14 +9,13 @@ public class MagicAttack : AAttackBehaviour
 {
     #region variables
 
-    [SerializeField] private MagicType attackStats;
-
     public Transform rightHand;
 
-    public ShieldSpawner shieldSpawner { get; private set; }
+    public ShieldManager shieldManager { get; private set; }
 
-    public GameObject magicGrenadeFX;
+    [SerializeField] private GameObject magicGrenadeFX;
 
+    [SerializeField] private float manaRegen;
     /// <summary>
     /// 0 = Digger
     /// 1 = Damage/Heal
@@ -30,8 +29,6 @@ public class MagicAttack : AAttackBehaviour
     public DamageType damage;
     public DamageType digger;
     public TelekinesisType telekin;
-
-    [SerializeField] private float pickupDistance;
 
     // Used so that commands are not passed every frame
     [SerializeField] private float waitTime;
@@ -57,7 +54,6 @@ public class MagicAttack : AAttackBehaviour
 
     #endregion
 
-
     void Start()
     {
         // Initial weapon selection
@@ -68,7 +64,7 @@ public class MagicAttack : AAttackBehaviour
 
         resourceManager = GetComponent<ResourceManager>();
         player = GetComponent<PlayerController>();
-        shieldSpawner = GetComponent<ShieldSpawner>();
+        shieldManager = GetComponent<ShieldManager>();
 
         idealLookSensitivity = player.lookSensitivityBase;
         idealPivotLocalPosition = cameraPivot.localPosition;
@@ -88,7 +84,7 @@ public class MagicAttack : AAttackBehaviour
         base.Update(); // Checks when attack related keys are pressed
 
         // Ends the shield if no energy remaining
-        if (!resourceManager.hasEnergy() && shieldSpawner.isShielding) endSecondaryAttack();
+        if (!resourceManager.hasEnergy() && shieldManager.isShielding) endSecondaryAttack();
 
         // End attacks if no energy left
 
@@ -111,13 +107,11 @@ public class MagicAttack : AAttackBehaviour
 
         energyUser();
         cycleWeapons();
-        // Trying to pick up something
-        if (Input.GetButtonDown("Use")) pickup();
 
         // Throw grenade
         if (Input.GetKeyDown(KeyCode.G)) CmdSpawnGrenade();
 
-        //Animation:
+        //Animation
         Animation(currentSpell);
 
         setUpCam();
@@ -126,7 +120,7 @@ public class MagicAttack : AAttackBehaviour
     void Animation(SpellType currentSpell)
     {
         animator.SetBool("isAttacking", currentSpell.isActive && currentSpell.name == SpellType.ATTACK_TYPE);
-        animator.SetBool("shieldUp", shieldSpawner.isShielding);
+        animator.SetBool("shieldUp", shieldManager.isShielding);
         animator.SetBool("isDigging", currentSpell.isActive && currentSpell.name == SpellType.DIGGER_TYPE);
         animator.SetBool("isTelekening", currentSpell.isActive && currentSpell.name == SpellType.TELEKINESIS_TYPE);
     }
@@ -163,14 +157,14 @@ public class MagicAttack : AAttackBehaviour
     {
         if (!isLocalPlayer) return;
 
-        if (resourceManager.getEnergy() > attackStats.initialShieldMana
-            && !shieldSpawner.isShielding && !shieldSpawner.isShieldCoolingdown)
+        if (resourceManager.getEnergy() > shieldManager.initialMana
+            && !shieldManager.isShielding && !shieldManager.isShieldCoolingdown)
         {
-            resourceManager.useEnergy(attackStats.initialShieldMana);
+            resourceManager.useEnergy(shieldManager.initialMana);
 
-            shieldSpawner.spawnShield(GetComponent<Identifier>().id);
+            shieldManager.spawnShield(GetComponent<Identifier>().id);
 
-            if (getAttackStats().artifactType == PickUpItem.ItemType.HEALER_ARTIFACT)
+            if (shieldManager.hasArtifact)
             {
                 idealPivotLocalPosition *= pivotRetraction;
                 idealCamFieldOfView *= FOVincrease;
@@ -185,15 +179,12 @@ public class MagicAttack : AAttackBehaviour
     [Client]
     public override void endSecondaryAttack()
     {
-        if (attackStats.isShield)
-        {
-            shieldSpawner.destroyShield();
+        shieldManager.destroyShield();
 
-            if (getAttackStats().artifactType == PickUpItem.ItemType.HEALER_ARTIFACT)
-            {
-                idealPivotLocalPosition /= pivotRetraction;
-                idealCamFieldOfView /= FOVincrease;
-            }
+        if (shieldManager.hasArtifact)
+        {
+            idealPivotLocalPosition /= pivotRetraction;
+            idealCamFieldOfView /= FOVincrease;
         }
     }
 
@@ -231,16 +222,16 @@ public class MagicAttack : AAttackBehaviour
     private void energyUser()
     {
         // Mana gain
-        if (!shieldSpawner.isShielding && !currentSpell.isActive)
-            resourceManager.gainEnery(attackStats.manaRegen * Time.deltaTime);
+        if (!shieldManager.isShielding && !currentSpell.isActive)
+            resourceManager.gainEnery(manaRegen * Time.deltaTime);
 
         // Shield health gain
-        if (!shieldSpawner.isShielding && !shieldSpawner.isShieldCoolingdown)
+        if (!shieldManager.isShielding && !shieldManager.isShieldCoolingdown)
         {
-            attackStats.currentShieldHealth = Math.Min
+            shieldManager.currentHealth = Math.Min
             (
-                attackStats.maxShieldHealth,
-                attackStats.currentShieldHealth + Time.deltaTime * attackStats.shieldHealRate
+                shieldManager.maxHealth,
+                shieldManager.currentHealth + Time.deltaTime * shieldManager.healRate
             );
         }
 
@@ -249,7 +240,7 @@ public class MagicAttack : AAttackBehaviour
         if (currentSpell.isActive) resourceManager.useEnergy(currentSpell.mana * Time.deltaTime);
 
         // Shield
-        if (shieldSpawner.isShielding) resourceManager.useEnergy(attackStats.shieldMana * Time.deltaTime);
+        if (shieldManager.isShielding) resourceManager.useEnergy(shieldManager.mana * Time.deltaTime);
     }
 
     private void setUpCam()
@@ -272,24 +263,9 @@ public class MagicAttack : AAttackBehaviour
         NetworkServer.Spawn(magicGrenade);
     }
 
-
-    public void pickup()
-    {
-        RaycastHit hit;
-        if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, pickupDistance, mask))
-            return;
-
-        PickUpItem item = hit.transform.gameObject.GetComponentInChildren<PickUpItem>(); // Pickup item lives on parent
-
-        if (item == null) return;
-
-        if (item.itemClass == PickUpItem.Class.MAGICIAN)
-        {
-            attackStats.upgrade(item.itemType);
-            item.pickedUp();
-        }
-    }
-
+    /// <summary>
+    /// Orients the direction of effects
+    /// </summary>
     private void orientEffects()
     {
         var activeSpell = spells[spellIndex]; // can't use current spell because index is the sync var
@@ -310,11 +286,5 @@ public class MagicAttack : AAttackBehaviour
     void CmdSetSpellIndexServer(int index)
     {
         spellIndex = index;
-    }
-
-
-    public MagicType getAttackStats()
-    {
-        return attackStats;
     }
 }

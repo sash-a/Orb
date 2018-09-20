@@ -38,6 +38,10 @@ public class PlayerController : MonoBehaviour
         return gravity.inSphere;
     }
 
+
+    //Sounds:
+    public AudioSource audioSource;
+    public AudioClip walkingClip;
     public Team team;
 
     void Start()
@@ -57,6 +61,9 @@ public class PlayerController : MonoBehaviour
     IEnumerator AddPlayer()
     {
         yield return new WaitForSecondsRealtime(1f);
+		while (TeamManager.singleton == null) {
+            yield return new WaitForSecondsRealtime(1f);
+        }
         TeamManager.singleton.addPlayer(this);
     }
 
@@ -85,7 +92,6 @@ public class PlayerController : MonoBehaviour
 
         if (transform.name.Contains("agician"))
         {
-
             actions.move(Input.GetKey(KeyCode.LeftShift) ? velocity * runMultiplier : velocity);
         }
 
@@ -98,6 +104,9 @@ public class PlayerController : MonoBehaviour
         if (Input.GetButtonDown("Jump"))
             actions.jump(jumpForce);
 
+        if (Input.GetButtonDown("Use"))
+            actions.pickup();
+        
         //Animation
         MovementAnimation(velocity);
 
@@ -109,9 +118,14 @@ public class PlayerController : MonoBehaviour
             //Debug.Log("player is in warning zone!");
         }
 
+//Movement Sounds:
+        if (isMoving && !audioSource.isPlaying)
+        {
+            audioSource.volume = UnityEngine.Random.Range(0.8f, 1);
+            audioSource.pitch = UnityEngine.Random.Range(0.8f, 1.1f);
+            audioSource.Play();
+        }
     }
-
-
 
     internal void sendToSpawnRoom()
     {
@@ -187,9 +201,9 @@ public class PlayerController : MonoBehaviour
     public void setPlayerName(string name, bool isLocalPlayer)
     {
         playerName = name;
-        if (!isLocalPlayer || false)
+        if (!isLocalPlayer|| true)
         {//dont put someones own name on their head
-            //Debug.Log("objcect player name");
+            Debug.Log("set player name: " + name);
 
             if (TeamManager.localPlayer.gameObject.name.Contains("unner") == gameObject.name.Contains("unner"))
             {
@@ -202,7 +216,7 @@ public class PlayerController : MonoBehaviour
             {
                 if (playerNameTrans != null)
                 {
-                    if (name != null)
+                    if (name != null && name.Length>0)
                     {
                         playerNameText.setValues(Color.red, name, playerNameTrans);
                     }

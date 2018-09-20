@@ -25,6 +25,7 @@ public abstract class SpellType
 	public float range;
 	public float mana;
 	public bool isActive;
+	public bool hasArtifact;
     
 	public ParticleSystem fx;
 	public ParticleSystem handFx;
@@ -38,4 +39,8 @@ public abstract class SpellType
 	public abstract void startAttack();
 
 	public abstract void endAttack();
+
+	public abstract void upgrade(PickUpItem.ItemType artifactType);
+
+	public abstract void downgrade();
 }

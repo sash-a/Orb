@@ -38,7 +38,7 @@ public class Shield : NetworkBehaviour
 
         var player = caster.gameObject.GetComponent<MagicAttack>();
         // if owns artifact make the shield larger
-        if (player.getAttackStats().artifactType == PickUpItem.ItemType.HEALER_ARTIFACT)
+        if (player.shieldManager.hasArtifact)
             transform.localScale = new Vector3(18f, 9, 18f);
 
         // Setting the health of the shield needs to be done locally (for UI) and server side (for sync var)
@@ -66,7 +66,7 @@ public class Shield : NetworkBehaviour
         var magic = GameManager.getObject(caster.id).GetComponent<MagicAttack>(); // Client error on release
 
         Debug.Log("Calling shield down: " + GetComponent<NetHealth>().getHealth());
-        magic.shieldSpawner.shieldDown(GetComponent<NetHealth>().getHealth());
+        magic.shieldManager.shieldDown(GetComponent<NetHealth>().getHealth());
         
         // Remove from UI
         ((MagicianUI) caster.GetComponent<Identifier>().UI).onShieldDown(); // Server error on release
