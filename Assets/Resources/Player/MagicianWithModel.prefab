@@ -3245,6 +3245,47 @@ MonoBehaviour:
     - -5
     damageText: {fileID: 1248568831543154, guid: 45276698013b05e4ba597fed8590ae33,
       type: 2}
+  digger:
+    player: {fileID: 4828850647062346}
+    magic: {fileID: 114685611026119682}
+    range: 70
+    mana: 1
+    isActive: 0
+    fx: {fileID: 198277429952926542}
+    handFx: {fileID: 198975176742124356}
+    cam: {fileID: 20564090809857192}
+    mask:
+      serializedVersion: 2
+      m_Bits: 4294835967
+    rightHand: {fileID: 4720825156490352}
+    damageNames:
+    - magician
+    - gunner
+    - voxel
+    - shield
+    - head
+    damageValues:
+    - 3
+    - 3
+    - 50
+    - 3
+    - 1.5
+    damageText: {fileID: 1248568831543154, guid: 45276698013b05e4ba597fed8590ae33,
+      type: 2}
+  teleken:
+    player: {fileID: 4828850647062346}
+    magic: {fileID: 114685611026119682}
+    range: 100
+    mana: 7
+    isActive: 0
+    fx: {fileID: 198019004327870092}
+    handFx: {fileID: 198975176742124356}
+    cam: {fileID: 20564090809857192}
+    mask:
+      serializedVersion: 2
+      m_Bits: 4294835967
+    currentVoxel: {fileID: 0}
+    targetPos: {fileID: 4505894572954432}
 --- !u!114 &114756109489538120
 MonoBehaviour:
   m_ObjectHideFlags: 1

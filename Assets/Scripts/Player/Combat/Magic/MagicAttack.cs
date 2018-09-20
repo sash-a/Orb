@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
+using Player.Combat.Magic.Attacks;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -72,6 +74,11 @@ public class MagicAttack : AAttackBehaviour
     #endregion
 
     public DamageType dmg;
+    public DamageType digger;
+    public TelekinesisType teleken;
+
+    private int currentSpell;
+    private List<SpellType> spells;
 
     void Start()
     {
@@ -201,59 +208,47 @@ public class MagicAttack : AAttackBehaviour
         }
         else if (attackStats.isTelekenetic)
         {
-            // Shoot ray from the camera to center of screen
-            RaycastHit hitFromCam;
-            if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hitFromCam,
-                attackStats.telekenRange, mask))
-                return;
-
-            //Debug.Log(hitFromCam.collider.transform.root.name + " " + hitFromCam.collider.transform.root.tag);
-
-            if (!hitFromCam.collider.CompareTag(VOXEL_TAG) &&
-                !hitFromCam.collider.transform.root.CompareTag(PLAYER_TAG)) return;
-
-            //Debug.Log("Through first if");
-
-            if (hitFromCam.collider.CompareTag(VOXEL_TAG))
-            {
-                Voxel voxel = hitFromCam.collider.gameObject.GetComponent<Voxel>();
-                if (voxel == null)
-                {
-                    //Debug.LogError("Voxel doesn't have voxel scipt");
-                    return;
-                }
-
-                isTelekening = true;
-
-                if (voxel.shatterLevel >= 1)
-                    CmdVoxelTeleken(voxel.columnID, voxel.layer, voxel.subVoxelID);
-                else
-                    CmdVoxelTeleken(voxel.columnID, voxel.layer, "NOTSUB");
-            }
-            else // Is player
-            {
-//                CmdEnableTeleken(hitFromHand.transform.root.gameObject);
-            }
+            teleken.startAttack();
+//            // Shoot ray from the camera to center of screen
+//            RaycastHit hitFromCam;
+//            if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hitFromCam,
+//                attackStats.telekenRange, mask))
+//                return;
+//
+//            //Debug.Log(hitFromCam.collider.transform.root.name + " " + hitFromCam.collider.transform.root.tag);
+//
+//            if (!hitFromCam.collider.CompareTag(VOXEL_TAG) &&
+//                !hitFromCam.collider.transform.root.CompareTag(PLAYER_TAG)) return;
+//
+//            //Debug.Log("Through first if");
+//
+//            if (hitFromCam.collider.CompareTag(VOXEL_TAG))
+//            {
+//                Voxel voxel = hitFromCam.collider.gameObject.GetComponent<Voxel>();
+//                if (voxel == null)
+//                {
+//                    //Debug.LogError("Voxel doesn't have voxel scipt");
+//                    return;
+//                }
+//
+//                isTelekening = true;
+//
+//                if (voxel.shatterLevel >= 1)
+//                    CmdVoxelTeleken(voxel.columnID, voxel.layer, voxel.subVoxelID);
+//                else
+//                    CmdVoxelTeleken(voxel.columnID, voxel.layer, "NOTSUB");
+//            }
+//            else // Is player
+//            {
+////                CmdEnableTeleken(hitFromHand.transform.root.gameObject);
+//            }
         }
         else if (attackStats.isDigger)
         {
-            playDiggerEffect(true);
+//            playDiggerEffect(true);
             isDigging = true;
+            digger.startAttack();
         }
-    }
-
-    [Command]
-    private void CmdEnableTeleken(GameObject rootGameObject)
-    {
-        RpcEnableTeleken(rootGameObject);
-    }
-
-    [ClientRpc]
-    private void RpcEnableTeleken(GameObject rootGameObject)
-    {
-        var telekenScript = rootGameObject.GetComponent<HumanTeleken>();
-        telekenScript.enabled = true;
-        telekenScript.setUp(telekenObjectPos.transform);
     }
 
     /// <summary>
@@ -266,7 +261,8 @@ public class MagicAttack : AAttackBehaviour
         if (attackStats.isTelekenetic)
         {
             isTelekening = false;
-            CmdEndTeleken();
+            teleken.endAttack();
+//            CmdEndTeleken();
             //restore look sens
         }
         else if (attackStats.isDamage)
@@ -277,8 +273,9 @@ public class MagicAttack : AAttackBehaviour
         }
         else if (attackStats.isDigger)
         {
-            playDiggerEffect(false);
+//            playDiggerEffect(false);
             isDigging = false;
+            digger.endAttack();
         }
 
         isAttacking = false;
@@ -451,46 +448,49 @@ public class MagicAttack : AAttackBehaviour
             return;
         timePassed = 0;
 
-        // Checking range, need high distance in raycast to orient effect
-        if (Mathf.Abs(Vector3.Distance(hitFromCam.point, transform.position)) > attackStats.diggerRange) return;
-
-        // Shoot ray from hand to hit position
-        RaycastHit hitFromHand;
-        if (!Physics.Linecast(rightHand.position, hitFromCam.point + 2 * cam.transform.forward, out hitFromHand, mask))
-            return; // this should never return
-
-        var rootTransform = hitFromHand.collider.transform.root;
-
-        Debug.Log("Hit: " + hitFromHand.collider.tag);
-
-        if (hitFromHand.collider.CompareTag(VOXEL_TAG))
-        {
-            var voxel = hitFromHand.collider.gameObject.GetComponent<Voxel>();
-
-            // If voxel is about to die
-            if (!voxel.hasEnergy && voxel.GetComponent<NetHealth>().getHealth() <= attackStats.diggerEnvDamage)
-                destructionEffectSpawner.play(hitFromHand.point, voxel);
-
-
-            CmdVoxelDamaged(hitFromHand.collider.gameObject, attackStats.diggerEnvDamage);
-
-            // Spawn energy blocks
-            if (voxel.hasEnergy)
-            {
-                energyBlockEffectSpawner.setVoxel(voxel.gameObject);
-                energyBlockEffectSpawner.spawnBlock();
-            }
-        }
-        else if (rootTransform.CompareTag(PLAYER_TAG) && !hitFromHand.collider.CompareTag("Shield"))
-        {
-            createDamageText(rootTransform, attackStats.diggerDamage);
-            CmdPlayerAttacked(rootTransform.gameObject.GetComponent<Identifier>().id, attackStats.diggerDamage);
-        }
-        else if (hitFromHand.collider.CompareTag("Shield"))
-        {
-            createDamageText(hitFromHand.transform, attackStats.diggerDamage, false, false, true);
-            CmdShieldHit(hitFromHand.transform.gameObject, attackStats.diggerDamage);
-        }
+        Debug.Log("Digger attacking");
+        digger.attack();
+        
+//        // Checking range, need high distance in raycast to orient effect
+//        if (Mathf.Abs(Vector3.Distance(hitFromCam.point, transform.position)) > attackStats.diggerRange) return;
+//
+//        // Shoot ray from hand to hit position
+//        RaycastHit hitFromHand;
+//        if (!Physics.Linecast(rightHand.position, hitFromCam.point + 2 * cam.transform.forward, out hitFromHand, mask))
+//            return; // this should never return
+//
+//        var rootTransform = hitFromHand.collider.transform.root;
+//
+//        Debug.Log("Hit: " + hitFromHand.collider.tag);
+//
+//        if (hitFromHand.collider.CompareTag(VOXEL_TAG))
+//        {
+//            var voxel = hitFromHand.collider.gameObject.GetComponent<Voxel>();
+//
+//            // If voxel is about to die
+//            if (!voxel.hasEnergy && voxel.GetComponent<NetHealth>().getHealth() <= attackStats.diggerEnvDamage)
+//                destructionEffectSpawner.play(hitFromHand.point, voxel);
+//
+//
+//            CmdVoxelDamaged(hitFromHand.collider.gameObject, attackStats.diggerEnvDamage);
+//
+//            // Spawn energy blocks
+//            if (voxel.hasEnergy)
+//            {
+//                energyBlockEffectSpawner.setVoxel(voxel.gameObject);
+//                energyBlockEffectSpawner.spawnBlock();
+//            }
+//        }
+//        else if (rootTransform.CompareTag(PLAYER_TAG) && !hitFromHand.collider.CompareTag("Shield"))
+//        {
+//            createDamageText(rootTransform, attackStats.diggerDamage);
+//            CmdPlayerAttacked(rootTransform.gameObject.GetComponent<Identifier>().id, attackStats.diggerDamage);
+//        }
+//        else if (hitFromHand.collider.CompareTag("Shield"))
+//        {
+//            createDamageText(hitFromHand.transform, attackStats.diggerDamage, false, false, true);
+//            CmdShieldHit(hitFromHand.transform.gameObject, attackStats.diggerDamage);
+//        }
     }
 
     /// <summary>
@@ -645,92 +645,46 @@ public class MagicAttack : AAttackBehaviour
 
     #region teleken
 
-    /// <summary>
-    /// Allows the player to control a voxel
-    /// </summary>
-    [Command]
-    private void CmdVoxelTeleken(int col, int layer, string subID)
-    {
-        if (subID == "NOTSUB")
-        {
-            currentTelekeneticVoxel = MapManager.manager.voxels[layer][col].gameObject;
-        }
-        else
-        {
-            currentTelekeneticVoxel = MapManager.manager.getSubVoxelAt(layer, col, subID).gameObject;
-        }
-
-        RpcPrepVoxel(col, layer, subID, GetComponent<Identifier>().id);
-    }
-
-
-    /// <summary>
-    /// Adds and enables the necessarry components to the voxels on every client
-    /// </summary>
-    /// <param name="col"></param>
-    /// <param name="layer"></param>
-    /// <param name="subID"></param>
-    /// <param name="playerID"></param>
-    [ClientRpc]
-    private void RpcPrepVoxel(int col, int layer, string subID, string playerID)
-    {
-        prepVoxel(col, layer, subID, playerID);
-    }
-
-    /// <summary>
-    /// Adds a rigidbody and enables the network transform of a given voxel.
-    /// Creates the necessary voxels below the current telekenetic one.
-    /// </summary>
-    /// <param name="col"></param>
-    /// <param name="layer"></param>
-    /// <param name="subID"></param>
-    /// <param name="playerID"></param>
-    private void prepVoxel(int col, int layer, string subID, string playerID)
-    {
-        if (subID == "NOTSUB")
-        {
-            currentTelekeneticVoxel = MapManager.manager.voxels[layer][col].gameObject;
-        }
-        else
-        {
-            currentTelekeneticVoxel = MapManager.manager.getSubVoxelAt(layer, col, subID).gameObject;
-        }
-
-        var voxel = currentTelekeneticVoxel.GetComponent<Voxel>();
-        // Creating the voxels below
-        //Debug.Log("Show neighbours " + (subID == "NOTSUB"));
-        voxel.showNeighbours(subID == "NOTSUB");
-
-        // Setting up rigidbody
-        // Needs to be true to work with a rigid body
-        voxel.gameObject.GetComponent<MeshCollider>().convex = true; // Still throws error sometimes
-
-        if (voxel.gameObject.GetComponent<Rigidbody>() == null)
-        {
-            var rb = voxel.gameObject.AddComponent<Rigidbody>();
-            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-            rb.useGravity = false;
-        }
-
-        // Enabling network transform
-        currentTelekeneticVoxel.GetComponent<NetworkTransform>().enabled = true;
-
-        voxel.transform.parent = MapManager.manager.Map.transform;
-        voxel.gameObject.name = playerID + "_teleken_voxel";
-
-        var tele = currentTelekeneticVoxel.GetComponent<Telekinesis>();
-        tele.enabled = true;
-        tele.setUp(telekenObjectPos.transform, Telekinesis.VOXEL, GetComponent<Identifier>().id, isServer);
-    }
-
-    [Command]
-    void CmdEndTeleken()
-    {
-        if (currentTelekeneticVoxel != null)
-        {
-            currentTelekeneticVoxel.GetComponent<Telekinesis>().throwObject(cam.transform.forward);
-        }
-    }
+//    /// <summary>
+//    /// Allows the player to control a voxel
+//    /// </summary>
+//    [Command]
+//    public void CmdVoxelTeleken(int col, int layer, string subID)
+//    {
+//        if (subID == "NOTSUB")
+//        {
+//            currentTelekeneticVoxel = MapManager.manager.voxels[layer][col].gameObject;
+//        }
+//        else
+//        {
+//            currentTelekeneticVoxel = MapManager.manager.getSubVoxelAt(layer, col, subID).gameObject;
+//        }
+//
+//        RpcPrepVoxel(col, layer, subID, GetComponent<Identifier>().id);
+//    }
+//
+//
+//    /// <summary>
+//    /// Adds and enables the necessarry components to the voxels on every client
+//    /// </summary>
+//    /// <param name="col"></param>
+//    /// <param name="layer"></param>
+//    /// <param name="subID"></param>
+//    /// <param name="playerID"></param>
+//    [ClientRpc]
+//    private void RpcPrepVoxel(int col, int layer, string subID, string playerID)
+//    {
+//        teleken.prepVoxel(col, layer, subID, playerID);
+//    }
+//
+//    [Command]
+//    public void CmdEndTeleken()
+//    {
+//        if (teleken.currentVoxel != null)
+//        {
+//            teleken.currentVoxel.GetComponent<Telekinesis>().throwObject(cam.transform.forward);
+//        }
+//    }
 
     #endregion
 

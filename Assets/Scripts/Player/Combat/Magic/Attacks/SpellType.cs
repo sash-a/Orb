@@ -1,10 +1,12 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿using UnityEngine;
 
 [System.Serializable]
 public abstract class SpellType
 {
 	public const string PLAYER_TAG = "Player";
+	public const string VOXEL_TAG = "TriVoxel";
+	
+	
 	public const string VOXEL = "voxel";
 	public const string MAGICIAN = "magician";
 	public const string GUNNER = "gunner";
