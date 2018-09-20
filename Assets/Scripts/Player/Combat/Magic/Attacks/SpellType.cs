@@ -2,7 +2,7 @@
 
 [System.Serializable]
 public abstract class SpellType
-{
+{	
 	public const string PLAYER_TAG = "Player";
 	public const string VOXEL_TAG = "TriVoxel";
 	
@@ -11,7 +11,13 @@ public abstract class SpellType
 	public const string MAGICIAN = "magician";
 	public const string GUNNER = "gunner";
 	public const string SHIELD = "shield";
-    
+
+	public const string ATTACK_TYPE = "attack";
+	public const string DIGGER_TYPE = "dig";
+	public const string TELEKINESIS_TYPE = "telekinesis";
+	
+	public string name;
+	
 	public Transform player;
 	public MagicAttack magic;
     

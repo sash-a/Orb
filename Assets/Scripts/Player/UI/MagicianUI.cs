@@ -75,19 +75,19 @@ public class MagicianUI : PlayerUI
 
     void showEquipped()
     {
-        if (magic.currentWeapon == 0)
+        if (magic.spellIndex == 0)
         {
             magicSlot0.sprite = borderEquipped;
             magicSlot1.sprite = borderUnequipped;
             magicSlot2.sprite = borderUnequipped;
         }
-        else if (magic.currentWeapon == 1)
+        else if (magic.spellIndex == 1)
         {
             magicSlot0.sprite = borderUnequipped;
             magicSlot1.sprite = borderEquipped;
             magicSlot2.sprite = borderUnequipped;
         }
-        else if (magic.currentWeapon == 2)
+        else if (magic.spellIndex == 2)
         {
             magicSlot0.sprite = borderUnequipped;
             magicSlot1.sprite = borderUnequipped;
@@ -102,7 +102,6 @@ public class MagicianUI : PlayerUI
 
     void setShield()
     {
-        Debug.Log("Displaying net health: " + (shieldHealth == null));
         if (shieldHealth == null)
         {
             shieldBar.localScale = new Vector3

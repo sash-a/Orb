@@ -10,7 +10,7 @@ namespace Player.Combat.Magic.Attacks
         private void Start()
         {
             magic = GetComponent<MagicAttack>();
-            telekinesis = magic.teleken;
+            telekinesis = magic.telekin;
         }
 
         /// <summary>

@@ -15,6 +15,8 @@ namespace Player.Combat.Magic.Attacks
 
         public GameObject damageText;
 
+        [SerializeField] private EnergyBlockEffectSpawner energyBlockEffectSpawner;
+        [SerializeField] private DestructionEffectSpawner destructionEffectSpawner;
 
         public override void attack()
         {
@@ -57,6 +59,14 @@ namespace Player.Combat.Magic.Attacks
             }
             else if (hitTransform.name.ToLower().Contains(VOXEL))
             {
+                var voxel = hitTransform.GetComponent<Voxel>();
+                if (voxel.hasEnergy && name == DIGGER_TYPE)
+                    energyBlockEffectSpawner.spawnBlock();
+
+                if (!voxel.hasEnergy)
+                    destructionEffectSpawner.play(hitFromHand.point, voxel);
+
+
                 magic.CmdVoxelDamaged(hitTransform.gameObject, getDamageValue(VOXEL));
             }
         }

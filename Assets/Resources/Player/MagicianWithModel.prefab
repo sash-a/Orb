@@ -358,24 +358,24 @@ GameObject:
   m_Component:
   - component: {fileID: 4828850647062346}
   - component: {fileID: 54288915647289724}
+  - component: {fileID: 114472336736598466}
   - component: {fileID: 114270760841178528}
   - component: {fileID: 114390162934834104}
   - component: {fileID: 114301223598397272}
+  - component: {fileID: 114322111051155298}
+  - component: {fileID: 114771434368962056}
+  - component: {fileID: 95792733785040294}
   - component: {fileID: 114192713922278768}
+  - component: {fileID: 114615067062985600}
   - component: {fileID: 114109090982811420}
   - component: {fileID: 114781513704706442}
   - component: {fileID: 114611930869768128}
-  - component: {fileID: 114472336736598466}
-  - component: {fileID: 114615067062985600}
-  - component: {fileID: 114756109489538120}
   - component: {fileID: 114516190801806492}
+  - component: {fileID: 114756109489538120}
   - component: {fileID: 114685611026119682}
+  - component: {fileID: 114900630331428130}
   - component: {fileID: 114323723182257248}
   - component: {fileID: 114230247052191806}
-  - component: {fileID: 95792733785040294}
-  - component: {fileID: 114771434368962056}
-  - component: {fileID: 114107938280388900}
-  - component: {fileID: 114322111051155298}
   m_Layer: 8
   m_Name: MagicianWithModel
   m_TagString: Player
@@ -1744,7 +1744,7 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1887010719109474}
-  m_LocalRotation: {x: 0.64444494, y: -0.34674183, z: 0.38055038, w: -0.5653691}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -1752,7 +1752,7 @@ Transform:
   - {fileID: 4041224176895444}
   m_Father: {fileID: 4720825156490352}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 180}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4227340832112696
 Transform:
   m_ObjectHideFlags: 1
@@ -2934,18 +2934,6 @@ Light:
   m_UseColorTemperature: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
---- !u!114 &114107938280388900
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1195965313534168}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c472f947b7beaf24fb9dbea66722e4fa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 1000
 --- !u!114 &114109090982811420
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3204,25 +3192,14 @@ MonoBehaviour:
     telekenRange: 100
   rightHand: {fileID: 4720825156490352}
   shield: {fileID: 1247925137036356, guid: 6dfdb12675b98d94791c722206d2f34c, type: 2}
-  telekenObjectPos: {fileID: 1065753496656896}
-  damageFX: {fileID: 198019004327870092}
-  damageHandFX: {fileID: 198975176742124356}
-  diggerFX: {fileID: 198277429952926542}
-  diggerHandFX: {fileID: 198975176742124356}
   magicGrenadeFX: {fileID: 1786394425573380, guid: c8e31bbc97454d74e83d73956942cdba,
     type: 2}
-  damageTextIndicatorEffect: {fileID: 1248568831543154, guid: 45276698013b05e4ba597fed8590ae33,
-    type: 2}
-  waitTime: 0.2
-  currentWeapon: 0
-  pickupDistance: 20
-  animator: {fileID: 95638754553782564}
-  cameraPivot: {fileID: 4090603448813962}
-  dmg:
+  damage:
+    name: attack
     player: {fileID: 4828850647062346}
     magic: {fileID: 114685611026119682}
-    range: 200
-    mana: 5
+    range: 60
+    mana: 1
     isActive: 0
     fx: {fileID: 198019004327870092}
     handFx: {fileID: 198975176742124356}
@@ -3235,17 +3212,20 @@ MonoBehaviour:
     - magician
     - gunner
     - voxel
-    - head
     - shield
+    - head
     damageValues:
-    - -7
-    - 10
-    - 3
-    - 1.5
     - -5
+    - 8
+    - 1
+    - -5
+    - 1.5
     damageText: {fileID: 1248568831543154, guid: 45276698013b05e4ba597fed8590ae33,
       type: 2}
+    energyBlockEffectSpawner: {fileID: 114323723182257248}
+    destructionEffectSpawner: {fileID: 114230247052191806}
   digger:
+    name: dig
     player: {fileID: 4828850647062346}
     magic: {fileID: 114685611026119682}
     range: 70
@@ -3265,27 +3245,36 @@ MonoBehaviour:
     - shield
     - head
     damageValues:
-    - 3
-    - 3
+    - -1
+    - 1
     - 50
-    - 3
+    - -1
     - 1.5
     damageText: {fileID: 1248568831543154, guid: 45276698013b05e4ba597fed8590ae33,
       type: 2}
-  teleken:
+    energyBlockEffectSpawner: {fileID: 114323723182257248}
+    destructionEffectSpawner: {fileID: 114230247052191806}
+  telekin:
+    name: telekinesis
     player: {fileID: 4828850647062346}
     magic: {fileID: 114685611026119682}
     range: 100
-    mana: 7
+    mana: 5
     isActive: 0
-    fx: {fileID: 198019004327870092}
+    fx: {fileID: 198975176742124356}
     handFx: {fileID: 198975176742124356}
     cam: {fileID: 20564090809857192}
     mask:
       serializedVersion: 2
       m_Bits: 4294835967
     currentVoxel: {fileID: 0}
+    netHelper: {fileID: 114900630331428130}
     targetPos: {fileID: 4505894572954432}
+  spellIndex: 0
+  pickupDistance: 20
+  waitTime: 0.2
+  animator: {fileID: 95638754553782564}
+  cameraPivot: {fileID: 4090603448813962}
 --- !u!114 &114756109489538120
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3340,6 +3329,17 @@ MonoBehaviour:
   playerName: 
   playerNameTrans: {fileID: 4316922251517352}
   spawned: 0
+--- !u!114 &114900630331428130
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1195965313534168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7103d3ec896f47499374f3069f550357, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!124 &124963876594173656
 Behaviour:
   m_ObjectHideFlags: 1
@@ -5477,7 +5477,7 @@ ParticleSystem:
     y:
       serializedVersion: 2
       minMaxState: 0
-      scalar: -50
+      scalar: 0
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -5530,7 +5530,7 @@ ParticleSystem:
     z:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0
+      scalar: 50
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -7432,7 +7432,7 @@ ParticleSystem:
         m_NumAlphaKeys: 2
     range: {x: 0, y: 1}
   CollisionModule:
-    enabled: 1
+    enabled: 0
     serializedVersion: 3
     type: 1
     collisionMode: 0
@@ -11972,7 +11972,7 @@ ParticleSystem:
         m_NumAlphaKeys: 2
     range: {x: 0, y: 1}
   CollisionModule:
-    enabled: 1
+    enabled: 0
     serializedVersion: 3
     type: 1
     collisionMode: 0
