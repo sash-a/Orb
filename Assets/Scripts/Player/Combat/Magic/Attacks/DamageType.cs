@@ -8,13 +8,15 @@ namespace Player.Combat.Magic.Attacks
     {
         public static readonly string HEAD = "Head";
 
-        public Transform rightHand;
-
         public List<string> damageNames;
         public List<float> damageValues;
 
         public GameObject damageText;
 
+        [SerializeField] private DamageNetHelper netHelper;
+        
+        //FX
+        [SerializeField] private NetworkFXPlayer fxPlayer;
         [SerializeField] private EnergyBlockEffectSpawner energyBlockEffectSpawner;
         [SerializeField] private DestructionEffectSpawner destructionEffectSpawner;
 
@@ -31,7 +33,7 @@ namespace Player.Combat.Magic.Attacks
 
             // Shoot ray from hand to hit position
             RaycastHit hitFromHand;
-            if (!Physics.Linecast(rightHand.position, hitFromCam.point + 2 * cam.transform.forward, out hitFromHand,
+            if (!Physics.Linecast(magic.rightHand.position, hitFromCam.point + 2 * cam.transform.forward, out hitFromHand,
                 mask))
                 return; // This should never return
 
@@ -76,7 +78,8 @@ namespace Player.Combat.Magic.Attacks
             if (!magic.isClient) return;
 
             isActive = true;
-            fx.Play(); // This needs to be an rpc
+            netHelper.CmdSetSpellActive(true, equippedIndex);
+            fxPlayer.play(true, equippedIndex);
         }
 
         public override void endAttack()
@@ -84,9 +87,9 @@ namespace Player.Combat.Magic.Attacks
             if (!magic.isClient) return;
 
             isActive = false;
-            fx.Stop();
+            netHelper.CmdSetSpellActive(false, equippedIndex);
+            fxPlayer.play(false, equippedIndex);
         }
-
 
         private void createDamageText(Transform hit, float damage, bool isHealing = false, bool isHeadshot = false,
             bool isShield = false)

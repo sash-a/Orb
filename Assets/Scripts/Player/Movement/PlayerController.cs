@@ -181,7 +181,7 @@ public class PlayerController : MonoBehaviour
         animator.SetBool("isMoving", isMoving);
         animator.SetFloat("xMove", xMoveOld);
         animator.SetFloat("yMove", yMoveOld);
-        animator.SetFloat("MouseY", MouseY);
+//        animator.SetFloat("MouseY", MouseY);
     }
 
     public void setPlayerName(string name, bool isLocalPlayer)

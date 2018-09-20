@@ -12,7 +12,9 @@ public class MagicAttack : AAttackBehaviour
 
     [SerializeField] private MagicType attackStats;
 
-    [SerializeField] private Transform rightHand;
+    public Transform rightHand;
+
+    #region shield
 
     // Shield
     private Shield currentShield; // The current instance of shield
@@ -20,12 +22,9 @@ public class MagicAttack : AAttackBehaviour
     private bool shieldUp; // True if the player is currently using a shield
     private bool isShieldCoolingdown;
 
+    #endregion
+
     public GameObject magicGrenadeFX;
-
-    public DamageType damage;
-    public DamageType digger;
-    public TelekinesisType telekin;
-
 
     /// <summary>
     /// 0 = Digger
@@ -34,8 +33,12 @@ public class MagicAttack : AAttackBehaviour
     /// </summary>
     [SyncVar] public int spellIndex;
 
-    private List<SpellType> spells;
+    public List<SpellType> spells;
     private SpellType currentSpell;
+
+    public DamageType damage;
+    public DamageType digger;
+    public TelekinesisType telekin;
 
     [SerializeField] private float pickupDistance;
 
@@ -43,10 +46,11 @@ public class MagicAttack : AAttackBehaviour
     [SerializeField] private float waitTime;
     private float timePassed;
 
-    //Animation:
+    //Animation
     public Animator animator;
 
-    // Viewing variables
+    #region Viewing variables
+
     PlayerController player;
 
     float idealLookSensitivity;
@@ -57,6 +61,8 @@ public class MagicAttack : AAttackBehaviour
     float idealCamFieldOfView = 65f;
     float pivotRetraction = 2.5f;
     float FOVincrease = 1.4f;
+
+    #endregion
 
     #endregion
 
@@ -76,13 +82,13 @@ public class MagicAttack : AAttackBehaviour
         idealLookSensitivity = player.lookSensitivityBase;
         idealPivotLocalPosition = cameraPivot.localPosition;
 
-        playEffect(false);
+        for (int i = 0; i < spells.Count; i++)
+            spells[i].equippedIndex = i;
     }
 
     void Update()
     {
         currentSpell = spells[spellIndex];
-
         orientEffects(); // Needs to be done for non-local clients
 
 
@@ -94,6 +100,7 @@ public class MagicAttack : AAttackBehaviour
         if (!resourceManager.hasEnergy() && shieldUp) endSecondaryAttack();
 
         // End attacks if no energy left
+
         if (currentSpell.isActive && resourceManager.hasEnergy())
         {
             if (timePassed < waitTime)
@@ -102,11 +109,14 @@ public class MagicAttack : AAttackBehaviour
                 return;
             }
 
+            Debug.Log("Attacking...");
             currentSpell.attack();
             timePassed = 0;
         }
-        else
+        else if (currentSpell.isActive)
         {
+            Debug.Log("ending attack, has energy + " + resourceManager.hasEnergy() + " active " +
+                      currentSpell.isActive);
             currentSpell.endAttack();
             timePassed = 0;
         }
@@ -143,8 +153,6 @@ public class MagicAttack : AAttackBehaviour
         }
 
         currentSpell.startAttack();
-        playEffect(currentSpell.isActive);
-        CmdSetSpellActive(true);
     }
 
     /// <summary>
@@ -153,10 +161,9 @@ public class MagicAttack : AAttackBehaviour
     [Client]
     public override void endAttack()
     {
+        Debug.Log("ending attack because m1 released");
         timePassed = 0;
         spells[spellIndex].endAttack();
-        playEffect(false);
-        CmdSetSpellActive(false);
     }
 
     /// <summary>
@@ -399,7 +406,6 @@ public class MagicAttack : AAttackBehaviour
         var activeSpell = spells[spellIndex]; // can't use current spell because index is the sync var
         if (activeSpell.isActive)
         {
-            Debug.Log("Orienting on local player " + isLocalPlayer);
             RaycastHit hit;
             if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, 1000, mask)) return;
 
@@ -415,63 +421,6 @@ public class MagicAttack : AAttackBehaviour
     void CmdSetSpellIndexServer(int index)
     {
         spellIndex = index;
-    }
-
-    // Sets a spell active on the server and on all clients
-    #region activeate spells
-
-    [Command]
-    void CmdSetSpellActive(bool active)
-    {
-        setSpellActive(active);
-        RpcSetSpellActive(active);
-    }
-
-    [ClientRpc]
-    void RpcSetSpellActive(bool active)
-    {
-        setSpellActive(active);
-    }
-
-    private void setSpellActive(bool active)
-    {
-        spells[spellIndex].isActive = active;
-    }
-
-    #endregion
-    
-
-    /*
-     * Playing partilce effects on all clients
-     */
-    void playEffect(bool isPlaying)
-    {
-        if (isLocalPlayer)
-        {
-            CmdPlayEffect(isPlaying);
-        }
-
-        if (isPlaying)
-        {
-            spells[spellIndex].fx.Play();
-            return;
-        }
-
-        spells[spellIndex].fx.Stop();
-    }
-
-    [Command]
-    void CmdPlayEffect(bool isPlaying)
-    {
-        RpcPlayEffect(isPlaying);
-    }
-
-    [ClientRpc]
-    void RpcPlayEffect(bool isPlaying)
-    {
-        if (isLocalPlayer) return;
-
-        playEffect(isPlaying);
     }
 
 

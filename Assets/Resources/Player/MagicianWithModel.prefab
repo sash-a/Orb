@@ -376,6 +376,8 @@ GameObject:
   - component: {fileID: 114900630331428130}
   - component: {fileID: 114323723182257248}
   - component: {fileID: 114230247052191806}
+  - component: {fileID: 114235722671765518}
+  - component: {fileID: 114594646391713632}
   m_Layer: 8
   m_Name: MagicianWithModel
   m_TagString: Player
@@ -2993,6 +2995,17 @@ MonoBehaviour:
     type: 2}
   grass: {fileID: 2100000, guid: dd58237607b1c334fa14d4473ea27563, type: 2}
   ground: {fileID: 2100000, guid: 091b363e397311a4793b78939b79707b, type: 2}
+--- !u!114 &114235722671765518
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1195965313534168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2cb00df5f9fd436db4e30b58c887a1ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114270760841178528
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3114,6 +3127,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   energy: 100
   maxEnergy: 100
+--- !u!114 &114594646391713632
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1195965313534168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d331b516d54c49469f4b17f9fa1f73e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114611930869768128
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3194,8 +3218,10 @@ MonoBehaviour:
   shield: {fileID: 1247925137036356, guid: 6dfdb12675b98d94791c722206d2f34c, type: 2}
   magicGrenadeFX: {fileID: 1786394425573380, guid: c8e31bbc97454d74e83d73956942cdba,
     type: 2}
+  spellIndex: 0
   damage:
     name: attack
+    equippedIndex: 0
     player: {fileID: 4828850647062346}
     magic: {fileID: 114685611026119682}
     range: 60
@@ -3207,7 +3233,6 @@ MonoBehaviour:
     mask:
       serializedVersion: 2
       m_Bits: 4294835967
-    rightHand: {fileID: 4720825156490352}
     damageNames:
     - magician
     - gunner
@@ -3222,10 +3247,13 @@ MonoBehaviour:
     - 1.5
     damageText: {fileID: 1248568831543154, guid: 45276698013b05e4ba597fed8590ae33,
       type: 2}
+    netHelper: {fileID: 114235722671765518}
+    fxPlayer: {fileID: 114594646391713632}
     energyBlockEffectSpawner: {fileID: 114323723182257248}
     destructionEffectSpawner: {fileID: 114230247052191806}
   digger:
     name: dig
+    equippedIndex: 0
     player: {fileID: 4828850647062346}
     magic: {fileID: 114685611026119682}
     range: 70
@@ -3237,7 +3265,6 @@ MonoBehaviour:
     mask:
       serializedVersion: 2
       m_Bits: 4294835967
-    rightHand: {fileID: 4720825156490352}
     damageNames:
     - magician
     - gunner
@@ -3252,10 +3279,13 @@ MonoBehaviour:
     - 1.5
     damageText: {fileID: 1248568831543154, guid: 45276698013b05e4ba597fed8590ae33,
       type: 2}
+    netHelper: {fileID: 114235722671765518}
+    fxPlayer: {fileID: 114594646391713632}
     energyBlockEffectSpawner: {fileID: 114323723182257248}
     destructionEffectSpawner: {fileID: 114230247052191806}
   telekin:
     name: telekinesis
+    equippedIndex: 0
     player: {fileID: 4828850647062346}
     magic: {fileID: 114685611026119682}
     range: 100
@@ -3270,7 +3300,6 @@ MonoBehaviour:
     currentVoxel: {fileID: 0}
     netHelper: {fileID: 114900630331428130}
     targetPos: {fileID: 4505894572954432}
-  spellIndex: 0
   pickupDistance: 20
   waitTime: 0.2
   animator: {fileID: 95638754553782564}

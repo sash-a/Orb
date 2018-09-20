@@ -17,6 +17,7 @@ public abstract class SpellType
 	public const string TELEKINESIS_TYPE = "telekinesis";
 	
 	public string name;
+	public int equippedIndex;
 	
 	public Transform player;
 	public MagicAttack magic;
