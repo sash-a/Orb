@@ -66,8 +66,8 @@ public class Shield : NetworkBehaviour
         var magic = GameManager.getObject(caster.id).GetComponent<MagicAttack>(); // Client error on release
 
         Debug.Log("Calling shield down: " + GetComponent<NetHealth>().getHealth());
-        magic.shieldDown(GetComponent<NetHealth>().getHealth());
-
+        magic.shieldSpawner.shieldDown(GetComponent<NetHealth>().getHealth());
+        
         // Remove from UI
         ((MagicianUI) caster.GetComponent<Identifier>().UI).onShieldDown(); // Server error on release
     }

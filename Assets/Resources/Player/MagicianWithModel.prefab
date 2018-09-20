@@ -378,6 +378,7 @@ GameObject:
   - component: {fileID: 114230247052191806}
   - component: {fileID: 114235722671765518}
   - component: {fileID: 114594646391713632}
+  - component: {fileID: 114590960983787738}
   m_Layer: 8
   m_Name: MagicianWithModel
   m_TagString: Player
@@ -3127,6 +3128,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   energy: 100
   maxEnergy: 100
+--- !u!114 &114590960983787738
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1195965313534168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe5a8cbb75054b44b3da708b1659333d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shieldPrefab: {fileID: 1247925137036356, guid: 6dfdb12675b98d94791c722206d2f34c,
+    type: 2}
+  currentShield: {fileID: 0}
+  maxHealth: 150
+  currentHealth: 150
+  cooldownTime: 5
 --- !u!114 &114594646391713632
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3215,7 +3233,6 @@ MonoBehaviour:
     telekenMana: 10
     telekenRange: 100
   rightHand: {fileID: 4720825156490352}
-  shield: {fileID: 1247925137036356, guid: 6dfdb12675b98d94791c722206d2f34c, type: 2}
   magicGrenadeFX: {fileID: 1786394425573380, guid: c8e31bbc97454d74e83d73956942cdba,
     type: 2}
   spellIndex: 0

@@ -124,7 +124,6 @@ public class PlayerActions : NetworkBehaviour
         }
     }
 
-    // TODO this should be move to a utility/player properites class
     public Vector3 getFoward()
     {
         var up = -grav.getDownDir();
