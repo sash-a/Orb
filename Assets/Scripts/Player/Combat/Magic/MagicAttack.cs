@@ -17,6 +17,7 @@ public class MagicAttack : AAttackBehaviour
     [SerializeField] private GameObject magicGrenadeFX;
 
     [SerializeField] private float manaRegen;
+
     /// <summary>
     /// 0 = Digger
     /// 1 = Damage/Heal
@@ -95,7 +96,7 @@ public class MagicAttack : AAttackBehaviour
         // Ends the shield if no energy remaining
         if (!resourceManager.hasEnergy() && shieldManager.isShielding) endSecondaryAttack();
 
-        
+
         if (currentSpell.isActive && resourceManager.hasEnergy()) // Damages if has energy
         {
             if (timePassed < waitTime)
@@ -125,6 +126,13 @@ public class MagicAttack : AAttackBehaviour
         spellSounds();
 
         setUpCam();
+
+        // For shield debugging
+        if (Input.GetKey(KeyCode.L))
+        {
+            Debug.LogWarning("Debug damaging shield");
+            CmdShieldHit(shieldManager.currentShield.gameObject, 50);
+        }
     }
 
     void Animation(SpellType currentSpell)
@@ -164,12 +172,12 @@ public class MagicAttack : AAttackBehaviour
         //Create a new audio clip
         int frequency = clip.frequency;
         float timeLength = stop - start;
-        int samplesLength = (int)(frequency * timeLength);
+        int samplesLength = (int) (frequency * timeLength);
         AudioClip newClip = AudioClip.Create(clip.name + "-sub", samplesLength, 1, frequency, false);
         //Create a temporary buffer for the samples
         float[] data = new float[samplesLength];
         //Get the data from the original clip
-        clip.GetData(data, (int)(frequency * start));
+        clip.GetData(data, (int) (frequency * start));
         //Transfer the data to the new clip
         newClip.SetData(data, 0);
         //Return the sub clip

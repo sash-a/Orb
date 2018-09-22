@@ -946,6 +946,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1 &1612159424341730
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 4389092878705294}
+  m_Layer: 8
+  m_Name: PlayerNameTransform
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &1619928782094560
 GameObject:
   m_ObjectHideFlags: 1
@@ -2024,6 +2039,19 @@ Transform:
   m_Father: {fileID: 4280358876500442}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &4389092878705294
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1612159424341730}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 9.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 4828850647062346}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4400778083601856
 Transform:
   m_ObjectHideFlags: 1
@@ -2563,6 +2591,7 @@ Transform:
   - {fileID: 4850440907203114}
   - {fileID: 4090603448813962}
   - {fileID: 4191025483643882}
+  - {fileID: 4389092878705294}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3628,6 +3657,7 @@ MonoBehaviour:
     - 1.5
     damageText: {fileID: 1248568831543154, guid: 45276698013b05e4ba597fed8590ae33,
       type: 2}
+    damageTextPosition: {fileID: 4389092878705294}
     netHelper: {fileID: 114235722671765518}
     fxPlayer: {fileID: 114594646391713632}
     energyBlockEffectSpawner: {fileID: 114323723182257248}
@@ -3661,6 +3691,7 @@ MonoBehaviour:
     - 1
     damageText: {fileID: 1248568831543154, guid: 45276698013b05e4ba597fed8590ae33,
       type: 2}
+    damageTextPosition: {fileID: 4389092878705294}
     netHelper: {fileID: 114235722671765518}
     fxPlayer: {fileID: 114594646391713632}
     energyBlockEffectSpawner: {fileID: 114323723182257248}

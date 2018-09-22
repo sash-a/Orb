@@ -126,7 +126,7 @@ namespace Player.Combat.Magic.Attacks
         private void createDamageText(Transform hit, float damage, bool isHealing = false, bool isHeadshot = false,
             bool isShield = false)
         {
-            float posUp = isShield ? 10 : 15;
+            float posUp = isShield ? 12 : 10;
             Object.Instantiate
             (
                 damageText,

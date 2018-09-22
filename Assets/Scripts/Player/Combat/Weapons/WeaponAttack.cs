@@ -466,7 +466,7 @@ public class WeaponAttack : AAttackBehaviour
 
     private void createDamageText(Transform hit, float damage, bool isHeadShot, bool isShield = false)
     {
-        float posUp = isShield ? 10 : 15;
+        float posUp = isShield ? 12 : 10;
 
         Instantiate
         (

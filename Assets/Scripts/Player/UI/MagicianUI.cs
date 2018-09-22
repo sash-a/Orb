@@ -17,6 +17,8 @@ public class MagicianUI : PlayerUI
     [SerializeField] private RectTransform healthBar;
     [SerializeField] private RectTransform shieldBar;
     [SerializeField] private RectTransform energyBar;
+    [SerializeField] private RectTransform shieldCooldownBar;
+    private float cooldownTimeElapsed;
 
     // Slot borders
     [SerializeField] private Image magicSlot0;
@@ -53,6 +55,7 @@ public class MagicianUI : PlayerUI
             Debug.LogError("passed null local player");
             return;
         }
+
         player = localPlayer;
         if (player != null && player.GetComponent<Identifier>().typePrefix != Identifier.magicianType)
         {
@@ -76,6 +79,7 @@ public class MagicianUI : PlayerUI
         setShield();
         setEnergy(resourceManager.getEnergy(), resourceManager.getMaxEnergy());
         showEquipped();
+        shieldCooldown();
     }
 
     void showEquipped()
@@ -120,8 +124,22 @@ public class MagicianUI : PlayerUI
 
     void setEnergy(float amount, float maxEnergy)
     {
-        energyCount.text = (int)amount + "";
+        energyCount.text = (int) amount + "";
         energyBar.localScale = new Vector3(1f, amount / maxEnergy, 1f);
+    }
+
+    private void shieldCooldown()
+    {
+        if (magic.shieldManager.isShieldCoolingdown)
+        {
+            shieldCooldownBar.localScale = new Vector3(1, cooldownTimeElapsed / magic.shieldManager.cooldownTime, 1);
+            cooldownTimeElapsed += Time.deltaTime;
+        }
+        else
+        {
+            cooldownTimeElapsed = 0;
+            shieldCooldownBar.localScale = Vector3.one;
+        }
     }
 
     public void onShieldUp(NetHealth health)

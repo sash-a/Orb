@@ -11,6 +11,8 @@ public class Telekinesis : MonoBehaviour
     [SerializeField] private Voxel vox;
     private Transform voxPos;
 
+    [SerializeField] private float damage;
+
     private const float voxelSpeed = 10;
     private const float gunnerSpeed = 2;
     private const float beastSpeed = 0;
@@ -18,7 +20,6 @@ public class Telekinesis : MonoBehaviour
 
     public static int VOXEL = 0;
     public static int GUNNER = 1;
-    public static int BEAST = 2;
 
     private bool hasReleased;
     private float throwForce;
@@ -36,6 +37,7 @@ public class Telekinesis : MonoBehaviour
 
         hasReleased = false;
         throwForce = 150;
+        damage = 90;
     }
 
     public void setUp(Transform stuckTo, int typeHit, string casterID, bool isServer)
@@ -55,7 +57,6 @@ public class Telekinesis : MonoBehaviour
             Debug.LogWarning("Waiting for rigidbody to spawn");
             StartCoroutine(getRB());
         }
-        
 
         //        teleEffect.gameObject.SetActive(true);
         //        teleEffect.Play();
@@ -70,7 +71,7 @@ public class Telekinesis : MonoBehaviour
 
         rb.MovePosition(rb.position + (requiredPos.position - voxPos.position).normalized * Time.deltaTime * speed);
 
-        //        teleEffect.transform.position = voxPos.position;
+        // teleEffect.transform.position = voxPos.position;
     }
 
     public void throwObject(Vector3 direction)
@@ -87,15 +88,13 @@ public class Telekinesis : MonoBehaviour
 
         var casterAttack = GameManager.getObject(casterID).GetComponent<MagicAttack>();
 
-        // TODO tweak numbers
-        if (hit.collider.CompareTag(AAttackBehaviour.PLAYER_TAG))
-            casterAttack.CmdPlayerAttacked(hit.collider.name, 20);
-        else if (hit.collider.CompareTag(AAttackBehaviour.VOXEL_TAG))
-            casterAttack.CmdVoxelDamaged(hit.collider.gameObject, 2);
-        else if (hit.collider.CompareTag("Shield")) // TODO constant
-            casterAttack.CmdShieldHit(hit.collider.gameObject, 75);
+        if (hit.collider.CompareTag(SpellType.PLAYER_TAG))
+            casterAttack.CmdPlayerAttacked(hit.collider.name, damage);
+        else if (hit.collider.CompareTag(SpellType.VOXEL_TAG))
+            casterAttack.CmdVoxelDamaged(hit.collider.gameObject, damage);
+        else if (hit.collider.CompareTag(SpellType.SHIELD))
+            casterAttack.CmdShieldHit(hit.collider.gameObject, 0);
 
-        // TODO FX
         NetworkServer.Destroy(gameObject);
     }
 
