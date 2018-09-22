@@ -8,7 +8,7 @@ using UnityEngine.UI;
 public class PlayerActions : NetworkBehaviour
 {
     public static PlayerActions localActions;
-    
+
     Vector3 velocity;
     Vector3 rotation;
 
@@ -82,6 +82,7 @@ public class PlayerActions : NetworkBehaviour
         isGroundPlanted = false;
     }
 
+    // TODO this shouldn't be here
     internal void deliverPlayerName()
     {
         if (isLocalPlayer)
@@ -124,6 +125,7 @@ public class PlayerActions : NetworkBehaviour
             health = GetComponent<NetHealth>();
         }
 
+        // TODO this shouldn't be here
         if (grav != null && !grav.inSphere && health != null && health.getHealth() > 0 && MapManager.manager != null &&
             MapManager.manager.mapDoneLocally && TeamManager.singleton != null && !TeamManager.localPlayer.spawned)
         {
@@ -207,39 +209,53 @@ public class PlayerActions : NetworkBehaviour
     public void pickup()
     {
         var isMagician = id.typePrefix == Identifier.magicianType;
-        Debug.Log("in pick is magician: " + isMagician);
+        Debug.Log("Starting pickup");
 
+        // Working out what was hit
         RaycastHit hit;
         if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, pickupDistance,
             attackScript.getLayerMask()))
             return;
-        
-        Debug.Log("hit " + hit.transform.name);
-        
+
         PickUpItem item = hit.transform.gameObject.GetComponentInChildren<PickUpItem>(); // Pickup item lives on parent
 
-        if (item == null) return;
+        if (item == null) return; // If we hit an item
 
-        if (item.itemClass == PickUpItem.Class.MAGICIAN && isMagician)
+        if (item.itemClass == PickUpItem.Class.MAGICIAN && isMagician) // Artifacts
         {
             MagicAttack magic = (MagicAttack) attackScript;
 
+            // Downgrade artifacts before picking up new one. Downgrade method only downgrades if you own an artifact.
             if (item.itemType != PickUpItem.ItemType.LESSER_ARTIFACT)
             {
-                Debug.Log("lesser");
-                magic.shieldManager.downgrade();
-                magic.spells.ForEach(spell => spell.downgrade());
+                if (magic.shieldManager.hasArtifact)
+                    magic.shieldManager.downgrade();
+
+                foreach (var spell in magic.spells)
+                {
+                    if (spell.hasArtifact)
+                        spell.downgrade();
+                }
+
             }
 
-            magic.spells.ForEach(spell => spell.upgrade(item.itemType));
+            // Upgrade relevant artifact. Only upgrades if the artifact is the correct type
+            foreach (var spell in magic.spells)
+                spell.upgrade(item.itemType);
+
             magic.shieldManager.upgrade(item.itemType);
 
-            Debug.Log("picked up");
             item.pickedUp();
         }
-        else if (item.itemClass == PickUpItem.Class.GUNNER && !isMagician)
+        else if (item.itemClass == PickUpItem.Class.GUNNER && !isMagician) // Special weapons
         {
-            // TODO gunner pickup   
+            WeaponAttack gunner = (WeaponAttack) attackScript;
+
+            var xbow = gunner.weapons[5];
+            gunner.weaponWheel.onRecieveSpecialWeapon(xbow);
+            gunner.equippedWeapons[3] = xbow;
+
+            item.pickedUp();
         }
     }
 
@@ -253,6 +269,7 @@ public class PlayerActions : NetworkBehaviour
         }
     }
 
+    // TODO this shouldn't be here
     [Command]
     public void CmdSetPlayerName(string name)
     {
@@ -262,6 +279,7 @@ public class PlayerActions : NetworkBehaviour
         player.setPlayerName(name, isLocalPlayer);
     }
 
+    // TODO this shouldn't be here
     [ClientRpc]
     void RpcSetPlayerName(string name)
     {

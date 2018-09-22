@@ -19,7 +19,7 @@ public class ShieldManager : NetworkBehaviour
     public float initialMana;
     public float mana;
 
-    public bool hasArtifact;
+    [SyncVar] public bool hasArtifact;
 
     public void spawnShield(string casterID)
     {
@@ -35,13 +35,13 @@ public class ShieldManager : NetworkBehaviour
 
     public void upgrade(PickUpItem.ItemType artifactType)
     {
-        if (artifactType != PickUpItem.ItemType.HEALER_ARTIFACT || artifactType != PickUpItem.ItemType.LESSER_ARTIFACT)
+        if (artifactType != PickUpItem.ItemType.HEALER_ARTIFACT && artifactType != PickUpItem.ItemType.LESSER_ARTIFACT)
             return;
 
-        hasArtifact = artifactType == PickUpItem.ItemType.HEALER_ARTIFACT;
+        CmdHasArtifact(artifactType == PickUpItem.ItemType.HEALER_ARTIFACT);
         float modifier = 1.3f;
-
-        if (artifactType == PickUpItem.ItemType.LESSER_ARTIFACT)
+ 
+        if (hasArtifact)
             modifier = 1.1f;
 
 
@@ -51,6 +51,8 @@ public class ShieldManager : NetworkBehaviour
         healRate *= modifier;
         mana /= modifier;
         cooldownTime /= modifier;
+        
+        Debug.Log("Shield upgraded");
     }
 
     public void downgrade()
@@ -58,7 +60,7 @@ public class ShieldManager : NetworkBehaviour
         if (!hasArtifact)
             return;
 
-        hasArtifact = false;
+        CmdHasArtifact(false);
         float modifier = 1.3f;
 
         maxHealth /= modifier;
@@ -99,7 +101,8 @@ public class ShieldManager : NetworkBehaviour
         (
             GetComponent<Identifier>(),
             maxHealth,
-            currentHealth
+            currentHealth,
+            hasArtifact
         );
 
         // Allowing it to move with the player
@@ -123,7 +126,8 @@ public class ShieldManager : NetworkBehaviour
         (
             GameManager.getObject(casterID),
             maxHealth,
-            currentHealth
+            currentHealth,
+            hasArtifact
         );
         GameManager.getObject(shieldID).transform.parent = GameManager.getObject(casterID).transform;
     }
@@ -157,5 +161,11 @@ public class ShieldManager : NetworkBehaviour
         isShieldCoolingdown = true;
         yield return new WaitForSeconds(cooldownTime);
         isShieldCoolingdown = false;
+    }
+
+    [Command]
+    private void CmdHasArtifact(bool b)
+    {
+        hasArtifact = b;
     }
 }

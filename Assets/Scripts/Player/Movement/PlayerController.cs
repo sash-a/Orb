@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerActions))]
@@ -50,14 +49,10 @@ public class PlayerController : MonoBehaviour
         gravity = GetComponent<Gravity>();
         lookSens = lookSensitivityBase;
         gravity.inSphere = false;
-        //sendToSpawnRoom();
         StartCoroutine(AddPlayer());
-
-
-
-        //Debug.Log("look sens: " + lookSens);
     }
 
+    // TODO this shouldn't be here
     IEnumerator AddPlayer()
     {
         yield return new WaitForSecondsRealtime(1f);
@@ -110,7 +105,7 @@ public class PlayerController : MonoBehaviour
         //Animation
         MovementAnimation(velocity);
 
-
+        // TODO this shouldn't be here
         if (ShredManager.isInWarningZone(transform.position))
         {
             new UIMessage("WARNING! You are in the shredding zone!", 1);
@@ -118,11 +113,11 @@ public class PlayerController : MonoBehaviour
             //Debug.Log("player is in warning zone!");
         }
 
-//Movement Sounds:
+        // Movement Sounds:
         if (isMoving && !audioSource.isPlaying)
         {
-            audioSource.volume = UnityEngine.Random.Range(0.8f, 1);
-            audioSource.pitch = UnityEngine.Random.Range(0.8f, 1.1f);
+            audioSource.volume = Random.Range(0.8f, 1);
+            audioSource.pitch = Random.Range(0.8f, 1.1f);
             audioSource.Play();
         }
     }
@@ -198,6 +193,7 @@ public class PlayerController : MonoBehaviour
 //        animator.SetFloat("MouseY", MouseY);
     }
 
+    // TODO this has nothing to do with player actions
     public void setPlayerName(string name, bool isLocalPlayer)
     {
         playerName = name;

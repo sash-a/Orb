@@ -39,7 +39,7 @@ public class Altar : MonoBehaviour {
         if (type.Equals(Type.ARTIFACT))
         {
             item.itemClass = PickUpItem.Class.MAGICIAN;
-            item.itemType = (PickUpItem.ItemType)(UnityEngine.Random.Range(1 , PickUpItem.numArtifacts + 1));
+            item.itemType = PickUpItem.ItemType.HEALER_ARTIFACT/*(PickUpItem.ItemType)(UnityEngine.Random.Range(1 , PickUpItem.numArtifacts + 1))*/;
             item.GetComponent<ModelSelector>().setModel(item.itemType);
 
             if (textObject != null) {

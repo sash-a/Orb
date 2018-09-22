@@ -382,6 +382,7 @@ GameObject:
   - component: {fileID: 82258690092278078}
   - component: {fileID: 82391999117379570}
   - component: {fileID: 82540191825604164}
+  - component: {fileID: 82809715007831866}
   m_Layer: 8
   m_Name: MagicianWithModel
   m_TagString: Player
@@ -2807,7 +2808,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: ceede7a829d41470a86526620500b878, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.65
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -2902,7 +2903,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 22b5b26c3429f42c482afafb562afc2a, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.65
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -2997,9 +2998,104 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.65
   m_Pitch: 1
   Loop: 1
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!82 &82809715007831866
+AudioSource:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1195965313534168}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: 8f63a99abbeabc3498994cc053fcdcd2, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 0.65
+  m_Pitch: 1
+  Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -3236,7 +3332,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f820ce22fb5b5694e9140799b3782485, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pickupDistance: 0
+  pickupDistance: 30
   camRotLimitX: 90
   cam: {fileID: 20564090809857192}
 --- !u!114 &114167247837178250
@@ -3591,6 +3687,13 @@ MonoBehaviour:
   waitTime: 0.2
   animator: {fileID: 95638754553782564}
   cameraPivot: {fileID: 4090603448813962}
+  audioSourceGrenade: {fileID: 82258690092278078}
+  audioSourceMagic: {fileID: 82540191825604164}
+  audioSourceShield: {fileID: 82809715007831866}
+  spellDigClip: {fileID: 8300000, guid: b56b588d93cfc6d4981a01d406bc7966, type: 3}
+  spellAttackClip: {fileID: 8300000, guid: 360c585cc8ec86b4ba2321c819fe927c, type: 3}
+  spellTelekenClip: {fileID: 8300000, guid: 258c0bd998368544a9d6ee546f91d593, type: 3}
+  spellShieldClip: {fileID: 8300000, guid: 8f63a99abbeabc3498994cc053fcdcd2, type: 3}
 --- !u!114 &114756109489538120
 MonoBehaviour:
   m_ObjectHideFlags: 1

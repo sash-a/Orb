@@ -26,6 +26,7 @@ public class GunnerUI : PlayerUI
 
     // Ammo count
     [SerializeField] private TextMeshProUGUI ammoCount;
+    [SerializeField] private TextMeshProUGUI grenadeCount;
 
     // Game state indicators
     [SerializeField] private TextMeshProUGUI energyCount;
@@ -61,10 +62,12 @@ public class GunnerUI : PlayerUI
 
     public void setUp(GameObject localPlayer)
     {
-        if (localPlayer == null) {
+        if (localPlayer == null)
+        {
             Debug.LogError("passed null local player");
             return;
         }
+
         player = localPlayer;
         if (player != null && player.GetComponent<Identifier>().typePrefix != Identifier.gunnerType)
         {
@@ -93,13 +96,14 @@ public class GunnerUI : PlayerUI
 
         if (weapons.weapons[weapons.selectedWeapon].name == "digging tool")
         {
-            setAmmo(true);
+            setAmmo(true, weapons.grenade.ammunition.getNumGrenades());
         }
         else
         {
             setAmmo
             (
                 false,
+                weapons.grenade.ammunition.getNumGrenades(),
                 weapons.weapons[weapons.selectedWeapon].ammunition.getMagAmmo(),
                 weapons.weapons[weapons.selectedWeapon].ammunition.getPrimaryAmmo()
             );
@@ -150,7 +154,7 @@ public class GunnerUI : PlayerUI
         energyCount.text = amount + "";
     }
 
-    void setAmmo(bool isDigger, int clip = 0, int total = 0)
+    void setAmmo(bool isDigger, int numGrenades, int clip = 0, int total = 0)
     {
         if (isDigger)
         {
@@ -160,6 +164,8 @@ public class GunnerUI : PlayerUI
         {
             ammoCount.text = clip + "|" + total;
         }
+
+        grenadeCount.text = numGrenades.ToString();
     }
 
     public void onWeaponPurchased(int oldWeaponEquippedIndex, WeaponType newWeapon)

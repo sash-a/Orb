@@ -32,13 +32,13 @@ public class Shield : NetworkBehaviour
         gameObject.layer = LayerMask.NameToLayer(PlayerSetup.REMOTE_LAYER_NAME);
     }
 
-    public void setCaster(Identifier id, float maxHealth, float currentHealth)
+    public void setCaster(Identifier id, float maxHealth, float currentHealth, bool hasArtifact)
     {
         caster = id;
 
         var player = caster.gameObject.GetComponent<MagicAttack>();
         // if owns artifact make the shield larger
-        if (player.shieldManager.hasArtifact)
+        if (hasArtifact)
             transform.localScale = new Vector3(18f, 9, 18f);
 
         // Setting the health of the shield needs to be done locally (for UI) and server side (for sync var)

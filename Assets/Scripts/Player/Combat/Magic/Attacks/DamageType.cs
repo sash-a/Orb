@@ -95,7 +95,7 @@ namespace Player.Combat.Magic.Attacks
 
         public override void upgrade(PickUpItem.ItemType artifactType)
         {
-            if (artifactType != PickUpItem.ItemType.LESSER_ARTIFACT ||
+            if (artifactType != PickUpItem.ItemType.LESSER_ARTIFACT &&
                 artifactType != PickUpItem.ItemType.DAMAGE_ARTIFACT)
                 return;
 
@@ -107,6 +107,8 @@ namespace Player.Combat.Magic.Attacks
 
             for (int i = 0; i < damageValues.Count; i++)
                 damageValues[i] *= modifier;
+            
+            Debug.Log("Damage upgraded");
         }
 
         public override void downgrade()

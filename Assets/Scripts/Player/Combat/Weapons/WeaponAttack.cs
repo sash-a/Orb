@@ -64,9 +64,6 @@ public class WeaponAttack : AAttackBehaviour
     public int idealCamAngle;
     public Camera weaponCamera;
 
-    [SerializeField] private float pickupDistance;
-
-
     void Start()
     {
         resourceManager = GetComponent<ResourceManager>();
@@ -163,8 +160,6 @@ public class WeaponAttack : AAttackBehaviour
         {
             grenadeHoldLength = 0;
         }
-
-        if (Input.GetButtonDown("Use")) pickup();
 
         Animation();
     }
@@ -483,7 +478,6 @@ public class WeaponAttack : AAttackBehaviour
 
     public override void endAttack()
     {
-        //throw new System.NotImplementedException();
     }
 
     public override void secondaryAttack()
@@ -497,23 +491,5 @@ public class WeaponAttack : AAttackBehaviour
 
     public override void endSecondaryAttack()
     {
-    }
-
-    public void pickup()
-    {
-        RaycastHit hit;
-        if (!Physics.Raycast(cam.transform.position, cam.transform.forward, out hit, pickupDistance, mask))
-            return;
-
-        PickUpItem item = hit.transform.gameObject.GetComponentInChildren<PickUpItem>(); // Pickup item lives on parent
-
-        if (item == null) return;
-
-        if (item.itemType == PickUpItem.ItemType.EXPLOSIVE_CROSSBOW)
-        {
-            var xbow = weapons[5];
-            weaponWheel.onRecieveSpecialWeapon(xbow);
-            equippedWeapons[3] = xbow;
-        }
     }
 }

@@ -55,12 +55,14 @@ namespace Player.Combat.Magic.Attacks
 
         public override void upgrade(PickUpItem.ItemType artifactType)
         {
-            if (artifactType != PickUpItem.ItemType.LESSER_ARTIFACT ||
+            if (artifactType != PickUpItem.ItemType.LESSER_ARTIFACT &&
                 artifactType != PickUpItem.ItemType.TELEPATH_ARTIFACT)
                 return;
 
             hasArtifact = artifactType == PickUpItem.ItemType.TELEPATH_ARTIFACT;
             colisionDamage *= 1.5f;
+            
+            Debug.Log("Telekinesis upgraded");
         }
 
         public override void downgrade()

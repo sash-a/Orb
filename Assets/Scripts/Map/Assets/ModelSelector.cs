@@ -26,5 +26,5 @@ public class ModelSelector : MonoBehaviour
             effect.startColor = telekenModel.GetComponent<MeshRenderer>().material.color;
         }
     }
-    
+   
 }

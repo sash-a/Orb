@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Player.Combat.Magic.Attacks;
 using UnityEngine;
@@ -50,6 +51,15 @@ public class MagicAttack : AAttackBehaviour
     float pivotRetraction = 2.5f;
     float FOVincrease = 1.4f;
 
+    //Sound:
+    public AudioSource audioSourceGrenade;
+    public AudioSource audioSourceMagic;
+    public AudioSource audioSourceShield;
+    public AudioClip spellDigClip;
+    public AudioClip spellAttackClip;
+    public AudioClip spellTelekenClip;
+    public AudioClip spellShieldClip;
+
     #endregion
 
     #endregion
@@ -78,7 +88,6 @@ public class MagicAttack : AAttackBehaviour
         currentSpell = spells[spellIndex];
         orientEffects(); // Needs to be done for non-local clients
 
-
         if (!isLocalPlayer) return;
 
         base.Update(); // Checks when attack related keys are pressed
@@ -86,9 +95,8 @@ public class MagicAttack : AAttackBehaviour
         // Ends the shield if no energy remaining
         if (!resourceManager.hasEnergy() && shieldManager.isShielding) endSecondaryAttack();
 
-        // End attacks if no energy left
-
-        if (currentSpell.isActive && resourceManager.hasEnergy())
+        
+        if (currentSpell.isActive && resourceManager.hasEnergy()) // Damages if has energy
         {
             if (timePassed < waitTime)
             {
@@ -99,7 +107,7 @@ public class MagicAttack : AAttackBehaviour
             currentSpell.attack();
             timePassed = 0;
         }
-        else if (currentSpell.isActive)
+        else if (currentSpell.isActive) // Ends attack if no energy left
         {
             currentSpell.endAttack();
             timePassed = 0;
@@ -109,10 +117,12 @@ public class MagicAttack : AAttackBehaviour
         cycleWeapons();
 
         // Throw grenade
-        if (Input.GetKeyDown(KeyCode.G)) CmdSpawnGrenade();
+        if (Input.GetKeyDown(KeyCode.G)) StartCoroutine(throwMagicGrenade());
 
         //Animation
         Animation(currentSpell);
+        //Sounds
+        spellSounds();
 
         setUpCam();
     }
@@ -123,6 +133,47 @@ public class MagicAttack : AAttackBehaviour
         animator.SetBool("shieldUp", shieldManager.isShielding);
         animator.SetBool("isDigging", currentSpell.isActive && currentSpell.name == SpellType.DIGGER_TYPE);
         animator.SetBool("isTelekening", currentSpell.isActive && currentSpell.name == SpellType.TELEKINESIS_TYPE);
+    }
+
+    void spellSounds()
+    {
+        if (currentSpell.isActive && currentSpell.name == SpellType.ATTACK_TYPE)
+        {
+            audioSourceMagic.PlayOneShot(MakeSubclip(spellAttackClip, 0.15f, 0.85f));
+        }
+
+        if (currentSpell.isActive && currentSpell.name == SpellType.DIGGER_TYPE)
+        {
+            audioSourceMagic.PlayOneShot(MakeSubclip(spellDigClip, 0.15f, 0.85f));
+        }
+
+        if (currentSpell.isActive && currentSpell.name == SpellType.TELEKINESIS_TYPE)
+        {
+            audioSourceMagic.PlayOneShot(MakeSubclip(spellTelekenClip, 0.15f, 0.85f));
+        }
+
+        if (shieldManager.isShielding && !audioSourceShield.isPlaying)
+        {
+            audioSourceShield.PlayOneShot(MakeSubclip(spellShieldClip, 0.1f, 0.25f));
+        }
+    }
+
+
+    private AudioClip MakeSubclip(AudioClip clip, float start, float stop)
+    {
+        //Create a new audio clip
+        int frequency = clip.frequency;
+        float timeLength = stop - start;
+        int samplesLength = (int)(frequency * timeLength);
+        AudioClip newClip = AudioClip.Create(clip.name + "-sub", samplesLength, 1, frequency, false);
+        //Create a temporary buffer for the samples
+        float[] data = new float[samplesLength];
+        //Get the data from the original clip
+        clip.GetData(data, (int)(frequency * start));
+        //Transfer the data to the new clip
+        newClip.SetData(data, 0);
+        //Return the sub clip
+        return newClip;
     }
 
     [Client]
@@ -255,12 +306,24 @@ public class MagicAttack : AAttackBehaviour
         Camera.main.fieldOfView += (idealCamFieldOfView - Camera.main.fieldOfView) * 0.15f;
     }
 
+    IEnumerator throwMagicGrenade()
+    {
+        animator.SetTrigger("magicGrenade");
+        //Debug.Log(isThrowingGrenade);
+        yield return new WaitForSecondsRealtime(0.40f);
+        //Spawn Grenade
+        CmdSpawnGrenade();
+        //Wait for rest of animation to finish
+        yield return new WaitForSecondsRealtime(1.72f);
+    }
+
     [Command]
     void CmdSpawnGrenade()
     {
         var magicGrenade = Instantiate(magicGrenadeFX, rightHand.position, cam.transform.rotation);
         magicGrenade.GetComponent<MagicGrenade>().setCaster(gameObject);
         NetworkServer.Spawn(magicGrenade);
+        audioSourceGrenade.Play();
     }
 
     /// <summary>
